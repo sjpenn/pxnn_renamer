@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PxNN Renamer</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&family=Geist+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    
+    <!-- Tailwind Config -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-fixed': '#dae2ff',
+                        'on-secondary': '#ffffff',
+                        'inverse-on-surface': '#eaf1ff',
+                        'primary-container': '#0052cc',
+                        'secondary': '#4c5d8d',
+                        'surface-container-high': '#dce9ff',
+                        'primary-fixed-dim': '#b2c5ff',
+                        'on-primary-container': '#c4d2ff',
+                        'inverse-surface': '#233144',
+                        'surface-bright': '#f8f9ff',
+                        'outline': '#737685',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Manrope', 'sans-serif'],
+                        mono: ['Geist Mono', 'monospace'],
+                    },
+                    borderRadius: {
+                        '3xl': '1.5rem',
+                        '4xl': '2rem',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="min-h-screen bg-surface-bright text-deep-slate font-sans">
+    <div class="app-noise opacity-30"></div>
+
+    <div class="relative flex min-h-screen">
+        <!-- Sidebar Navigation -->
+        <aside class="fixed inset-y-0 left-0 w-72 border-r border-outline/10 bg-white/80 backdrop-blur-xl">
+            <div class="flex h-full flex-col px-6 py-10">
+                <div class="flex items-center gap-3 px-2">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-container text-white">
+                        <span class="material-symbols-outlined">sync_alt</span>
+                    </div>
+                    <div>
+                        <p class="font-display text-lg font-bold tracking-tight text-deep-slate">PxNN Renamer</p>
+                        <p class="text-[10px] font-semibold uppercase tracking-widest text-secondary opacity-60">Precision Studio</p>
+                    </div>
+                </div>
+
+                <div class="mt-12 space-y-1">
+                    <p class="px-3 text-[11px] font-bold uppercase tracking-widest text-outline opacity-50 mb-4">Wizard Workflow</p>
+                    <nav class="space-y-4" aria-label="Wizard steps">
+                        <button type="button" class="wizard-step is-active w-full text-left" data-step-target="1">
+                            <span class="wizard-step-index">01</span>
+                            <span>
+                                <span class="wizard-step-label">Add Files</span>
+                                <span class="wizard-step-copy">Stage tracks & inspect hints</span>
+                            </span>
+                        </button>
+                        <button type="button" class="wizard-step is-locked w-full text-left" data-step-target="2">
+                            <span class="wizard-step-index">02</span>
+                            <span>
+                                <span class="wizard-step-label">Define Metadata</span>
+                                <span class="wizard-step-copy">Set artist & clean producers</span>
+                            </span>
+                        </button>
+                        <button type="button" class="wizard-step is-locked w-full text-left" data-step-target="3">
+                            <span class="wizard-step-index">03</span>
+                            <span>
+                                <span class="wizard-step-label">Export Archive</span>
+                                <span class="wizard-step-copy">Review and download</span>
+                            </span>
+                        </button>
+                    </nav>
+                </div>
+
+                <div class="mt-auto space-y-6">
+                    <div class="rounded-2xl border border-outline/10 bg-surface-container-high/30 p-4">
+                        <p class="text-[11px] font-bold uppercase tracking-widest text-outline opacity-50">Session Stats</p>
+                        <div class="mt-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-secondary">Batched</span>
+                                <span id="stat-files" class="text-sm font-bold text-deep-slate">0</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-secondary">Ready</span>
+                                <span id="stat-ready" class="text-xs font-bold px-2 py-0.5 rounded-full bg-outline/10 text-outline uppercase tracking-wider">No</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="account-sidebar-box" class="rounded-2xl border border-primary-fixed/50 bg-primary-fixed/20 p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="material-symbols-outlined text-sm text-primary-container">account_circle</span>
+                            <p class="text-[11px] font-bold uppercase tracking-widest text-primary-container">Account</p>
+                        </div>
+                        <p id="account-sidebar-copy" class="text-xs leading-5 text-secondary">
+                            Sign in to save metadata history and unlock batch exports.
+                        </p>
+                        <div class="mt-4 flex items-center justify-between">
+                            <span class="text-xs font-bold text-primary-container">Credits: <span id="account-sidebar-credits">0</span></span>
+                            <span id="account-sidebar-plan" class="text-[10px] font-bold uppercase tracking-wider bg-white/50 px-2 py-0.5 rounded-md text-primary-container">Free</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="ml-72 flex-1 flex flex-col min-h-screen">
+            <!-- Header Bar -->
+            <header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-outline/10 bg-white/60 px-8 backdrop-blur-md">
+                <div class="flex items-center gap-4">
+                    <p class="text-sm font-medium text-secondary">Project Workspace</p>
+                    <span class="h-4 w-[1px] bg-outline/20"></span>
+                    <h2 class="text-sm font-bold text-deep-slate uppercase tracking-wider">Rename Wizard</h2>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div id="header-auth-pill" class="text-xs font-medium text-secondary">
+                        Sync your metadata across devices
+                    </div>
+                    <div id="status-pill" class="inline-flex items-center gap-2 rounded-full bg-surface-container-high px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-primary-container">
+                        <span class="h-2 w-2 rounded-full bg-primary-container animate-pulse"></span>
+                        Waiting for files
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex-1 p-8">
+                <div class="mx-auto max-w-6xl space-y-8">
+
+                <div class="rounded-3xl border border-outline/10 bg-white p-8 shadow-sm">
+                    <div class="flex items-start justify-between border-b border-outline/10 pb-6">
+                        <div class="space-y-1">
+                            <p class="text-[11px] font-bold uppercase tracking-widest text-secondary opacity-60">Status: Active Batch</p>
+                            <h2 class="text-3xl font-display font-bold text-deep-slate">Rename Wizard</h2>
+                            <p id="workspace-subtitle" class="max-w-2xl text-sm leading-6 text-secondary font-medium">
+                                Upload your tracks below. We'll automatically identify BPM, artist, and version data.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 space-y-8">
+                        <div id="billing-banner" class="hidden rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900"></div>
+
+                        <div class="grid gap-6 lg:grid-cols-2">
+                            <!-- Auth Panel -->
+                            <div class="rounded-3xl border border-outline/10 bg-surface-bright/50 p-6">
+                                <div id="signed-out-shell" class="space-y-6">
+                                    <div class="space-y-2">
+                                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-fixed text-primary-container">
+                                            <span class="material-symbols-outlined text-sm">lock_open</span>
+                                        </div>
+                                        <h3 class="text-xl font-bold text-deep-slate">Sign in to sync</h3>
+                                        <p class="text-sm text-secondary font-medium leading-relaxed">
+                                            Access your batch history and metadata presets from any device.
+                                        </p>
+                                    </div>
+
+                                    <div id="auth-feedback" class="hidden rounded-xl border border-red-100 bg-red-50 px-4 py-2 text-xs text-red-600"></div>
+
+                                    <form id="login-form" class="space-y-3">
+                                        <input name="username" type="text" placeholder="Username" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed" required>
+                                        <input name="password" type="password" placeholder="Password" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed" required>
+                                        <button type="submit" class="w-full rounded-xl bg-deep-slate py-3 text-sm font-bold text-white transition hover:bg-slate-800">
+                                            Sign in
+                                        </button>
+                                    </form>
+
+                                    <form id="register-form" class="space-y-3 pt-4 border-t border-outline/10">
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-outline">New user?</p>
+                                        <input name="username" type="text" placeholder="New username" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed" required>
+                                        <input name="password" type="password" placeholder="Password (8+ chars)" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed" required>
+                                        <button type="submit" class="w-full rounded-xl border border-outline/20 bg-white py-3 text-sm font-bold text-deep-slate transition hover:border-deep-slate">
+                                            Create Account
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <div id="signed-in-shell" class="hidden space-y-6">
+                                    <div class="flex items-start justify-between">
+                                        <div class="space-y-2">
+                                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                            </div>
+                                            <h3 id="auth-username" class="text-xl font-bold text-deep-slate">Username</h3>
+                                            <p class="text-sm text-secondary font-medium">Session synced to your profile</p>
+                                        </div>
+                                        <button id="logout-button" class="text-xs font-bold text-red-500 hover:text-red-700">LOGOUT</button>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="rounded-xl bg-primary-container p-4 text-white">
+                                            <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">Power Credits</p>
+                                            <p id="auth-credit-balance" class="mt-1 text-2xl font-display font-bold">0</p>
+                                        </div>
+                                        <div class="rounded-xl bg-white border border-outline/10 p-4">
+                                            <p class="text-[10px] font-bold uppercase tracking-widest text-outline">Plan Status</p>
+                                            <p id="auth-plan-status" class="mt-1 text-xl font-bold text-deep-slate">Free</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dashboard Panel -->
+                            <div class="rounded-3xl border border-outline/10 bg-white p-6">
+                                <div class="flex items-center justify-between mb-6">
+                                    <div class="space-y-1">
+                                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-container-high text-secondary">
+                                            <span class="material-symbols-outlined text-sm">dashboard</span>
+                                        </div>
+                                        <h3 class="text-xl font-bold text-deep-slate">Project Activity</h3>
+                                    </div>
+                                    <div id="dashboard-user-badge" class="text-[10px] font-bold uppercase tracking-widest text-secondary opacity-50 bg-surface-bright px-3 py-1 rounded-full">
+                                        Offline Buffer
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div class="rounded-2xl border border-outline/10 bg-surface-bright/50 p-4">
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-secondary opacity-60">Batches</p>
+                                        <p id="dashboard-total-batches" class="mt-1 text-2xl font-display font-bold text-deep-slate">0</p>
+                                    </div>
+                                    <div class="rounded-2xl border border-outline/10 bg-surface-bright/50 p-4">
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-secondary opacity-60">Files</p>
+                                        <p id="dashboard-total-files" class="mt-1 text-2xl font-display font-bold text-deep-slate">0</p>
+                                    </div>
+                                    <div class="rounded-2xl border border-outline/10 bg-surface-bright/50 p-4">
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-secondary opacity-60">Exports</p>
+                                        <p id="dashboard-total-downloads" class="mt-1 text-2xl font-display font-bold text-deep-slate">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content Panels -->
+                        <div class="grid gap-6 xl:grid-cols-2">
+                            <div class="rounded-3xl border border-outline/10 bg-white p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h4 class="text-sm font-bold text-deep-slate uppercase tracking-wider">Rename Batches</h4>
+                                    <span id="batch-list-count" class="text-[10px] font-bold text-secondary opacity-50">0 ITEMS</span>
+                                </div>
+                                <div id="batch-list" class="space-y-3 min-h-[100px]"></div>
+                            </div>
+
+                            <div class="rounded-3xl border border-outline/10 bg-white p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h4 class="text-sm font-bold text-deep-slate uppercase tracking-wider">Activity Log</h4>
+                                    <span id="activity-list-count" class="text-[10px] font-bold text-secondary opacity-50">0 EVENTS</span>
+                                </div>
+                                <div id="activity-list" class="space-y-3 min-h-[100px]"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wizard Lockout Overlay -->
+                    <div id="wizard-lockout" class="hidden rounded-2xl border border-dashed border-primary-container/30 bg-primary-fixed/20 p-8 text-center">
+                        <span class="material-symbols-outlined text-4xl text-primary-container mb-3">lock</span>
+                        <p class="text-sm font-bold text-primary-container">Authentication Required</p>
+                        <p class="mt-1 text-xs text-secondary font-medium">Please sign in to begin your renaming batch.</p>
+                    </div>
+
+                    <!-- Step 1: File Staging -->
+                    <section class="wizard-panel space-y-8" data-step-panel="1">
+                        <div class="space-y-2">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-primary-container bg-primary-fixed/30 inline-block px-2 py-0.5 rounded">Process Step 01</p>
+                            <h3 class="text-2xl font-display font-bold text-deep-slate">Stage Source Files</h3>
+                            <p class="max-w-2xl text-sm leading-6 text-secondary font-medium">
+                                Our precision parser will extract BPM, artist, and version metadata from your filenames.
+                            </p>
+                        </div>
+
+                        <div class="rounded-3xl border-2 border-dashed border-outline/20 bg-white p-12 transition-all hover:border-primary-container/40 dropzone" id="dropzone">
+                            <div class="flex flex-col items-center justify-center text-center">
+                                <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-bright text-primary-container shadow-sm">
+                                    <span class="material-symbols-outlined text-3xl">upload_file</span>
+                                </div>
+                                <h3 class="text-lg font-bold text-deep-slate">Drag & Drop audio files</h3>
+                                <p class="mt-2 text-sm text-secondary font-medium">Or click to browse storage</p>
+                                <input type="file" id="file-input" multiple class="hidden" accept=".wav,.mp3,.aif,.aiff,.flac">
+                            </div>
+                        </div>
+
+                        <div class="rounded-2xl bg-deep-slate p-5 text-white shadow-lg">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="material-symbols-outlined text-sm text-primary-fixed-dim">info</span>
+                                <p class="text-xs font-bold uppercase tracking-widest text-primary-fixed-dim">Workflow Tip</p>
+                            </div>
+                            <p class="text-xs leading-5 opacity-80 font-medium">
+                                The fastest path is to define the artist once at Step 2. We'll automatically identify BPM and mix versions wherever possible.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Step 2: Metadata Definition -->
+                    <section class="wizard-panel hidden space-y-8" data-step-panel="2">
+                        <div class="space-y-2">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-primary-container bg-primary-fixed/30 inline-block px-2 py-0.5 rounded">Process Step 02</p>
+                            <h3 class="text-2xl font-display font-bold text-deep-slate">Define Metadata Rules</h3>
+                            <p class="max-w-xl text-sm leading-6 text-secondary font-medium">
+                                Set batch defaults first. Producers accept semicolon-separated values like <span class="font-bold text-deep-slate">PMHITSS; REALLYINDIG0</span>.
+                            </p>
+                        </div>
+
+                        <form id="rename-form" class="space-y-6">
+                            <div class="grid gap-6 lg:grid-cols-2">
+                                <label class="space-y-2">
+                                    <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Primary Artist</span>
+                                    <input id="default_artist" name="default_artist" type="text" placeholder="Hurricane Wisdom" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed">
+                                </label>
+
+                                <label class="space-y-2">
+                                    <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Default Producers</span>
+                                    <input id="default_producers" name="default_producers" type="text" placeholder="PMHITSS; REALLYINDIG0" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed">
+                                </label>
+                            </div>
+
+                            <label class="space-y-2 block">
+                                <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Output Format String</span>
+                                <textarea id="format_template" name="format_template" rows="2" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed font-mono">ARTIST_TITLE_PRODUCERS_MIX_VERSION</textarea>
+                            </label>
+
+                            <div class="grid gap-6 lg:grid-cols-2">
+                                <label class="space-y-2">
+                                    <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Separator Logic</span>
+                                    <select id="delimiter" name="delimiter" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed">
+                                        <option value="underscore" selected>Underscore (_)</option>
+                                        <option value="dash">Dash (-)</option>
+                                        <option value="space">Space ( )</option>
+                                        <option value="dot">Dot (.)</option>
+                                    </select>
+                                </label>
+
+                                <label class="space-y-2">
+                                    <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Casing Style</span>
+                                    <select id="case_style" name="case_style" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed">
+                                        <option value="keep" selected>Professional / keep as is</option>
+                                        <option value="title">Title Case</option>
+                                        <option value="lower">lowercase</option>
+                                        <option value="upper">UPPERCASE</option>
+                                    </select>
+                                </label>
+                            </div>
+
+                            <label class="flex items-center justify-between rounded-xl border border-outline/10 bg-surface-bright p-5">
+                                <div class="flex items-center gap-4">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                                        <span class="material-symbols-outlined">cleaning_services</span>
+                                    </div>
+                                    <div>
+                                        <span class="block text-sm font-bold text-deep-slate">Precision Cleanup</span>
+                                        <span class="block text-xs text-secondary font-medium">Strips problem characters for archive-safe delivery.</span>
+                                    </div>
+                                </div>
+                                <input id="safe_cleanup" name="safe_cleanup" type="checkbox" checked class="h-6 w-6 rounded-lg border-outline/20 text-primary-container focus:ring-primary-fixed">
+                            </label>
+                        </form>
+
+                        <div class="grid gap-6 lg:grid-cols-[1.5fr,1fr]">
+                            <div class="rounded-2xl border border-outline/10 bg-white p-6">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-outline mb-4">Variable Token Reference</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="token-chip">ARTIST</span>
+                                    <span class="token-chip">TITLE</span>
+                                    <span class="token-chip">PRODUCERS</span>
+                                    <span class="token-chip">MIX</span>
+                                    <span class="token-chip">VERSION</span>
+                                    <span class="token-chip">BPM</span>
+                                    <span class="token-chip">DATE</span>
+                                    <span class="token-chip">KEY</span>
+                                </div>
+                            </div>
+
+                            <div class="rounded-2xl bg-primary-container p-6 text-white shadow-lg">
+                                <p class="text-xs font-bold uppercase tracking-widest opacity-70 mb-3">Custom Strings</p>
+                                <p class="text-xs leading-relaxed opacity-90 font-medium">
+                                    You can mix tokens and freeform text like: <br>
+                                    <code class="mt-2 block bg-black/20 p-2 rounded font-mono text-[10px]">TITLE @ prodvaiii + @PRODUCERS</code>
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-xs uppercase tracking-[0.22em] text-slate-500">Per-file cleanup</p>
+                                            <h4 class="mt-1 font-display text-xl text-slate-950">Only edit the exceptions</h4>
+                                        </div>
+                                        <span class="rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-white">Autofilled from filenames</span>
+                                    </div>
+                                    <div id="metadata-editor-list" class="space-y-4"></div>
+                                </div>
+
+                                <div class="flex flex-wrap items-center gap-3">
+                                    <button id="refresh-preview" type="button" class="inline-flex items-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
+                                        Refresh preview
+                                    </button>
+                                    <button id="go-review" type="button" class="inline-flex items-center rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-950 hover:text-slate-950">
+                                        Continue to review
+                                    </button>
+                                </div>
+                            </section>
+
+                    <!-- Step 3: Review & Download -->
+                    <section class="wizard-panel hidden space-y-8" data-step-panel="3">
+                        <div class="space-y-2">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-primary-container bg-primary-fixed/30 inline-block px-2 py-0.5 rounded">Process Step 03</p>
+                            <h3 class="text-2xl font-display font-bold text-deep-slate">Final Review & Export</h3>
+                            <p class="max-w-xl text-sm leading-6 text-secondary font-medium">
+                                Your standardized archive is ready. Verify the final names in the preview rail before downloading.
+                            </p>
+                        </div>
+
+                        <div class="grid gap-6 md:grid-cols-2">
+                            <div class="rounded-3xl bg-deep-slate p-8 text-white shadow-xl">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-container mb-6">
+                                    <span class="material-symbols-outlined text-white">sim_card_download</span>
+                                </div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest opacity-60">Export Ready</p>
+                                <p class="mt-2 font-display text-4xl font-bold" id="download-file-count">0 Files</p>
+                                <p class="mt-4 text-xs leading-5 opacity-70 font-medium">
+                                    Standardized ZIP archive generated according to your precision metadata rules.
+                                </p>
+                                <a id="download-link" href="#" class="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-primary-fixed py-4 text-sm font-bold text-primary-container transition hover:bg-primary-fixed-dim">
+                                    <span class="material-symbols-outlined text-sm">download</span>
+                                    DOWNLOAD ARCHIVE
+                                </a>
+                            </div>
+
+                            <div class="rounded-3xl border border-outline/10 bg-white p-8">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-outline mb-6">Active Rule Summary</p>
+                                <dl class="space-y-4 text-sm">
+                                    <div class="flex justify-between border-b border-outline/10 pb-2">
+                                        <dt class="text-secondary font-medium">Format</dt>
+                                        <dd id="summary-format" class="font-bold text-deep-slate text-right max-w-[180px] break-all font-mono text-[10px]">ARTIST_TITLE_PRODUCERS_MIX_VERSION</dd>
+                                    </div>
+                                    <div class="flex justify-between border-b border-outline/10 pb-2">
+                                        <dt class="text-secondary font-medium">Artist</dt>
+                                        <dd id="summary-artist" class="font-bold text-deep-slate">Not set</dd>
+                                    </div>
+                                    <div class="flex justify-between border-b border-outline/10 pb-2">
+                                        <dt class="text-secondary font-medium">Producers</dt>
+                                        <dd id="summary-producers" class="font-bold text-deep-slate">Not set</dd>
+                                    </div>
+                                    <div class="flex justify-between border-b border-outline/10 pb-2">
+                                        <dt class="text-secondary font-medium">Delimiter</dt>
+                                        <dd id="summary-delimiter" class="font-bold text-deep-slate">Underscore</dd>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <dt class="text-secondary font-medium">Case</dt>
+                                        <dd id="summary-case" class="font-bold text-deep-slate">Normal</dd>
+                                    </div>
+                                </dl>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Right Sidebar: Preview Rail -->
+            <aside class="w-96 border-l border-outline/10 bg-surface-bright/50 overflow-y-auto hidden lg:block">
+                <div class="p-8">
+                    <div class="flex items-center justify-between border-b border-outline/10 pb-6">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-outline">Real-time Preview</p>
+                            <h3 class="text-xl font-display font-bold text-deep-slate">Detected State</h3>
+                        </div>
+                        <div id="preview-badge" class="px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold text-primary-container">EMPTY</div>
+                    </div>
+
+                    <div class="mt-8 space-y-6">
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between px-2">
+                                <h4 class="text-[11px] font-bold uppercase tracking-widest text-secondary opacity-60">Upload Queue</h4>
+                                <span id="queue-count" class="text-[10px] font-medium text-secondary">0 files</span>
+                            </div>
+                            <ul id="upload-list" class="space-y-3">
+                                <li class="rounded-2xl border border-dashed border-outline/20 bg-white/50 p-6 text-center">
+                                    <p class="text-xs font-medium text-secondary">No files staged yet.</p>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between px-2">
+                                <h4 class="text-[11px] font-bold uppercase tracking-widest text-secondary opacity-60">Rename Preview</h4>
+                                <span id="preview-count" class="text-[10px] font-medium text-secondary">0 items</span>
+                            </div>
+                            <ul id="preview-list" class="space-y-3">
+                                <li class="rounded-2xl border border-outline/10 bg-deep-slate p-6 text-center text-white/50">
+                                    <p class="text-xs font-medium">Final names will generate here.</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script>
+        const initialUser = {{ initial_user|tojson }};
+        const initialPaymentOptions = {{ payment_options|tojson }};
+        const stripeEnabled = {{ stripe_enabled|tojson }};
+        const billingNotice = {{ billing_notice|tojson }};
+
+        function emptyDashboard() {
+            return {
+                user: null,
+                summary: {
+                    credit_balance: 0,
+                    total_batches: 0,
+                    total_files: 0,
+                    downloads_completed: 0
+                },
+                collections: [],
+                activity: [],
+                payments: [],
+                payment_options: initialPaymentOptions
+            };
+        }
+
+        const state = {
+            activeStep: 1,
+            unlockedStep: 1,
+            sessionId: null,
+            uploadedFiles: [],
+            preview: [],
+            fileEdits: {},
+            totalSize: "0 B",
+            downloadUrl: "#",
+            user: initialUser,
+            dashboard: emptyDashboard(),
+            paymentOptions: initialPaymentOptions
+        };
+
+        const stepButtons = Array.from(document.querySelectorAll("[data-step-target]"));
+        const stepPanels = Array.from(document.querySelectorAll("[data-step-panel]"));
+        const dropzone = document.getElementById("dropzone");
+        const fileInput = document.getElementById("file-input");
+        const refreshPreviewButton = document.getElementById("refresh-preview");
+        const goReviewButton = document.getElementById("go-review");
+        const renameForm = document.getElementById("rename-form");
+        const metadataEditorList = document.getElementById("metadata-editor-list");
+        const statusPill = document.getElementById("status-pill");
+        const subtitle = document.getElementById("workspace-subtitle");
+        const uploadList = document.getElementById("upload-list");
+        const previewList = document.getElementById("preview-list");
+        const queueCount = document.getElementById("queue-count");
+        const previewCount = document.getElementById("preview-count");
+        const previewBadge = document.getElementById("preview-badge");
+        const statFiles = document.getElementById("stat-files");
+        const statSize = document.getElementById("stat-size");
+        const statReady = document.getElementById("stat-ready");
+        const downloadLink = document.getElementById("download-link");
+        const downloadFileCount = document.getElementById("download-file-count");
+        const summaryFormat = document.getElementById("summary-format");
+        const summaryArtist = document.getElementById("summary-artist");
+        const summaryProducers = document.getElementById("summary-producers");
+        const summaryDelimiter = document.getElementById("summary-delimiter");
+        const summaryCase = document.getElementById("summary-case");
+        const summaryCleanup = document.getElementById("summary-cleanup");
+        const headerAuthPill = document.getElementById("header-auth-pill");
+        const headerUserPill = document.getElementById("header-user-pill");
+        const accountSidebarCopy = document.getElementById("account-sidebar-copy");
+        const accountSidebarCredits = document.getElementById("account-sidebar-credits");
+        const accountSidebarPlan = document.getElementById("account-sidebar-plan");
+        const billingBanner = document.getElementById("billing-banner");
+        const signedOutShell = document.getElementById("signed-out-shell");
+        const signedInShell = document.getElementById("signed-in-shell");
+        const loginForm = document.getElementById("login-form");
+        const registerForm = document.getElementById("register-form");
+        const authFeedback = document.getElementById("auth-feedback");
+        const authUsername = document.getElementById("auth-username");
+        const authCreditBalance = document.getElementById("auth-credit-balance");
+        const authPlanStatus = document.getElementById("auth-plan-status");
+        const logoutButton = document.getElementById("logout-button");
+        const dashboardUserBadge = document.getElementById("dashboard-user-badge");
+        const dashboardTotalBatches = document.getElementById("dashboard-total-batches");
+        const dashboardTotalFiles = document.getElementById("dashboard-total-files");
+        const dashboardTotalDownloads = document.getElementById("dashboard-total-downloads");
+        const batchList = document.getElementById("batch-list");
+        const batchListCount = document.getElementById("batch-list-count");
+        const activityList = document.getElementById("activity-list");
+        const activityListCount = document.getElementById("activity-list-count");
+        const paymentOptionsList = document.getElementById("payment-options-list");
+        const paymentHistoryList = document.getElementById("payment-history-list");
+        const paymentHistoryCount = document.getElementById("payment-history-count");
+        const wizardLockout = document.getElementById("wizard-lockout");
+
+        const delimiterLabels = {
+            underscore: "Underscore",
+            dash: "Dash",
+            space: "Space",
+            dot: "Dot"
+        };
+
+        const caseLabels = {
+            keep: "Professional / keep extracted casing",
+            title: "Title case",
+            lower: "Lowercase",
+            upper: "Uppercase"
+        };
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#39;");
+        }
+
+        function parseDate(value) {
+            if (!value) {
+                return "";
+            }
+
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return "";
+            }
+
+            return new Intl.DateTimeFormat(undefined, {
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit"
+            }).format(date);
+        }
+
+        function formatMoney(amountCents, currency = "usd") {
+            return new Intl.NumberFormat(undefined, {
+                style: "currency",
+                currency: (currency || "usd").toUpperCase()
+            }).format((amountCents || 0) / 100);
+        }
+
+        function formatPlanName(planKey) {
+            if (!planKey || planKey === "free") {
+                return "Free";
+            }
+
+            const option = state.paymentOptions.find((item) => item.key === planKey);
+            return option ? option.label : planKey.replaceAll("_", " ");
+        }
+
+        function setBanner(message = "", tone = "success") {
+            if (!message) {
+                billingBanner.classList.add("hidden");
+                billingBanner.textContent = "";
+                return;
+            }
+
+            const toneClass = tone === "warning"
+                ? "rounded-[1.5rem] border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-950"
+                : "rounded-[1.5rem] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900";
+
+            billingBanner.className = toneClass;
+            billingBanner.textContent = message;
+            billingBanner.classList.remove("hidden");
+        }
+
+        function setAuthFeedback(message = "") {
+            if (!message) {
+                authFeedback.classList.add("hidden");
+                authFeedback.textContent = "";
+                return;
+            }
+
+            authFeedback.classList.remove("hidden");
+            authFeedback.textContent = message;
+        }
+
+        function resetWizardState() {
+            state.activeStep = 1;
+            state.unlockedStep = 1;
+            state.sessionId = null;
+            state.uploadedFiles = [];
+            state.preview = [];
+            state.fileEdits = {};
+            state.totalSize = "0 B";
+            state.downloadUrl = "#";
+            fileInput.value = "";
+            renameForm.reset();
+            document.getElementById("format_template").value = "ARTIST_TITLE_PRODUCERS_MIX_VERSION";
+            document.getElementById("delimiter").value = "underscore";
+            document.getElementById("case_style").value = "keep";
+            document.getElementById("safe_cleanup").checked = true;
+            renderUploadList();
+            renderMetadataEditor();
+            renderPreviewList();
+            updateSummary();
+            updateStepUI();
+            setStep(1);
+        }
+
+        function renderFieldChips(fields, variant = "light") {
+            const entries = [
+                ["artist", "Artist"],
+                ["title", "Title"],
+                ["producers", "Producers"],
+                ["mix", "Mix"],
+                ["version", "Version"],
+                ["bpm", "BPM"],
+                ["date", "Date"]
+            ].filter(([key]) => fields && fields[key]);
+
+            if (!entries.length) {
+                return `<span class="field-chip ${variant === "dark" ? "field-chip-dark" : "field-chip-light"}">No strong hints detected</span>`;
+            }
+
+            return entries
+                .map(([key, label]) => `<span class="field-chip ${variant === "dark" ? "field-chip-dark" : "field-chip-light"}">${label}: ${escapeHtml(fields[key])}</span>`)
+                .join("");
+        }
+
+        function buildInitialFileEdits(files) {
+            const edits = {};
+            files.forEach((file) => {
+                edits[file.id] = {
+                    artist: "",
+                    title: file.extracted_fields.title || "",
+                    producers: "",
+                    bpm: file.extracted_fields.bpm || "",
+                    mix: file.extracted_fields.mix || "",
+                    version: file.extracted_fields.version || "",
+                    date: file.extracted_fields.date || "",
+                    key: file.extracted_fields.key || ""
+                };
+            });
+            return edits;
+        }
+
+        function setStatus(text, type = "idle") {
+            const colors = {
+                idle: "bg-surface-container-high text-primary-container",
+                working: "bg-primary-fixed text-primary-container",
+                ready: "bg-emerald-100 text-emerald-700",
+                alert: "bg-red-50 text-red-600"
+            };
+            const dots = {
+                idle: "bg-primary-container opacity-40",
+                working: "bg-primary-container animate-pulse",
+                ready: "bg-emerald-600",
+                alert: "bg-red-600 animate-ping"
+            };
+
+            statusPill.className = `inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${colors[type]}`;
+            statusPill.innerHTML = `
+                <span class="h-2 w-2 rounded-full ${dots[type]}"></span>
+                ${escapeHtml(text)}
+            `;
+        }
+
+        function updateStepUI() {
+            stepPanels.forEach((panel) => {
+                panel.classList.toggle("hidden", Number(panel.dataset.stepPanel) !== state.activeStep);
+            });
+
+            stepButtons.forEach((button) => {
+                const step = Number(button.dataset.stepTarget);
+                button.disabled = step > state.unlockedStep;
+                button.classList.remove("is-active", "is-locked", "is-complete");
+
+                if (step === state.activeStep) {
+                    button.classList.add("is-active");
+                } else if (step > state.unlockedStep) {
+                    button.classList.add("is-locked");
+                } else {
+                    button.classList.add("is-complete");
+                }
+            });
+
+            if (state.activeStep === 1) {
+                subtitle.textContent = "Upload your audio files. WAV, MP3, and AIFF supported.";
+            } else if (state.activeStep === 2) {
+                subtitle.textContent = "Define the naming rules for this entire batch and edit individual tags.";
+            } else if (state.activeStep === 3) {
+                subtitle.textContent = "Verify the final names below and export your standardized archive.";
+            }
+        }
+
+        function setStep(step) {
+            if (step > state.unlockedStep) {
+                return;
+            }
+
+            state.activeStep = step;
+            updateStepUI();
+        }
+
+        function renderUploadList() {
+            if (!state.uploadedFiles.length) {
+                uploadList.innerHTML = `
+                    <li class="rounded-2xl border border-dashed border-outline/20 bg-white/50 p-6 text-center">
+                        <p class="text-xs font-medium text-secondary">No files staged yet.</p>
+                    </li>
+                `;
+                queueCount.textContent = "0 files";
+                return;
+            }
+
+            queueCount.textContent = `${state.uploadedFiles.length} items`;
+            uploadList.innerHTML = state.uploadedFiles.map((file) => `
+                <li class="group flex items-center justify-between rounded-xl border border-outline/10 bg-white p-3 shadow-sm transition-all hover:border-primary-container/30">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-surface-bright text-secondary">
+                            <span class="material-symbols-outlined text-sm">music_note</span>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-xs font-bold text-deep-slate">${escapeHtml(file.name)}</p>
+                            <div class="mt-1 flex items-center gap-3 opacity-60">
+                                <span class="text-[10px] font-bold uppercase tracking-widest text-secondary">${escapeHtml(file.extracted_fields.bpm > 0 ? file.extracted_fields.bpm + ' BPM' : '120 BPM')}</span>
+                                <span class="h-1 w-1 rounded-full bg-secondary"></span>
+                                <span class="text-[10px] font-bold text-secondary uppercase tracking-widest">${file.extension ? file.extension.toUpperCase() : 'WAV'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            `).join("");
+        }
+
+        function renderMetadataEditor() {
+            if (!state.uploadedFiles.length) {
+                metadataEditorList.innerHTML = "";
+                return;
+            }
+
+            metadataEditorList.innerHTML = state.uploadedFiles.map((file) => {
+                const edits = state.fileEdits[file.id] || {};
+                return `
+                <article class="rounded-2xl border border-outline/10 bg-white p-6 transition-all hover:shadow-md">
+                    <div class="flex items-center justify-between border-b border-outline/5 pb-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-bright text-secondary">
+                                <span class="material-symbols-outlined text-sm">edit_note</span>
+                            </div>
+                            <h4 class="text-xs font-bold text-deep-slate truncate max-w-[200px] sm:max-w-md">${escapeHtml(file.name)}</h4>
+                        </div>
+                        <span class="text-[10px] font-bold text-outline opacity-40 uppercase tracking-widest">${file.id.slice(0,6)}</span>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <label class="space-y-1.5">
+                            <span class="px-1 text-[10px] font-bold uppercase tracking-widest text-secondary opacity-50">Manual Title Override</span>
+                            <input 
+                                type="text" 
+                                data-file-id="${file.id}" 
+                                data-field="title" 
+                                value="${escapeHtml(edits.title || "")}"
+                                placeholder="${escapeHtml(file.extracted_fields.title || "Unknown Title")}"
+                                class="w-full rounded-xl border border-outline/10 bg-surface-bright px-3 py-2 text-xs font-medium text-deep-slate outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-fixed"
+                            >
+                        </label>
+                        <label class="space-y-1.5">
+                            <span class="px-1 text-[10px] font-bold uppercase tracking-widest text-secondary opacity-50">Producer Override</span>
+                            <input 
+                                type="text" 
+                                data-file-id="${file.id}" 
+                                data-field="producers" 
+                                value="${escapeHtml(edits.producers || "")}"
+                                placeholder="${escapeHtml(file.extracted_fields.producers || "System Default")}"
+                                class="w-full rounded-xl border border-outline/10 bg-surface-bright px-3 py-2 text-xs font-medium text-deep-slate outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-fixed"
+                            >
+                        </label>
+                        <label class="space-y-1.5">
+                            <span class="px-1 text-[10px] font-bold uppercase tracking-widest text-secondary opacity-50">Mix Version</span>
+                            <input 
+                                type="text" 
+                                data-file-id="${file.id}" 
+                                data-field="mix" 
+                                value="${escapeHtml(edits.mix || "")}"
+                                placeholder="${escapeHtml(file.extracted_fields.mix || "Main Mix")}"
+                                class="w-full rounded-xl border border-outline/10 bg-surface-bright px-3 py-2 text-xs font-medium text-deep-slate outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-fixed"
+                            >
+                        </label>
+                        <label class="space-y-1.5">
+                            <span class="px-1 text-[10px] font-bold uppercase tracking-widest text-secondary opacity-50">BPM</span>
+                            <input 
+                                type="text" 
+                                data-file-id="${file.id}" 
+                                data-field="bpm" 
+                                value="${escapeHtml(edits.bpm || "")}"
+                                placeholder="${escapeHtml(file.extracted_fields.bpm || "120")}"
+                                class="w-full rounded-xl border border-outline/10 bg-surface-bright px-3 py-2 text-xs font-medium text-deep-slate outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-fixed"
+                            >
+                        </label>
+                    </div>
+                </article>
+                `;
+            }).join("");
+        }
+
+        function renderPreviewList() {
+            if (!state.preview.length) {
+                previewList.innerHTML = `
+                    <li class="rounded-2xl border border-outline/10 bg-deep-slate p-6 text-center text-white/50">
+                        <p class="text-xs font-medium">Final names will generate here.</p>
+                    </li>
+                `;
+                previewCount.textContent = "0 items";
+                previewBadge.textContent = "EMPTY";
+                previewBadge.className = "px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold text-primary-container";
+                return;
+            }
+
+            previewCount.textContent = `${state.preview.length} files`;
+            previewBadge.textContent = "READY";
+            previewBadge.className = "px-3 py-1 bg-emerald-100 rounded-full text-[10px] font-bold text-emerald-700";
+
+            previewList.innerHTML = state.preview.map((item) => `
+                <li class="group rounded-xl border border-white/5 bg-white/5 p-4 transition-all hover:bg-white/10">
+                    <p class="break-all font-mono text-[10px] font-bold leading-relaxed text-primary-fixed-dim">
+                        ${escapeHtml(item.transformed_name)}${escapeHtml(item.extension)}
+                    </p>
+                    <div class="mt-3 flex flex-wrap gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
+                        ${item.detected_tags.title ? `<span class="field-chip-dark">T: ${escapeHtml(item.detected_tags.title)}</span>` : ''}
+                        ${item.detected_tags.bpm ? `<span class="field-chip-dark">B: ${item.detected_tags.bpm}</span>` : ''}
+                        ${item.detected_tags.mix ? `<span class="field-chip-dark">M: ${escapeHtml(item.detected_tags.mix)}</span>` : ''}
+                    </div>
+                </li>
+            `).join("");
+        }
+
+        function renderEmptyList(message, tone = "light") {
+            const classes = tone === "dark"
+                ? "rounded-2xl border border-white/10 px-4 py-4 text-slate-400"
+                : "rounded-2xl border border-dashed border-slate-300 px-4 py-4 text-slate-500";
+
+            return `<div class="${classes}">${escapeHtml(message)}</div>`;
+        }
+
+        function renderDashboard() {
+            const summary = state.dashboard.summary || emptyDashboard().summary;
+            const collections = state.dashboard.collections || [];
+            const activity = state.dashboard.activity || [];
+            const payments = state.dashboard.payments || [];
+
+            signedOutShell.classList.toggle("hidden", Boolean(state.user));
+            signedInShell.classList.toggle("hidden", !state.user);
+            wizardLockout.classList.toggle("hidden", Boolean(state.user));
+
+            headerAuthPill.classList.toggle("hidden", Boolean(state.user));
+            headerUserPill.classList.toggle("hidden", !state.user);
+            headerUserPill.textContent = state.user ? `${state.user.username} dashboard` : "Signed in";
+
+            accountSidebarCopy.textContent = state.user
+                ? `Signed in as ${state.user.username}. Every batch, payment, and export below is scoped to this account only.`
+                : "Sign in to keep each batch tied to the right dashboard and unlock exports with credits.";
+            accountSidebarCredits.textContent = String(summary.credit_balance || 0);
+            accountSidebarPlan.textContent = state.user
+                ? `${formatPlanName(state.user.active_plan)}`
+                : "Free";
+
+            if (state.user) {
+                authUsername.textContent = state.user.username;
+                authCreditBalance.textContent = String(summary.credit_balance || 0);
+                authPlanStatus.textContent = `${formatPlanName(state.user.active_plan)} · ${state.user.plan_status || "active"}`;
+                dashboardUserBadge.textContent = `${state.user.username} only`;
+                dashboardUserBadge.className = "px-3 py-1 bg-emerald-100 rounded-full text-[10px] font-bold text-emerald-700 uppercase tracking-widest";
+            } else {
+                dashboardUserBadge.textContent = "WAITING";
+                dashboardUserBadge.className = "px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold text-primary-container uppercase tracking-widest";
+            }
+
+            dashboardTotalBatches.textContent = String(summary.total_batches || 0);
+            dashboardTotalFiles.textContent = String(summary.total_files || 0);
+            dashboardTotalDownloads.textContent = String(summary.downloads_completed || 0);
+
+            batchListCount.textContent = `${collections.length} items`;
+            if (!collections.length) {
+                batchList.innerHTML = renderEmptyList(
+                    state.user ? "No batches created yet." : "Sign in to view batches."
+                );
+            } else {
+                batchList.innerHTML = collections.map((item) => `
+                    <article class="group rounded-2xl border border-outline/10 bg-white p-4 shadow-sm transition-all hover:border-primary-container/30">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-bright text-secondary">
+                                    <span class="material-symbols-outlined text-sm">folder_zip</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-deep-slate group-hover:text-primary-container transition-colors">${escapeHtml(item.name || "Untitled Batch")}</h4>
+                                    <p class="mt-1 text-[10px] font-bold uppercase tracking-widest text-secondary opacity-60">${item.file_count} files · ${parseDate(item.created_at)}</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-1 bg-surface-bright rounded text-[10px] font-bold text-secondary uppercase tracking-widest">${escapeHtml(item.status)}</span>
+                        </div>
+                    </article>
+                `).join("");
+            }
+
+            activityListCount.textContent = `${activity.length} events`;
+            if (!activity.length) {
+                activityList.innerHTML = renderEmptyList(
+                    state.user ? "No recent activity." : "Sign in to track activity."
+                );
+            } else {
+                activityList.innerHTML = activity.map((item) => `
+                    <div class="flex items-start gap-4 p-4 rounded-xl border border-outline/5 bg-white/50">
+                        <div class="mt-1 flex h-2 w-2 rounded-full bg-primary-container opacity-40"></div>
+                        <div>
+                            <p class="text-[11px] font-medium text-deep-slate leading-relaxed">${escapeHtml(item.summary)}</p>
+                            <p class="mt-1 text-[10px] font-bold uppercase tracking-widest text-secondary opacity-60">${parseDate(item.created_at)}</p>
+                        </div>
+                    </div>
+                `).join("");
+            }
+
+            paymentHistoryCount.textContent = `${payments.length} items`;
+            if (!payments.length) {
+                paymentHistoryList.innerHTML = renderEmptyList(
+                    state.user ? "No transactions found." : "Sign in to view payments."
+                );
+            } else {
+                paymentHistoryList.innerHTML = payments.map((item) => `
+                    <div class="flex items-center justify-between p-4 rounded-xl border border-outline/5 bg-white/50 shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-bright text-secondary">
+                                <span class="material-symbols-outlined text-sm">payments</span>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-deep-slate">${escapeHtml(formatPlanName(item.plan_key))}</p>
+                                <p class="mt-1 text-[10px] font-bold uppercase tracking-widest text-secondary opacity-60">${parseDate(item.created_at)}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs font-bold text-deep-slate">${formatMoney(item.amount_cents, item.currency)}</p>
+                            <p class="mt-1 text-[10px] font-bold uppercase tracking-widest text-primary-container">${escapeHtml(item.status)}</p>
+                        </div>
+                    </div>
+                `).join("");
+            }
+
+            if (!state.paymentOptions.length) {
+                paymentOptionsList.innerHTML = renderEmptyList("Contact support for top-up options.");
+                return;
+            }
+
+            paymentOptionsList.innerHTML = state.paymentOptions.map((option) => {
+                const disabled = !state.user || !stripeEnabled;
+                const buttonLabel = !stripeEnabled ? "UNAVAILABLE" : state.user ? "SELECT" : "SIGN IN";
+
+                return `
+                    <article class="flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:bg-white/10">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-primary-fixed-dim opacity-70 mb-2">${escapeHtml(option.accent)}</p>
+                            <h4 class="text-lg font-display font-bold text-white mb-2 leading-tight">${escapeHtml(option.label)}</h4>
+                            <p class="text-xs leading-relaxed opacity-60 font-medium">${escapeHtml(option.description)}</p>
+                        </div>
+                        <div class="mt-6">
+                            <div class="flex items-baseline gap-1 mb-4">
+                                <span class="text-xl font-bold text-white">${escapeHtml(option.amount_label)}</span>
+                                <span class="text-[10px] font-bold opacity-50">USD</span>
+                            </div>
+                            <button
+                                type="button"
+                                class="w-full rounded-xl py-3 text-[10px] font-bold tracking-widest transition-all ${disabled ? "bg-white/5 text-white/20" : "bg-primary-fixed text-primary-container hover:bg-white hover:text-deep-slate"}"
+                                data-plan-key="${escapeHtml(option.key)}"
+                                ${disabled ? "disabled" : ""}
+                            >
+                                ${escapeHtml(buttonLabel)}
+                            </button>
+                        </div>
+                    </article>
+                `;
+            }).join("");
+        }
+
+        function serializeOverrides() {
+            return JSON.stringify(state.fileEdits);
+        }
+
+        function updateSummary() {
+            const formatValue = document.getElementById("format_template").value.trim() || "ARTIST_TITLE_PRODUCERS_MIX_VERSION";
+            const artistValue = document.getElementById("default_artist").value.trim();
+            const producersValue = document.getElementById("default_producers").value.trim();
+            const delimiterValue = document.getElementById("delimiter").value;
+            const caseValue = document.getElementById("case_style").value;
+            const cleanupValue = document.getElementById("safe_cleanup").checked;
+
+            summaryFormat.textContent = formatValue;
+            summaryArtist.textContent = artistValue || "Not set";
+            summaryProducers.textContent = producersValue || "Not set";
+            summaryDelimiter.textContent = delimiterLabels[delimiterValue];
+            summaryCase.textContent = caseLabels[caseValue];
+            summaryCleanup.textContent = cleanupValue ? "Enabled" : "Disabled";
+            statFiles.textContent = String(state.uploadedFiles.length);
+            statSize.textContent = state.totalSize;
+            statReady.textContent = state.preview.length ? "Yes" : "No";
+            statReady.className = state.preview.length ? "text-sm font-semibold text-emerald-400" : "text-sm font-semibold text-slate-500";
+            downloadFileCount.textContent = `${state.preview.length} ${state.preview.length === 1 ? "file" : "files"}`;
+        }
+
+        async function parseError(response) {
+            try {
+                const payload = await response.json();
+                return payload.detail || payload.message || "Something went wrong.";
+            } catch (_error) {
+                return "Something went wrong.";
+            }
+        }
+
+        function setStatus(text, type = "idle") {
+            const colors = {
+                idle: "bg-surface-container-high text-primary-container",
+                working: "bg-primary-fixed text-primary-container",
+                ready: "bg-emerald-100 text-emerald-700",
+                alert: "bg-red-50 text-red-600"
+            };
+            const dots = {
+                idle: "bg-primary-container opacity-40",
+                working: "bg-primary-container animate-pulse",
+                ready: "bg-emerald-600",
+                alert: "bg-red-600 animate-ping"
+            };
+
+            statusPill.className = `inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${colors[type]}`;
+            statusPill.innerHTML = `
+                <span class="h-2 w-2 rounded-full ${dots[type]}"></span>
+                ${escapeHtml(text)}
+            `;
+        }
+
+        async function loadDashboard() {
+            if (!state.user) {
+                state.dashboard = emptyDashboard();
+                renderDashboard();
+                return;
+            }
+
+            const response = await fetch("/api/dashboard");
+            if (response.status === 401) {
+                handleUnauthorized();
+                return;
+            }
+
+            if (!response.ok) {
+                setBanner(await parseError(response), "warning");
+                return;
+            }
+
+            const payload = await response.json();
+            state.user = payload.user;
+            state.dashboard = payload;
+            state.paymentOptions = payload.payment_options || state.paymentOptions;
+            renderDashboard();
+        }
+
+        async function submitAuthForm(endpoint, formElement) {
+            const response = await fetch(endpoint, {
+                method: "POST",
+                body: new FormData(formElement)
+            });
+
+            if (!response.ok) {
+                setAuthFeedback(await parseError(response));
+                return;
+            }
+
+            const payload = await response.json();
+            state.user = payload.user;
+            formElement.reset();
+            setAuthFeedback("");
+            setBanner("Authentication complete. Your dashboard is ready.", "success");
+            setStatus("Signed in", "ready");
+            await loadDashboard();
+        }
+
+        async function logout() {
+            await fetch("/api/auth/logout", { method: "POST" });
+            state.user = null;
+            state.dashboard = emptyDashboard();
+            setAuthFeedback("");
+            setBanner("You have been signed out.", "success");
+            setStatus("Signed out", "working");
+            resetWizardState();
+            renderDashboard();
+        }
+
+        async function startCheckout(planKey) {
+            if (!state.user) {
+                setAuthFeedback("Sign in before purchasing credits.");
+                setBanner("Sign in before purchasing credits.", "warning");
+                return;
+            }
+
+            if (!stripeEnabled) {
+                setBanner("Stripe is not configured yet. Add Stripe keys in the app environment to enable checkout.", "warning");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("plan_key", planKey);
+
+            const response = await fetch("/api/payments/checkout", {
+                method: "POST",
+                body: formData
+            });
+
+            if (response.status === 401) {
+                handleUnauthorized();
+                return;
+            }
+
+            if (!response.ok) {
+                setBanner(await parseError(response), "warning");
+                return;
+            }
+
+            const payload = await response.json();
+            window.location.href = payload.checkout_url;
+        }
+
+        async function uploadFiles(files) {
+            if (!files.length) {
+                return;
+            }
+
+            if (!state.user) {
+                setAuthFeedback("Sign in before uploading files.");
+                setStatus("Sign in required", "alert");
+                return;
+            }
+
+            const formData = new FormData();
+            Array.from(files).forEach((file) => formData.append("files", file));
+
+            setStatus("Uploading files", "working");
+            dropzone.classList.add("is-busy");
+
+            const response = await fetch("/api/wizard/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            dropzone.classList.remove("is-busy");
+
+            if (response.status === 401) {
+                handleUnauthorized();
+                return;
+            }
+
+            if (!response.ok) {
+                setStatus("Upload needs attention", "alert");
+                setBanner(await parseError(response), "warning");
+                return;
+            }
+
+            const payload = await response.json();
+            state.sessionId = payload.session_id;
+            state.uploadedFiles = payload.files;
+            state.totalSize = payload.total_size_label;
+            state.fileEdits = buildInitialFileEdits(payload.files);
+            state.unlockedStep = 2;
+            state.activeStep = 2;
+            renderUploadList();
+            renderMetadataEditor();
+            updateStepUI();
+            updateSummary();
+            setStatus("Files uploaded", "ready");
+            await refreshPreview(true);
+            await loadDashboard();
+        }
+
+        async function refreshPreview(advanceToRename = false) {
+            if (!state.sessionId) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("session_id", state.sessionId);
+            formData.append("format_template", document.getElementById("format_template").value);
+            formData.append("delimiter", document.getElementById("delimiter").value);
+            formData.append("case_style", document.getElementById("case_style").value);
+            formData.append("safe_cleanup", document.getElementById("safe_cleanup").checked ? "true" : "false");
+            formData.append("default_artist", document.getElementById("default_artist").value);
+            formData.append("default_producers", document.getElementById("default_producers").value);
+            formData.append("file_overrides_json", serializeOverrides());
+
+            setStatus("Refreshing preview", "working");
+
+            const response = await fetch("/api/wizard/preview", {
+                method: "POST",
+                body: formData
+            });
+
+            if (response.status === 401) {
+                handleUnauthorized();
+                return;
+            }
+
+            if (!response.ok) {
+                setStatus("Preview needs attention", "alert");
+                setBanner(await parseError(response), "warning");
+                return;
+            }
+
+            const payload = await response.json();
+            state.preview = payload.preview;
+            state.downloadUrl = payload.download_url;
+            state.unlockedStep = 3;
+            renderPreviewList();
+            updateSummary();
+            downloadLink.href = state.downloadUrl;
+            setStatus("Preview ready", "ready");
+
+            if (advanceToRename) {
+                setStep(2);
+            }
+        }
+
+        async function downloadArchive(event) {
+            event.preventDefault();
+
+            if (state.downloadUrl === "#") {
+                return;
+            }
+
+            const response = await fetch(state.downloadUrl);
+            if (response.status === 401) {
+                handleUnauthorized();
+                return;
+            }
+
+            if (response.status === 402) {
+                const detail = await parseError(response);
+                setBanner(detail, "warning");
+                setStatus("Credits needed", "alert");
+                await loadDashboard();
+                return;
+            }
+
+            if (!response.ok) {
+                setBanner(await parseError(response), "warning");
+                setStatus("Download needs attention", "alert");
+                return;
+            }
+
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const tempLink = document.createElement("a");
+            tempLink.href = blobUrl;
+            tempLink.download = "pxnn-renamed-files.zip";
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            tempLink.remove();
+            URL.revokeObjectURL(blobUrl);
+
+            setStatus("Archive downloaded", "ready");
+            setBanner("Archive downloaded successfully.", "success");
+            await loadDashboard();
+        }
+
+        let refreshTimer = null;
+        function schedulePreviewRefresh() {
+            updateSummary();
+            if (!state.sessionId) {
+                return;
+            }
+
+            window.clearTimeout(refreshTimer);
+            refreshTimer = window.setTimeout(() => {
+                refreshPreview(false);
+            }, 260);
+        }
+
+        stepButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                setStep(Number(button.dataset.stepTarget));
+            });
+        });
+
+        fileInput.addEventListener("change", async (event) => {
+            await uploadFiles(event.target.files);
+        });
+
+        dropzone.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            dropzone.classList.add("is-dragging");
+        });
+
+        dropzone.addEventListener("dragleave", () => {
+            dropzone.classList.remove("is-dragging");
+        });
+
+        dropzone.addEventListener("drop", async (event) => {
+            event.preventDefault();
+            dropzone.classList.remove("is-dragging");
+            await uploadFiles(event.dataTransfer.files);
+        });
+
+        renameForm.addEventListener("input", schedulePreviewRefresh);
+        metadataEditorList.addEventListener("input", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLInputElement)) {
+                return;
+            }
+
+            const fileId = target.dataset.fileId;
+            const field = target.dataset.field;
+            if (!fileId || !field) {
+                return;
+            }
+
+            state.fileEdits[fileId] = {
+                ...(state.fileEdits[fileId] || {}),
+                [field]: target.value
+            };
+            schedulePreviewRefresh();
+        });
+
+        loginForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            await submitAuthForm("/api/auth/login", loginForm);
+        });
+
+        registerForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            await submitAuthForm("/api/auth/register", registerForm);
+        });
+
+        logoutButton.addEventListener("click", logout);
+
+        paymentOptionsList.addEventListener("click", async (event) => {
+            const target = event.target.closest("[data-plan-key]");
+            if (!target) {
+                return;
+            }
+
+            await startCheckout(target.dataset.planKey);
+        });
+
+        refreshPreviewButton.addEventListener("click", () => refreshPreview(false));
+        goReviewButton.addEventListener("click", async () => {
+            await refreshPreview(false);
+            setStep(3);
+        });
+
+        downloadLink.addEventListener("click", downloadArchive);
+
+        updateStepUI();
+        renderUploadList();
+        renderMetadataEditor();
+        renderPreviewList();
+        updateSummary();
+        renderDashboard();
+
+        if (billingNotice === "success") {
+            setBanner("Payment confirmed. Your credits have been added to this account.", "success");
+        } else if (billingNotice === "cancelled") {
+            setBanner("Checkout was cancelled before payment completed.", "warning");
+        }
+
+        if (state.user) {
+            loadDashboard();
+            setStatus("Dashboard ready", "ready");
+        } else {
+            setStatus("Sign in to begin", "alert");
+        }
+    </script>
+</body>
+</html>

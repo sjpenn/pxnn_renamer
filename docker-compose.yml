@@ -1,0 +1,42 @@
+# Docker Compose for PxNN it
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: pxnn_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-pxnn_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: pxnn_app
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-pxnn_db}
+      JWT_SECRET: ${JWT_SECRET:-supersecretkey}
+      APP_URL: ${APP_URL:-http://localhost:8000}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_SINGLE_EXPORT_PRICE_ID: ${STRIPE_SINGLE_EXPORT_PRICE_ID:-}
+      STRIPE_CREATOR_PACK_PRICE_ID: ${STRIPE_CREATOR_PACK_PRICE_ID:-}
+      STRIPE_LABEL_PACK_PRICE_ID: ${STRIPE_LABEL_PACK_PRICE_ID:-}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+
+volumes:
+  postgres_data:
