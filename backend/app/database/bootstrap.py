@@ -20,14 +20,39 @@ def _ensure_column(table_name: str, column_name: str, ddl: str) -> None:
         connection.execute(text(ddl))
 
 
+def _run_ddl_safe(ddl: str) -> None:
+    """Run a DDL statement, ignoring errors (for idempotent schema changes)."""
+    try:
+        with engine.begin() as connection:
+            connection.execute(text(ddl))
+    except Exception:
+        pass
+
+
 def bootstrap_database() -> None:
     Base.metadata.create_all(bind=engine)
 
+    # Users — original columns
     _ensure_column("users", "stripe_customer_id", "ALTER TABLE users ADD COLUMN stripe_customer_id TEXT")
     _ensure_column("users", "credit_balance", "ALTER TABLE users ADD COLUMN credit_balance INTEGER DEFAULT 0")
     _ensure_column("users", "active_plan", "ALTER TABLE users ADD COLUMN active_plan TEXT DEFAULT 'free'")
     _ensure_column("users", "plan_status", "ALTER TABLE users ADD COLUMN plan_status TEXT DEFAULT 'inactive'")
 
+    # Users — new OAuth + subscription columns
+    _ensure_column("users", "email", "ALTER TABLE users ADD COLUMN email TEXT")
+    _ensure_column("users", "google_sub", "ALTER TABLE users ADD COLUMN google_sub TEXT")
+    _ensure_column("users", "subscription_id", "ALTER TABLE users ADD COLUMN subscription_id TEXT")
+    _ensure_column("users", "subscription_status", "ALTER TABLE users ADD COLUMN subscription_status TEXT")
+    _ensure_column("users", "subscription_plan", "ALTER TABLE users ADD COLUMN subscription_plan TEXT")
+
+    # Make password_hash nullable on existing PostgreSQL deployments
+    _run_ddl_safe("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL")
+
+    # Add unique index for google_sub (partial index — only non-NULL values)
+    _run_ddl_safe("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_google_sub ON users (google_sub) WHERE google_sub IS NOT NULL")
+    _run_ddl_safe("CREATE INDEX IF NOT EXISTS ix_users_email ON users (email)")
+
+    # FileCollections
     _ensure_column(
         "file_collections",
         "session_id",
@@ -79,10 +104,18 @@ def bootstrap_database() -> None:
         "ALTER TABLE file_collections ADD COLUMN downloaded_at TIMESTAMP",
     )
 
+    # Files
     _ensure_column("files", "external_id", "ALTER TABLE files ADD COLUMN external_id TEXT")
     _ensure_column("files", "extracted_json", "ALTER TABLE files ADD COLUMN extracted_json TEXT")
     _ensure_column("files", "resolved_json", "ALTER TABLE files ADD COLUMN resolved_json TEXT")
     _ensure_column("files", "created_at", "ALTER TABLE files ADD COLUMN created_at TIMESTAMP")
+
+    # PaymentRecords — new columns
+    _ensure_column("payment_records", "plan_type", "ALTER TABLE payment_records ADD COLUMN plan_type TEXT DEFAULT 'one_time'")
+    _ensure_column("payment_records", "stripe_invoice_id", "ALTER TABLE payment_records ADD COLUMN stripe_invoice_id TEXT")
+
+    # Make stripe_checkout_session_id nullable for subscription renewal records
+    _run_ddl_safe("ALTER TABLE payment_records ALTER COLUMN stripe_checkout_session_id DROP NOT NULL")
 
     with engine.begin() as connection:
         connection.execute(
@@ -94,6 +127,12 @@ def bootstrap_database() -> None:
         connection.execute(
             text(
                 "CREATE UNIQUE INDEX IF NOT EXISTS ix_payment_records_checkout_session_id "
-                "ON payment_records (stripe_checkout_session_id)"
+                "ON payment_records (stripe_checkout_session_id) WHERE stripe_checkout_session_id IS NOT NULL"
+            )
+        )
+        connection.execute(
+            text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ix_payment_records_stripe_invoice_id "
+                "ON payment_records (stripe_invoice_id) WHERE stripe_invoice_id IS NOT NULL"
             )
         )
