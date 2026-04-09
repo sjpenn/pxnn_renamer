@@ -1,3 +1,4 @@
+from unittest.mock import MagicMock
 from backend.app.core.security import authenticate_user, serialize_user
 from backend.app.database.models import User
 
@@ -16,10 +17,10 @@ def _make_user(**kwargs):
         "created_at": None,
     }
     defaults.update(kwargs)
-    u = User.__new__(User)
+    mock = MagicMock(spec=User)
     for k, v in defaults.items():
-        setattr(u, k, v)
-    return u
+        setattr(mock, k, v)
+    return mock
 
 
 def test_serialize_user_includes_email():
