@@ -166,8 +166,7 @@ def _handle_invoice_paid(db: Session, invoice: dict) -> None:
 
     # Get plan_key from subscription metadata
     try:
-        stripe.api_key = settings.STRIPE_SECRET_KEY or "sk_test_placeholder"
-        stripe.api_version = STRIPE_API_VERSION
+        _configure_stripe()
         sub = stripe.Subscription.retrieve(subscription_id)
         plan_key = (sub.get("metadata") or {}).get("plan_key") or user.subscription_plan
     except Exception:
@@ -214,6 +213,10 @@ def _handle_subscription_deleted(db: Session, subscription: dict) -> None:
 
     user = db.query(User).filter(User.stripe_customer_id == customer_id).first()
     if not user:
+        return
+
+    # Only clear if this deletion event is for the user's current subscription
+    if user.subscription_id and user.subscription_id != sub_id:
         return
 
     user.subscription_status = "canceled"
@@ -354,7 +357,9 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
     payload = await request.body()
     signature = request.headers.get("stripe-signature")
 
-    if settings.STRIPE_WEBHOOK_SECRET and signature:
+    if settings.STRIPE_WEBHOOK_SECRET:
+        if not signature:
+            raise HTTPException(status_code=400, detail="Missing Stripe signature.")
         try:
             event = stripe.Webhook.construct_event(
                 payload=payload,
@@ -366,7 +371,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
         except stripe.error.SignatureVerificationError as exc:
             raise HTTPException(status_code=400, detail="Invalid Stripe signature.") from exc
     else:
-        # No secret configured — parse payload directly (test/dev only)
+        # No webhook secret configured — only safe in test/dev environments
         try:
             event = json.loads(payload)
         except Exception as exc:

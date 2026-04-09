@@ -26,7 +26,7 @@ def test_invoice_paid_webhook_grants_subscription_credits(client, db):
     db.commit()
 
     mock_sub = MagicMock()
-    mock_sub.get.return_value = {"plan_key": "pro_monthly", "user_id": str(user.id)}
+    mock_sub.get.side_effect = lambda key, default=None: {"metadata": {"plan_key": "pro_monthly", "user_id": str(user.id)}}.get(key, default)
 
     event_payload = {
         "type": "invoice.paid",
@@ -77,7 +77,7 @@ def test_invoice_paid_webhook_idempotent(client, db):
     db.commit()
 
     mock_sub = MagicMock()
-    mock_sub.get.return_value = {"plan_key": "pro_monthly"}
+    mock_sub.get.side_effect = lambda key, default=None: {"metadata": {"plan_key": "pro_monthly"}}.get(key, default)
 
     event_payload = {
         "type": "invoice.paid",
@@ -134,6 +134,67 @@ def test_subscription_cancelled_webhook_clears_plan(client, db):
             content=json.dumps(event_payload),
             headers={"stripe-signature": "test_sig", "content-type": "application/json"},
         )
+
+    assert response.status_code == 200
+    db.refresh(user)
+    assert user.subscription_status == "canceled"
+    assert user.active_plan == "free"
+
+
+def test_subscription_updated_webhook_syncs_status(client, db):
+    user = _create_user(db, stripe_customer_id="cus_upd")
+    user.subscription_status = "active"
+    db.commit()
+
+    event_payload = {
+        "type": "customer.subscription.updated",
+        "data": {
+            "object": {
+                "id": "sub_upd",
+                "customer": "cus_upd",
+                "status": "past_due",
+            }
+        },
+    }
+
+    with patch("backend.app.routes.payments.stripe") as mock_stripe:
+        mock_stripe.Webhook.construct_event.return_value = event_payload
+
+        response = client.post(
+            "/api/payments/webhook",
+            content=json.dumps(event_payload),
+            headers={"stripe-signature": "test_sig", "content-type": "application/json"},
+        )
+
+    assert response.status_code == 200
+    db.refresh(user)
+    assert user.subscription_status == "past_due"
+
+
+def test_cancel_subscription_route(client, db):
+    user = _create_user(db, stripe_customer_id="cus_canc2")
+    user.subscription_id = "sub_canc2"
+    user.subscription_status = "active"
+    db.commit()
+
+    # Log in to get a session cookie
+    login_resp = client.post("/api/auth/login", data={"username": "testuser", "password": "password123"})
+
+    with patch("backend.app.routes.payments.stripe") as mock_stripe:
+        mock_stripe.api_key = "sk_test"
+        mock_stripe.api_version = "2026-02-25.clover"
+        mock_stripe.Subscription.delete.return_value = {}
+
+        # Patch settings to have a STRIPE_SECRET_KEY
+        with patch("backend.app.routes.payments.settings") as mock_settings:
+            mock_settings.STRIPE_SECRET_KEY = "sk_test_fake"
+            mock_settings.STRIPE_WEBHOOK_SECRET = None
+            mock_settings.APP_URL = "http://localhost"
+
+            response = client.post(
+                "/api/payments/subscription/cancel",
+                cookies=login_resp.cookies,
+            )
 
     assert response.status_code == 200
     db.refresh(user)
