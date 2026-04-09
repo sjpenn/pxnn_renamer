@@ -1,10 +1,10 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "dockerfile",
-    "dockerfile": "docker/app/Dockerfile"
+    "builder": "nixpacks"
   },
   "deploy": {
+    "startCommand": "python main.py",
     "restartPolicyType": "ON_FAILURE",
     "numReplicas": 1
   }

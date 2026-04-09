@@ -33,15 +33,17 @@ async def root(
     request: Request,
     current_user: Optional[User] = Depends(get_current_user_optional),
 ):
-    context = {
-        "request": request,
-        "title": "PxNN it - Home",
-        "initial_user": serialize_user(current_user),
-        "payment_options": get_payment_options(),
-        "stripe_enabled": bool(settings.STRIPE_SECRET_KEY),
-        "billing_notice": request.query_params.get("billing", ""),
-    }
-    return templates.TemplateResponse("index.html", context)
+    return templates.TemplateResponse(
+        request,
+        "index.html",
+        {
+            "title": "PxNN it - Home",
+            "initial_user": serialize_user(current_user),
+            "payment_options": get_payment_options(),
+            "stripe_enabled": bool(settings.STRIPE_SECRET_KEY),
+            "billing_notice": request.query_params.get("billing", ""),
+        },
+    )
 
 
 @app.on_event("startup")
