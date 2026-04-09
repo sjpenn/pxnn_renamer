@@ -8,6 +8,7 @@ PAYMENT_PLANS = {
         "credits": 1,
         "price_id_setting": "STRIPE_SINGLE_EXPORT_PRICE_ID",
         "accent": "Starter",
+        "plan_type": "one_time",
     },
     "creator_pack": {
         "label": "Creator Pack",
@@ -16,6 +17,7 @@ PAYMENT_PLANS = {
         "credits": 10,
         "price_id_setting": "STRIPE_CREATOR_PACK_PRICE_ID",
         "accent": "Best value",
+        "plan_type": "one_time",
     },
     "label_pack": {
         "label": "Label Pack",
@@ -24,6 +26,34 @@ PAYMENT_PLANS = {
         "credits": 50,
         "price_id_setting": "STRIPE_LABEL_PACK_PRICE_ID",
         "accent": "Team",
+        "plan_type": "one_time",
+    },
+    "starter_monthly": {
+        "label": "Starter",
+        "description": "3 credits/month for independent producers.",
+        "amount_cents": 900,
+        "credits": 3,
+        "price_id_setting": "STRIPE_STARTER_MONTHLY_PRICE_ID",
+        "accent": "Monthly",
+        "plan_type": "subscription",
+    },
+    "pro_monthly": {
+        "label": "Pro",
+        "description": "15 credits/month for regular uploaders.",
+        "amount_cents": 2900,
+        "credits": 15,
+        "price_id_setting": "STRIPE_PRO_MONTHLY_PRICE_ID",
+        "accent": "Popular",
+        "plan_type": "subscription",
+    },
+    "label_monthly": {
+        "label": "Label",
+        "description": "60 credits/month for teams and heavy release schedules.",
+        "amount_cents": 7900,
+        "credits": 60,
+        "price_id_setting": "STRIPE_LABEL_MONTHLY_PRICE_ID",
+        "accent": "Team",
+        "plan_type": "subscription",
     },
 }
 
@@ -49,6 +79,7 @@ def get_payment_options() -> list[dict]:
                 "credits": plan["credits"],
                 "accent": plan["accent"],
                 "stripe_price_id": price_id,
+                "plan_type": plan["plan_type"],
             }
         )
     return options
