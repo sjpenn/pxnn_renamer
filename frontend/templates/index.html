@@ -125,9 +125,7 @@
             <!-- Header Bar -->
             <header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-outline/10 bg-white/60 px-8 backdrop-blur-md">
                 <div class="flex items-center gap-4">
-                    <p class="text-sm font-medium text-secondary">Project Workspace</p>
-                    <span class="h-4 w-[1px] bg-outline/20"></span>
-                    <h2 class="text-sm font-bold text-deep-slate uppercase tracking-wider">Rename Wizard</h2>
+                    <p class="text-sm font-medium text-secondary">Active Session</p>
                 </div>
                 <div class="flex items-center gap-4">
                     <div id="header-auth-pill" class="text-xs font-medium text-secondary">
@@ -153,9 +151,218 @@
                             </p>
                         </div>
                     </div>
-
                     <div class="mt-8 space-y-8">
                         <div id="billing-banner" class="hidden rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900"></div>
+
+                        <!-- Wizard Lockout Overlay -->
+                        <div id="wizard-lockout" class="hidden rounded-2xl border border-dashed border-primary-container/30 bg-primary-fixed/20 p-8 text-center">
+                            <span class="material-symbols-outlined text-4xl text-primary-container mb-3">lock</span>
+                            <p class="text-sm font-bold text-primary-container">Authentication Required</p>
+                            <p class="mt-1 text-xs text-secondary font-medium">Please sign in to begin your renaming batch.</p>
+                        </div>
+
+                        <!-- Step 1: File Staging -->
+                        <section class="wizard-panel space-y-8" data-step-panel="1">
+                            <div class="space-y-2">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-primary-container bg-primary-fixed/30 inline-block px-2 py-0.5 rounded">Process Step 01</p>
+                                <h3 class="text-2xl font-display font-bold text-deep-slate">Stage Source Files</h3>
+                                <p class="max-w-2xl text-sm leading-6 text-secondary font-medium">
+                                    Our precision parser will extract BPM, artist, and version metadata from your filenames.
+                                </p>
+                            </div>
+
+                            <div class="rounded-3xl border-2 border-dashed border-outline/20 bg-white p-12 transition-all hover:border-primary-container/40 dropzone" id="dropzone">
+                                <div class="flex flex-col items-center justify-center text-center">
+                                    <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-bright text-primary-container shadow-sm">
+                                        <span class="material-symbols-outlined text-3xl">upload_file</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-deep-slate">Drag & Drop audio files</h3>
+                                    <p class="mt-2 text-sm text-secondary font-medium">Or click to browse storage</p>
+                                    <input type="file" id="file-input" multiple class="hidden" accept=".wav,.mp3,.aif,.aiff,.flac">
+                                </div>
+                            </div>
+
+                            <div class="rounded-2xl bg-deep-slate p-5 text-white shadow-lg">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <span class="material-symbols-outlined text-sm text-primary-fixed-dim">info</span>
+                                    <p class="text-xs font-bold uppercase tracking-widest text-primary-fixed-dim">Workflow Tip</p>
+                                </div>
+                                <p class="text-xs leading-5 opacity-80 font-medium">
+                                    The fastest path is to define the artist once at Step 2. We'll automatically identify BPM and mix versions wherever possible.
+                                </p>
+                            </div>
+                        </section>
+
+                        <!-- Step 2: Metadata Definition -->
+                        <section class="wizard-panel hidden space-y-8" data-step-panel="2">
+                            <div class="space-y-2">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-primary-container bg-primary-fixed/30 inline-block px-2 py-0.5 rounded">Process Step 02</p>
+                                <h3 class="text-2xl font-display font-bold text-deep-slate">Define Metadata Rules</h3>
+                                <p class="max-w-xl text-sm leading-6 text-secondary font-medium">
+                                    Set batch defaults first. Producers accept semicolon-separated values like <span class="font-bold text-deep-slate">PMHITSS; REALLYINDIG0</span>.
+                                </p>
+                            </div>
+
+                            <form id="rename-form" class="space-y-6">
+                                <div class="grid gap-6 lg:grid-cols-2">
+                                    <label class="space-y-2">
+                                        <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Primary Artist</span>
+                                        <input id="default_artist" name="default_artist" type="text" placeholder="Hurricane Wisdom" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed">
+                                    </label>
+
+                                    <label class="space-y-2">
+                                        <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Default Producers</span>
+                                        <input id="default_producers" name="default_producers" type="text" placeholder="PMHITSS; REALLYINDIG0" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed">
+                                    </label>
+                                </div>
+
+                                <label class="space-y-2 block">
+                                    <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Output Format String</span>
+                                    <textarea id="format_template" name="format_template" rows="2" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed font-mono">ARTIST_TITLE_PRODUCERS_MIX_VERSION</textarea>
+                                </label>
+
+                                <div class="grid gap-6 lg:grid-cols-2">
+                                    <label class="space-y-2">
+                                        <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Separator Logic</span>
+                                        <select id="delimiter" name="delimiter" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed">
+                                            <option value="underscore" selected>Underscore (_)</option>
+                                            <option value="dash">Dash (-)</option>
+                                            <option value="space">Space ( )</option>
+                                            <option value="dot">Dot (.)</option>
+                                        </select>
+                                    </label>
+
+                                    <label class="space-y-2">
+                                        <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Casing Style</span>
+                                        <select id="case_style" name="case_style" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed">
+                                            <option value="keep" selected>Professional / keep as is</option>
+                                            <option value="title">Title Case</option>
+                                            <option value="lower">lowercase</option>
+                                            <option value="upper">UPPERCASE</option>
+                                        </select>
+                                    </label>
+                                </div>
+
+                                <label class="flex items-center justify-between rounded-xl border border-outline/10 bg-surface-bright p-5">
+                                    <div class="flex items-center gap-4">
+                                        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                                            <span class="material-symbols-outlined">cleaning_services</span>
+                                        </div>
+                                        <div>
+                                            <span class="block text-sm font-bold text-deep-slate">Precision Cleanup</span>
+                                            <span class="block text-xs text-secondary font-medium">Strips problem characters for archive-safe delivery.</span>
+                                        </div>
+                                    </div>
+                                    <input id="safe_cleanup" name="safe_cleanup" type="checkbox" checked class="h-6 w-6 rounded-lg border-outline/20 text-primary-container focus:ring-primary-fixed">
+                                </label>
+                            </form>
+
+                            <div class="grid gap-6 lg:grid-cols-[1.5fr,1fr]">
+                                <div class="rounded-2xl border border-outline/10 bg-white p-6">
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-outline mb-4">Variable Token Reference</p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="token-chip">ARTIST</span>
+                                        <span class="token-chip">TITLE</span>
+                                        <span class="token-chip">PRODUCERS</span>
+                                        <span class="token-chip">MIX</span>
+                                        <span class="token-chip">VERSION</span>
+                                        <span class="token-chip">BPM</span>
+                                        <span class="token-chip">DATE</span>
+                                        <span class="token-chip">KEY</span>
+                                    </div>
+                                </div>
+
+                                <div class="rounded-2xl bg-primary-container p-6 text-white shadow-lg">
+                                    <p class="text-xs font-bold uppercase tracking-widest opacity-70 mb-3">Custom Strings</p>
+                                    <p class="text-xs leading-relaxed opacity-90 font-medium">
+                                        You can mix tokens and freeform text like: <br>
+                                        <code class="mt-2 block bg-black/20 p-2 rounded font-mono text-[10px]">TITLE @ prodvaiii + @PRODUCERS</code>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4 pt-4 border-t border-outline/10">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs font-bold uppercase tracking-widest text-secondary opacity-60">Per-file cleanup</p>
+                                        <h4 class="mt-1 font-display text-xl text-deep-slate">Only edit the exceptions</h4>
+                                    </div>
+                                    <span class="rounded-full bg-deep-slate px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white">Autofilled from filenames</span>
+                                </div>
+                                <div id="metadata-editor-list" class="space-y-4"></div>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button id="refresh-preview" type="button" class="inline-flex items-center rounded-xl bg-deep-slate px-6 py-3 text-sm font-bold text-white transition hover:bg-slate-800">
+                                    Refresh preview
+                                </button>
+                                <button id="go-review" type="button" class="inline-flex items-center rounded-xl border border-outline/20 bg-white px-6 py-3 text-sm font-bold text-deep-slate transition hover:border-deep-slate">
+                                    Continue to review
+                                </button>
+                            </div>
+                        </section>
+
+                        <!-- Step 3: Review & Download -->
+                        <section class="wizard-panel hidden space-y-8" data-step-panel="3">
+                            <div class="space-y-2">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-primary-container bg-primary-fixed/30 inline-block px-2 py-0.5 rounded">Process Step 03</p>
+                                <h3 class="text-2xl font-display font-bold text-deep-slate">Final Review & Export</h3>
+                                <p class="max-w-xl text-sm leading-6 text-secondary font-medium">
+                                    Your standardized archive is ready. Verify the final names in the preview rail before downloading.
+                                </p>
+                            </div>
+
+                            <div class="grid gap-6 md:grid-cols-2">
+                                <div class="rounded-3xl bg-deep-slate p-8 text-white shadow-xl">
+                                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-container mb-6">
+                                        <span class="material-symbols-outlined text-white">sim_card_download</span>
+                                    </div>
+                                    <p class="text-[10px] font-bold uppercase tracking-widest opacity-60">Export Ready</p>
+                                    <p class="mt-2 font-display text-4xl font-bold" id="download-file-count">0 Files</p>
+                                    <p class="mt-4 text-xs leading-5 opacity-70 font-medium">
+                                        Standardized ZIP archive generated according to your precision metadata rules.
+                                    </p>
+                                    <a id="download-link" href="#" class="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-primary-fixed py-4 text-sm font-bold text-primary-container transition hover:bg-primary-fixed-dim">
+                                        <span class="material-symbols-outlined text-sm">download</span>
+                                        DOWNLOAD ARCHIVE
+                                    </a>
+                                </div>
+
+                                <div class="rounded-3xl border border-outline/10 bg-white p-8">
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-outline mb-6">Active Rule Summary</p>
+                                    <dl class="space-y-4 text-sm">
+                                        <div class="flex justify-between border-b border-outline/10 pb-2">
+                                            <dt class="text-secondary font-medium">Format</dt>
+                                            <dd id="summary-format" class="font-bold text-deep-slate text-right max-w-[180px] break-all font-mono text-[10px]">ARTIST_TITLE_PRODUCERS_MIX_VERSION</dd>
+                                        </div>
+                                        <div class="flex justify-between border-b border-outline/10 pb-2">
+                                            <dt class="text-secondary font-medium">Artist</dt>
+                                            <dd id="summary-artist" class="font-bold text-deep-slate">Not set</dd>
+                                        </div>
+                                        <div class="flex justify-between border-b border-outline/10 pb-2">
+                                            <dt class="text-secondary font-medium">Producers</dt>
+                                            <dd id="summary-producers" class="font-bold text-deep-slate">Not set</dd>
+                                        </div>
+                                        <div class="flex justify-between border-b border-outline/10 pb-2">
+                                            <dt class="text-secondary font-medium">Delimiter</dt>
+                                            <dd id="summary-delimiter" class="font-bold text-deep-slate">Underscore</dd>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <dt class="text-secondary font-medium">Case</dt>
+                                            <dd id="summary-case" class="font-bold text-deep-slate">Normal</dd>
+                                        </div>
+                                    </dl>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="pt-12 border-t border-outline/10 hidden md:block">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-container-high text-secondary mb-4">
+                                <span class="material-symbols-outlined">analytics</span>
+                            </div>
+                            <h3 class="text-xl font-display font-bold text-deep-slate">Workspace Overview</h3>
+                            <p class="mt-1 text-sm text-secondary font-medium">Access your batch history and account settings below.</p>
+                        </div>
 
                         <div class="grid gap-6 lg:grid-cols-2">
                             <!-- Auth Panel -->
@@ -247,7 +454,7 @@
                         </div>
 
                         <!-- Content Panels -->
-                        <div class="grid gap-6 xl:grid-cols-2">
+                        <div class="grid gap-6 xl:grid-cols-2 pb-12">
                             <div class="rounded-3xl border border-outline/10 bg-white p-6">
                                 <div class="flex items-center justify-between mb-4">
                                     <h4 class="text-sm font-bold text-deep-slate uppercase tracking-wider">Rename Batches</h4>
@@ -263,213 +470,11 @@
                                 </div>
                                 <div id="activity-list" class="space-y-3 min-h-[100px]"></div>
                             </div>
-                        </div>
                     </div>
-
-                    <!-- Wizard Lockout Overlay -->
-                    <div id="wizard-lockout" class="hidden rounded-2xl border border-dashed border-primary-container/30 bg-primary-fixed/20 p-8 text-center">
-                        <span class="material-symbols-outlined text-4xl text-primary-container mb-3">lock</span>
-                        <p class="text-sm font-bold text-primary-container">Authentication Required</p>
-                        <p class="mt-1 text-xs text-secondary font-medium">Please sign in to begin your renaming batch.</p>
-                    </div>
-
-                    <!-- Step 1: File Staging -->
-                    <section class="wizard-panel space-y-8" data-step-panel="1">
-                        <div class="space-y-2">
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-primary-container bg-primary-fixed/30 inline-block px-2 py-0.5 rounded">Process Step 01</p>
-                            <h3 class="text-2xl font-display font-bold text-deep-slate">Stage Source Files</h3>
-                            <p class="max-w-2xl text-sm leading-6 text-secondary font-medium">
-                                Our precision parser will extract BPM, artist, and version metadata from your filenames.
-                            </p>
-                        </div>
-
-                        <div class="rounded-3xl border-2 border-dashed border-outline/20 bg-white p-12 transition-all hover:border-primary-container/40 dropzone" id="dropzone">
-                            <div class="flex flex-col items-center justify-center text-center">
-                                <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-bright text-primary-container shadow-sm">
-                                    <span class="material-symbols-outlined text-3xl">upload_file</span>
-                                </div>
-                                <h3 class="text-lg font-bold text-deep-slate">Drag & Drop audio files</h3>
-                                <p class="mt-2 text-sm text-secondary font-medium">Or click to browse storage</p>
-                                <input type="file" id="file-input" multiple class="hidden" accept=".wav,.mp3,.aif,.aiff,.flac">
-                            </div>
-                        </div>
-
-                        <div class="rounded-2xl bg-deep-slate p-5 text-white shadow-lg">
-                            <div class="flex items-center gap-3 mb-2">
-                                <span class="material-symbols-outlined text-sm text-primary-fixed-dim">info</span>
-                                <p class="text-xs font-bold uppercase tracking-widest text-primary-fixed-dim">Workflow Tip</p>
-                            </div>
-                            <p class="text-xs leading-5 opacity-80 font-medium">
-                                The fastest path is to define the artist once at Step 2. We'll automatically identify BPM and mix versions wherever possible.
-                            </p>
-                        </div>
-                    </section>
-
-                    <!-- Step 2: Metadata Definition -->
-                    <section class="wizard-panel hidden space-y-8" data-step-panel="2">
-                        <div class="space-y-2">
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-primary-container bg-primary-fixed/30 inline-block px-2 py-0.5 rounded">Process Step 02</p>
-                            <h3 class="text-2xl font-display font-bold text-deep-slate">Define Metadata Rules</h3>
-                            <p class="max-w-xl text-sm leading-6 text-secondary font-medium">
-                                Set batch defaults first. Producers accept semicolon-separated values like <span class="font-bold text-deep-slate">PMHITSS; REALLYINDIG0</span>.
-                            </p>
-                        </div>
-
-                        <form id="rename-form" class="space-y-6">
-                            <div class="grid gap-6 lg:grid-cols-2">
-                                <label class="space-y-2">
-                                    <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Primary Artist</span>
-                                    <input id="default_artist" name="default_artist" type="text" placeholder="Hurricane Wisdom" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed">
-                                </label>
-
-                                <label class="space-y-2">
-                                    <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Default Producers</span>
-                                    <input id="default_producers" name="default_producers" type="text" placeholder="PMHITSS; REALLYINDIG0" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed">
-                                </label>
-                            </div>
-
-                            <label class="space-y-2 block">
-                                <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Output Format String</span>
-                                <textarea id="format_template" name="format_template" rows="2" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed font-mono">ARTIST_TITLE_PRODUCERS_MIX_VERSION</textarea>
-                            </label>
-
-                            <div class="grid gap-6 lg:grid-cols-2">
-                                <label class="space-y-2">
-                                    <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Separator Logic</span>
-                                    <select id="delimiter" name="delimiter" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed">
-                                        <option value="underscore" selected>Underscore (_)</option>
-                                        <option value="dash">Dash (-)</option>
-                                        <option value="space">Space ( )</option>
-                                        <option value="dot">Dot (.)</option>
-                                    </select>
-                                </label>
-
-                                <label class="space-y-2">
-                                    <span class="text-xs font-bold uppercase tracking-wider text-secondary opacity-70 px-1">Casing Style</span>
-                                    <select id="case_style" name="case_style" class="w-full rounded-xl border border-outline/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-container focus:ring-2 focus:ring-primary-fixed">
-                                        <option value="keep" selected>Professional / keep as is</option>
-                                        <option value="title">Title Case</option>
-                                        <option value="lower">lowercase</option>
-                                        <option value="upper">UPPERCASE</option>
-                                    </select>
-                                </label>
-                            </div>
-
-                            <label class="flex items-center justify-between rounded-xl border border-outline/10 bg-surface-bright p-5">
-                                <div class="flex items-center gap-4">
-                                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
-                                        <span class="material-symbols-outlined">cleaning_services</span>
-                                    </div>
-                                    <div>
-                                        <span class="block text-sm font-bold text-deep-slate">Precision Cleanup</span>
-                                        <span class="block text-xs text-secondary font-medium">Strips problem characters for archive-safe delivery.</span>
-                                    </div>
-                                </div>
-                                <input id="safe_cleanup" name="safe_cleanup" type="checkbox" checked class="h-6 w-6 rounded-lg border-outline/20 text-primary-container focus:ring-primary-fixed">
-                            </label>
-                        </form>
-
-                        <div class="grid gap-6 lg:grid-cols-[1.5fr,1fr]">
-                            <div class="rounded-2xl border border-outline/10 bg-white p-6">
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-outline mb-4">Variable Token Reference</p>
-                                <div class="flex flex-wrap gap-2">
-                                    <span class="token-chip">ARTIST</span>
-                                    <span class="token-chip">TITLE</span>
-                                    <span class="token-chip">PRODUCERS</span>
-                                    <span class="token-chip">MIX</span>
-                                    <span class="token-chip">VERSION</span>
-                                    <span class="token-chip">BPM</span>
-                                    <span class="token-chip">DATE</span>
-                                    <span class="token-chip">KEY</span>
-                                </div>
-                            </div>
-
-                            <div class="rounded-2xl bg-primary-container p-6 text-white shadow-lg">
-                                <p class="text-xs font-bold uppercase tracking-widest opacity-70 mb-3">Custom Strings</p>
-                                <p class="text-xs leading-relaxed opacity-90 font-medium">
-                                    You can mix tokens and freeform text like: <br>
-                                    <code class="mt-2 block bg-black/20 p-2 rounded font-mono text-[10px]">TITLE @ prodvaiii + @PRODUCERS</code>
-                                </p>
-                            </div>
-                        </div>
-                    </section>
-
-                                <div class="space-y-4">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <p class="text-xs uppercase tracking-[0.22em] text-slate-500">Per-file cleanup</p>
-                                            <h4 class="mt-1 font-display text-xl text-slate-950">Only edit the exceptions</h4>
-                                        </div>
-                                        <span class="rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-white">Autofilled from filenames</span>
-                                    </div>
-                                    <div id="metadata-editor-list" class="space-y-4"></div>
-                                </div>
-
-                                <div class="flex flex-wrap items-center gap-3">
-                                    <button id="refresh-preview" type="button" class="inline-flex items-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
-                                        Refresh preview
-                                    </button>
-                                    <button id="go-review" type="button" class="inline-flex items-center rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-950 hover:text-slate-950">
-                                        Continue to review
-                                    </button>
-                                </div>
-                            </section>
-
-                    <!-- Step 3: Review & Download -->
-                    <section class="wizard-panel hidden space-y-8" data-step-panel="3">
-                        <div class="space-y-2">
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-primary-container bg-primary-fixed/30 inline-block px-2 py-0.5 rounded">Process Step 03</p>
-                            <h3 class="text-2xl font-display font-bold text-deep-slate">Final Review & Export</h3>
-                            <p class="max-w-xl text-sm leading-6 text-secondary font-medium">
-                                Your standardized archive is ready. Verify the final names in the preview rail before downloading.
-                            </p>
-                        </div>
-
-                        <div class="grid gap-6 md:grid-cols-2">
-                            <div class="rounded-3xl bg-deep-slate p-8 text-white shadow-xl">
-                                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-container mb-6">
-                                    <span class="material-symbols-outlined text-white">sim_card_download</span>
-                                </div>
-                                <p class="text-[10px] font-bold uppercase tracking-widest opacity-60">Export Ready</p>
-                                <p class="mt-2 font-display text-4xl font-bold" id="download-file-count">0 Files</p>
-                                <p class="mt-4 text-xs leading-5 opacity-70 font-medium">
-                                    Standardized ZIP archive generated according to your precision metadata rules.
-                                </p>
-                                <a id="download-link" href="#" class="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-primary-fixed py-4 text-sm font-bold text-primary-container transition hover:bg-primary-fixed-dim">
-                                    <span class="material-symbols-outlined text-sm">download</span>
-                                    DOWNLOAD ARCHIVE
-                                </a>
-                            </div>
-
-                            <div class="rounded-3xl border border-outline/10 bg-white p-8">
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-outline mb-6">Active Rule Summary</p>
-                                <dl class="space-y-4 text-sm">
-                                    <div class="flex justify-between border-b border-outline/10 pb-2">
-                                        <dt class="text-secondary font-medium">Format</dt>
-                                        <dd id="summary-format" class="font-bold text-deep-slate text-right max-w-[180px] break-all font-mono text-[10px]">ARTIST_TITLE_PRODUCERS_MIX_VERSION</dd>
-                                    </div>
-                                    <div class="flex justify-between border-b border-outline/10 pb-2">
-                                        <dt class="text-secondary font-medium">Artist</dt>
-                                        <dd id="summary-artist" class="font-bold text-deep-slate">Not set</dd>
-                                    </div>
-                                    <div class="flex justify-between border-b border-outline/10 pb-2">
-                                        <dt class="text-secondary font-medium">Producers</dt>
-                                        <dd id="summary-producers" class="font-bold text-deep-slate">Not set</dd>
-                                    </div>
-                                    <div class="flex justify-between border-b border-outline/10 pb-2">
-                                        <dt class="text-secondary font-medium">Delimiter</dt>
-                                        <dd id="summary-delimiter" class="font-bold text-deep-slate">Underscore</dd>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <dt class="text-secondary font-medium">Case</dt>
-                                        <dd id="summary-case" class="font-bold text-deep-slate">Normal</dd>
-                                    </div>
-                                </dl>
-                            </div>
-                        </div>
-                    </section>
                 </div>
             </div>
+        </div>
+    </div>
 
             <!-- Right Sidebar: Preview Rail -->
             <aside class="w-96 border-l border-outline/10 bg-surface-bright/50 overflow-y-auto hidden lg:block">
