@@ -9,6 +9,14 @@ from .session import Base
 class User(Base):
     __tablename__ = "users"
 
+    def __new__(cls, *args, **kwargs):
+        instance = object.__new__(cls)
+        from sqlalchemy.orm.instrumentation import manager_of_class
+        from sqlalchemy.orm import configure_mappers
+        configure_mappers()
+        manager_of_class(cls).setup_instance(instance)
+        return instance
+
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=True)  # nullable for Google-only accounts
