@@ -11,8 +11,13 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
-    password_hash = Column(String, nullable=False)
+    password_hash = Column(String, nullable=True)  # nullable for Google-only accounts
+    email = Column(String, nullable=True, index=True)
+    google_sub = Column(String, unique=True, nullable=True)
     stripe_customer_id = Column(String, nullable=True)
+    subscription_id = Column(String, nullable=True)
+    subscription_status = Column(String, nullable=True)
+    subscription_plan = Column(String, nullable=True)
     credit_balance = Column(Integer, default=0, nullable=False)
     active_plan = Column(String, default="free", nullable=False)
     plan_status = Column(String, default="inactive", nullable=False)
@@ -84,10 +89,12 @@ class PaymentRecord(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    stripe_checkout_session_id = Column(String, unique=True, nullable=False, index=True)
+    stripe_checkout_session_id = Column(String, unique=True, nullable=True, index=True)
+    stripe_invoice_id = Column(String, unique=True, nullable=True, index=True)
     stripe_customer_id = Column(String, nullable=True)
     stripe_price_id = Column(String, nullable=True)
     plan_key = Column(String, nullable=False)
+    plan_type = Column(String, nullable=False, default="one_time")
     amount_cents = Column(Integer, nullable=False, default=0)
     currency = Column(String, nullable=False, default="usd")
     credits = Column(Integer, nullable=False, default=0)
