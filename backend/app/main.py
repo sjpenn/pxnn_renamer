@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Optional
 from fastapi import Depends, FastAPI, Request
 from fastapi.templating import Jinja2Templates
@@ -17,8 +18,9 @@ from .routes.wizard import router as wizard_router
 app = FastAPI(title="PxNN it")
 
 # Setup Templates and Static Files
-templates = Jinja2Templates(directory="frontend/templates")
-app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+templates = Jinja2Templates(directory=str(BASE_DIR / "frontend" / "templates"))
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "frontend" / "static")), name="static")
 
 app.include_router(auth_router)
 app.include_router(dashboard_router)
