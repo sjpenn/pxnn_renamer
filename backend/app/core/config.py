@@ -15,6 +15,12 @@ class Settings(BaseSettings):
     STRIPE_SINGLE_EXPORT_PRICE_ID: Optional[str] = None
     STRIPE_CREATOR_PACK_PRICE_ID: Optional[str] = None
     STRIPE_LABEL_PACK_PRICE_ID: Optional[str] = None
+    STRIPE_STARTER_MONTHLY_PRICE_ID: Optional[str] = None
+    STRIPE_PRO_MONTHLY_PRICE_ID: Optional[str] = None
+    STRIPE_LABEL_MONTHLY_PRICE_ID: Optional[str] = None
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/auth/google/callback"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
