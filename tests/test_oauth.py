@@ -45,3 +45,12 @@ def test_logs_account_created_activity(db):
     _resolve_or_create_google_user(db, google_sub="sub_log", email="log@x.com")
     log = db.query(ActivityLog).filter(ActivityLog.event_type == "account_created").first()
     assert log is not None
+
+
+def test_resolve_creates_new_user_no_email(db):
+    """When email is None or empty, creates a user with a fallback username."""
+    user = _resolve_or_create_google_user(db, google_sub="sub_noemail", email=None)
+    assert user is not None
+    assert user.google_sub == "sub_noemail"
+    assert user.password_hash is None
+    assert user.username is not None

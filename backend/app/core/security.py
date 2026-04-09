@@ -63,12 +63,12 @@ def serialize_user(user: Optional[User]) -> Optional[dict]:
     return {
         "id": user.id,
         "username": user.username,
-        "email": getattr(user, "email", None),
+        "email": user.email,
         "credit_balance": user.credit_balance,
         "active_plan": user.active_plan,
         "plan_status": user.plan_status,
-        "subscription_status": getattr(user, "subscription_status", None),
-        "subscription_plan": getattr(user, "subscription_plan", None),
+        "subscription_status": user.subscription_status,
+        "subscription_plan": user.subscription_plan,
         "created_at": user.created_at.isoformat() if user.created_at else None,
     }
 

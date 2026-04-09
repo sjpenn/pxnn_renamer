@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock
-from backend.app.core.security import authenticate_user, serialize_user
+from backend.app.core.security import authenticate_user, hash_password, serialize_user
 from backend.app.database.models import User
 
 
@@ -41,9 +41,25 @@ def test_serialize_user_none_returns_none():
 
 
 def test_authenticate_user_google_only_returns_none(db):
-    from backend.app.core.security import hash_password
     user = User(username="googleuser", password_hash=None, email="g@example.com", google_sub="sub123")
     db.add(user)
     db.commit()
     result = authenticate_user(db, "googleuser", "any_password")
+    assert result is None
+
+
+def test_authenticate_user_normal_correct(db):
+    user = User(username="normaluser", password_hash=hash_password("goodpass"), credit_balance=0, active_plan=None, plan_status=None)
+    db.add(user)
+    db.commit()
+    result = authenticate_user(db, "normaluser", "goodpass")
+    assert result is not None
+    assert result.username == "normaluser"
+
+
+def test_authenticate_user_normal_wrong_password(db):
+    user = User(username="normaluser2", password_hash=hash_password("goodpass"), credit_balance=0, active_plan=None, plan_status=None)
+    db.add(user)
+    db.commit()
+    result = authenticate_user(db, "normaluser2", "wrongpass")
     assert result is None
