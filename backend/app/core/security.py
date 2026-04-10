@@ -108,3 +108,13 @@ def get_current_user(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Sign in to continue.",
     )
+
+
+def set_pending_plan(request: Request, plan_key: str) -> None:
+    """Store a plan key in the session for post-registration checkout redirect."""
+    request.session["pending_plan"] = plan_key
+
+
+def pop_pending_plan(request: Request) -> Optional[str]:
+    """Retrieve and clear the pending plan from the session."""
+    return request.session.pop("pending_plan", None)
