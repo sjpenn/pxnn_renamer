@@ -1,0 +1,84 @@
+{# Nav partial. Expects: current_user (User|None), page (string), google_oauth_enabled (bool) #}
+<nav class="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-outline/10">
+    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        {# Left: logo + marketing links #}
+        <div class="flex items-center gap-8">
+            <a href="{% if current_user %}/app{% else %}/{% endif %}" class="flex items-center gap-2 font-display font-bold text-lg text-deep-slate">
+                <span class="material-symbols-outlined text-primary-container">sync_alt</span>
+                PxNN it
+            </a>
+            {% if page in ['home', 'login', 'register'] %}
+            <div class="hidden md:flex items-center gap-6 text-sm font-semibold text-secondary">
+                <a href="/#features" class="hover:text-primary-container transition">Features</a>
+                <a href="/#pricing" class="hover:text-primary-container transition">Pricing</a>
+            </div>
+            {% endif %}
+        </div>
+
+        {# Right: auth state #}
+        <div class="flex items-center gap-3">
+            {% if current_user %}
+                <a href="/app"
+                   class="hidden sm:inline-block text-sm font-semibold {% if page == 'app' %}text-primary-container border-b-2 border-primary-container{% else %}text-secondary hover:text-primary-container{% endif %} transition">
+                    Dashboard
+                </a>
+                <a href="/app?billing=options"
+                   class="hidden sm:inline-block text-sm font-semibold text-secondary hover:text-primary-container transition">
+                    Billing
+                </a>
+
+                {# Avatar dropdown #}
+                <div class="relative">
+                    <button id="nav-user-dropdown-btn"
+                            type="button"
+                            class="flex items-center gap-2 rounded-full border border-outline/20 bg-white px-3 py-1.5 text-sm font-semibold text-deep-slate hover:border-primary-container transition">
+                        <span class="material-symbols-outlined text-base">account_circle</span>
+                        <span class="max-w-[120px] truncate">{{ current_user.username }}</span>
+                        <span class="material-symbols-outlined text-base">expand_more</span>
+                    </button>
+                    <div id="nav-user-dropdown-menu"
+                         class="hidden absolute right-0 mt-2 w-56 rounded-xl border border-outline/10 bg-white py-2 shadow-lg">
+                        <div class="px-4 py-2 text-xs font-bold uppercase tracking-widest text-secondary opacity-60">
+                            {{ current_user.username }}
+                        </div>
+                        <a href="/profile"
+                           class="block px-4 py-2 text-sm text-deep-slate hover:bg-surface-bright transition">
+                            Profile
+                        </a>
+                        <div class="my-1 border-t border-outline/10"></div>
+                        <form method="post" action="/api/auth/logout" onsubmit="event.preventDefault(); fetch('/api/auth/logout', {method: 'POST'}).then(() => window.location.href = '/');">
+                            <button type="submit"
+                                    class="block w-full text-left px-4 py-2 text-sm text-deep-slate hover:bg-surface-bright transition">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <a href="/login"
+                   class="text-sm font-semibold {% if page == 'login' %}text-primary-container border-b-2 border-primary-container{% else %}text-secondary hover:text-primary-container{% endif %} transition">
+                    Sign in
+                </a>
+                <a href="/register"
+                   class="rounded-xl bg-primary-container px-4 py-2 text-sm font-bold text-white hover:bg-primary-container/90 transition">
+                    Get Started
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+    const btn = document.getElementById('nav-user-dropdown-btn');
+    const menu = document.getElementById('nav-user-dropdown-menu');
+    if (!btn || !menu) return;
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menu.classList.toggle('hidden');
+    });
+    document.addEventListener('click', function() {
+        menu.classList.add('hidden');
+    });
+})();
+</script>
