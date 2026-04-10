@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}PxNN it{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&family=Geist+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined"
+        rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Manrope', 'sans-serif'],
+                        mono: ['Geist Mono', 'monospace'],
+                    },
+                    colors: {
+                        'primary-container': '#0052cc',
+                        'primary-fixed': '#dae2ff',
+                        'primary-fixed-dim': '#b2c5ff',
+                        'secondary': '#4c5d8d',
+                        'inverse-surface': '#233144',
+                        'inverse-on-surface': '#eaf1ff',
+                        'surface-bright': '#f8f9ff',
+                        'surface-container-high': '#dce9ff',
+                        'on-secondary': '#ffffff',
+                        'outline': '#737685',
+                        'deep-slate': '#1a1f2e',
+                    },
+                    borderRadius: {
+                        '3xl': '1.5rem',
+                        '4xl': '2rem',
+                    },
+                },
+            },
+        };
+    </script>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-full font-sans text-deep-slate antialiased {% block body_class %}bg-surface-bright{% endblock %}">
+    {% block body %}{% endblock %}
+</body>
+</html>
