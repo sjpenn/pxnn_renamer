@@ -4,12 +4,16 @@ from typing import Optional
 from fastapi import Depends, FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from .core.config import settings
 from .core.pricing import get_payment_options
-from .core.security import get_current_user_optional, serialize_user
+from .core.security import (
+    get_current_user_optional,
+    serialize_user,
+    set_pending_plan,
+)
 from .database.bootstrap import bootstrap_database
 from .database.models import User
 from .routes.auth import router as auth_router
@@ -21,7 +25,7 @@ from .routes.wizard import router as wizard_router
 
 app = FastAPI(title="PxNN it")
 
-# SessionMiddleware required by authlib for OAuth state/nonce
+# SessionMiddleware required by authlib for OAuth state/nonce and pending plan storage
 app.add_middleware(SessionMiddleware, secret_key=settings.JWT_SECRET)
 
 # Setup Templates and Static Files
@@ -38,19 +42,103 @@ app.include_router(wizard_router)
 
 
 @app.get("/", response_class=HTMLResponse)
-async def root(
+async def home(
     request: Request,
     current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    if current_user:
+        return RedirectResponse(url="/app", status_code=303)
     return templates.TemplateResponse(
         request,
-        "index.html",
+        "home.html",
         {
-            "title": "PxNN it - Home",
+            "current_user": None,
+            "page": "home",
+            "payment_options": get_payment_options(),
+            "stripe_enabled": bool(settings.STRIPE_SECRET_KEY),
+            "google_oauth_enabled": bool(settings.GOOGLE_CLIENT_ID),
+        },
+    )
+
+
+@app.get("/app", response_class=HTMLResponse)
+async def workspace(
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    if current_user is None:
+        return RedirectResponse(url="/login", status_code=303)
+    return templates.TemplateResponse(
+        request,
+        "app.html",
+        {
+            "title": "PxNN it - Workspace",
+            "current_user": current_user,
+            "page": "app",
             "initial_user": serialize_user(current_user),
             "payment_options": get_payment_options(),
             "stripe_enabled": bool(settings.STRIPE_SECRET_KEY),
             "billing_notice": request.query_params.get("billing", ""),
+            "google_oauth_enabled": bool(settings.GOOGLE_CLIENT_ID),
+        },
+    )
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    if current_user:
+        return RedirectResponse(url="/app", status_code=303)
+    return templates.TemplateResponse(
+        request,
+        "auth/login.html",
+        {
+            "current_user": None,
+            "page": "login",
+            "google_oauth_enabled": bool(settings.GOOGLE_CLIENT_ID),
+        },
+    )
+
+
+@app.get("/register", response_class=HTMLResponse)
+async def register_page(
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    if current_user:
+        return RedirectResponse(url="/app", status_code=303)
+
+    plan_key = request.query_params.get("plan")
+    if plan_key:
+        set_pending_plan(request, plan_key)
+
+    return templates.TemplateResponse(
+        request,
+        "auth/register.html",
+        {
+            "current_user": None,
+            "page": "register",
+            "google_oauth_enabled": bool(settings.GOOGLE_CLIENT_ID),
+        },
+    )
+
+
+@app.get("/profile", response_class=HTMLResponse)
+async def profile_page(
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    if current_user is None:
+        return RedirectResponse(url="/login", status_code=303)
+    return templates.TemplateResponse(
+        request,
+        "profile.html",
+        {
+            "title": "Profile — PxNN it",
+            "current_user": current_user,
+            "page": "profile",
             "google_oauth_enabled": bool(settings.GOOGLE_CLIENT_ID),
         },
     )
