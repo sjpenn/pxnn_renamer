@@ -97,6 +97,6 @@ async def google_callback(
     user = _resolve_or_create_google_user(db, google_sub=google_sub, email=email)
 
     jwt_token = create_access_token(str(user.id))
-    response = RedirectResponse(url="/", status_code=303)
+    response = RedirectResponse(url="/app", status_code=303)
     set_auth_cookie(response, jwt_token)
     return response
