@@ -24,3 +24,18 @@ def test_app_hides_admin_link_for_non_admin(client, db):
     r = client.get("/app")
     assert r.status_code == 200
     assert 'href="/admin"' not in r.text
+
+
+def test_app_shows_ui_comment_widget_for_admin(client, db):
+    _login(client, db, is_admin=True)
+    r = client.get("/app")
+    assert r.status_code == 200
+    assert "ui-comment-widget" in r.text
+    assert "data-block-key=\"dropzone\"" in r.text
+
+
+def test_app_hides_ui_comment_widget_from_non_admin(client, db):
+    _login(client, db, is_admin=False)
+    r = client.get("/app")
+    assert r.status_code == 200
+    assert "ui-comment-widget" not in r.text

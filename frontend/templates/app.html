@@ -107,7 +107,8 @@
             <div class="flex-1 p-4 sm:p-6 lg:p-8">
                 <div class="mx-auto max-w-6xl space-y-6 sm:space-y-8">
 
-                <div class="rounded-xl border border-hairline bg-stage-raised p-8 ">
+                <div class="rounded-xl border border-hairline bg-stage-raised p-8 relative">
+                    {% with block_key="step-1-stage-files", block_label="Step 1 · Stage Files" %}{% include "partials/ui_comment_widget.html" %}{% endwith %}
                     <div class="flex items-start justify-between border-b border-hairline pb-6">
                         <div class="space-y-1">
                             <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; WORKSPACE</p>
@@ -130,7 +131,7 @@
                                 </p>
                             </div>
 
-                            <div class="dropzone p-12 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
+                            <div class="dropzone p-12 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan relative"
                                  id="dropzone"
                                  role="button"
                                  tabindex="0"
@@ -141,6 +142,7 @@
                                     <p class="mt-1 text-sm text-ink-dim">or <span class="text-cyan font-medium underline underline-offset-2">click to browse</span></p>
                                     <p class="mt-2 text-[11px] font-mono uppercase tracking-widest text-ink-dim">&gt; MP3 · WAV · AIFF · FLAC</p>
                                 </div>
+                                {% with block_key="dropzone", block_label="Dropzone" %}{% include "partials/ui_comment_widget.html" %}{% endwith %}
                                 <input type="file" id="file-input" multiple class="hidden" accept=".wav,.mp3,.aif,.aiff,.flac">
                             </div>
 
@@ -156,7 +158,8 @@
                         </section>
 
                         <!-- Step 2: Metadata Definition -->
-                        <section class="wizard-panel hidden space-y-8" data-step-panel="2">
+                        <section class="wizard-panel hidden space-y-8 relative" data-step-panel="2">
+                            {% with block_key="step-2-metadata", block_label="Step 2 · Metadata" %}{% include "partials/ui_comment_widget.html" %}{% endwith %}
                             <div class="space-y-2">
                                 <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; STEP 02 · RULE BUILDER</p>
                                 <h3 class="text-2xl font-display font-extrabold text-ink">Define Metadata Rules</h3>
@@ -265,7 +268,8 @@
                         </section>
 
                         <!-- Step 3: Review & Download -->
-                        <section class="wizard-panel hidden space-y-8" data-step-panel="3">
+                        <section class="wizard-panel hidden space-y-8 relative" data-step-panel="3">
+                            {% with block_key="step-3-export", block_label="Step 3 · Export" %}{% include "partials/ui_comment_widget.html" %}{% endwith %}
                             <div class="space-y-2">
                                 <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; STEP 03 · COMMIT BATCH</p>
                                 <h3 class="text-2xl font-display font-extrabold text-ink">Final Review & Export</h3>
@@ -318,7 +322,8 @@
                             </div>
                         </section>
 
-                        <div class="pt-12 border-t border-hairline hidden md:block">
+                        <div class="pt-12 border-t border-hairline hidden md:block relative">
+                            {% with block_key="workspace-overview", block_label="Workspace Overview" %}{% include "partials/ui_comment_widget.html" %}{% endwith %}
                             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-rail text-ink-dim mb-4">
                                 <span class="material-symbols-outlined">analytics</span>
                             </div>
@@ -402,7 +407,8 @@
 
                         <!-- Content Panels -->
                         <div class="grid gap-6 xl:grid-cols-2 pb-12">
-                            <div class="rounded-xl border border-hairline bg-stage-raised p-6">
+                            <div class="rounded-xl border border-hairline bg-stage-raised p-6 relative">
+                                {% with block_key="rename-batches", block_label="Rename Batches" %}{% include "partials/ui_comment_widget.html" %}{% endwith %}
                                 <div class="flex items-center justify-between mb-4">
                                     <h4 class="text-sm font-bold text-ink uppercase tracking-wider">Rename Batches</h4>
                                     <span id="batch-list-count" class="text-[10px] font-bold text-ink-dim opacity-50">0 ITEMS</span>
@@ -1529,6 +1535,84 @@
             });
         })();
     </script>
+{% if current_user and current_user.is_admin %}
+<script>
+(function() {
+  // UI Comment widget — fetch POST to /api/admin/ui-comments
+  function wireWidgets() {
+    document.querySelectorAll('.ui-comment-widget').forEach(function(widget) {
+      var toggle = widget.querySelector('.ui-comment-toggle');
+      var form = widget.querySelector('.ui-comment-form');
+      var cancel = widget.querySelector('.ui-comment-cancel');
+      var status = widget.querySelector('.ui-comment-status');
+
+      if (!toggle || !form) return;
+
+      toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        // Close any other open forms first
+        document.querySelectorAll('.ui-comment-form').forEach(function(f) {
+          if (f !== form) f.classList.add('hidden');
+        });
+        form.classList.toggle('hidden');
+      });
+
+      if (cancel) {
+        cancel.addEventListener('click', function() {
+          form.classList.add('hidden');
+          status.textContent = '';
+        });
+      }
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var body = form.querySelector('textarea[name="body"]').value.trim();
+        if (!body) return;
+        var fd = new FormData();
+        fd.set('block_key', form.dataset.blockKey);
+        fd.set('page_path', form.dataset.pagePath || location.pathname);
+        fd.set('body', body);
+        status.textContent = 'Saving…';
+        try {
+          var r = await fetch('/api/admin/ui-comments', {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: fd
+          });
+          if (r.status === 204) {
+            status.textContent = 'Saved ✓';
+            form.querySelector('textarea[name="body"]').value = '';
+            setTimeout(function() {
+              form.classList.add('hidden');
+              status.textContent = '';
+            }, 900);
+          } else {
+            status.textContent = 'Error (' + r.status + ')';
+          }
+        } catch (err) {
+          status.textContent = 'Network error';
+        }
+      });
+    });
+  }
+
+  // Close forms when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.ui-comment-widget')) {
+      document.querySelectorAll('.ui-comment-form').forEach(function(f) {
+        f.classList.add('hidden');
+      });
+    }
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wireWidgets);
+  } else {
+    wireWidgets();
+  }
+})();
+</script>
+{% endif %}
 <script>
 (function() {
   var HEARTBEAT_URL = '/api/session/heartbeat';
