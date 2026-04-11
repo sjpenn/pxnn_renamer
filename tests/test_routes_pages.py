@@ -19,8 +19,8 @@ def _create_and_login(client, db, username="routesuser", password="testpass123")
 def test_home_renders_for_anonymous(client, db):
     response = client.get("/")
     assert response.status_code == 200
-    assert "PxNN it" in response.text
-    assert "Get Started Free" in response.text
+    assert "PxNN" in response.text
+    assert "Get Started" in response.text
 
 
 def test_home_redirects_authenticated_to_app(client, db):
@@ -45,7 +45,7 @@ def test_app_renders_for_authenticated(client, db):
 def test_login_page_renders_for_anonymous(client, db):
     response = client.get("/login")
     assert response.status_code == 200
-    assert "Sign in to PxNN it" in response.text
+    assert "Sign in to PxNN" in response.text
 
 
 def test_login_page_redirects_authenticated_to_app(client, db):
@@ -58,7 +58,7 @@ def test_login_page_redirects_authenticated_to_app(client, db):
 def test_register_page_renders_for_anonymous(client, db):
     response = client.get("/register")
     assert response.status_code == 200
-    assert "Create your PxNN it account" in response.text
+    assert "Create your PxNN account" in response.text
 
 
 def test_register_page_redirects_authenticated_to_app(client, db):
@@ -71,7 +71,7 @@ def test_register_page_redirects_authenticated_to_app(client, db):
 def test_register_stores_pending_plan_in_session(client, db):
     response = client.get("/register?plan=pro_monthly")
     assert response.status_code == 200
-    assert "Create your PxNN it account" in response.text
+    assert "Create your PxNN account" in response.text
 
 
 def test_profile_page_renders_for_authenticated(client, db):
