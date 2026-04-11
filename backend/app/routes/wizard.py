@@ -817,7 +817,12 @@ async def download_archive(
     collection = _get_user_collection(db, current_user.id, session_id)
     if not metadata.get("preview"):
         raise HTTPException(status_code=400, detail="Generate a rename preview first.")
-    if collection.download_count == 0 and current_user.credit_balance <= 0:
+    from ..core.security import has_unlimited_access
+    if (
+        collection.download_count == 0
+        and current_user.credit_balance <= 0
+        and not has_unlimited_access(current_user)
+    ):
         raise HTTPException(
             status_code=402,
             detail="You need at least 1 download credit before exporting this batch.",

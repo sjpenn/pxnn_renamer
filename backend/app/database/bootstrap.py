@@ -47,6 +47,7 @@ def bootstrap_database() -> None:
 
     # Users — admin flag
     _ensure_column("users", "is_admin", "ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE")
+    _ensure_column("users", "is_testing", "ALTER TABLE users ADD COLUMN is_testing BOOLEAN DEFAULT FALSE")
 
     # Make password_hash nullable on existing PostgreSQL deployments
     _run_ddl_safe("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL")
