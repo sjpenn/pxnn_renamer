@@ -5,6 +5,7 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, RedirectResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from .core.config import settings
@@ -24,6 +25,26 @@ from .routes.profile import router as profile_router
 from .routes.wizard import router as wizard_router
 
 app = FastAPI(title="PxNN it")
+
+
+class NoCacheHTMLMiddleware(BaseHTTPMiddleware):
+    """Prevent browsers from caching HTML pages so template/style changes deploy instantly.
+
+    Static assets under /static (with query-string versioning) can still be cached
+    because we pass them through untouched.
+    """
+
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        content_type = response.headers.get("content-type", "")
+        if content_type.startswith("text/html"):
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
+
+
+app.add_middleware(NoCacheHTMLMiddleware)
 
 # SessionMiddleware required by authlib for OAuth state/nonce and pending plan storage
 app.add_middleware(SessionMiddleware, secret_key=settings.JWT_SECRET)
