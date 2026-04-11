@@ -1,0 +1,63 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="flex items-center justify-between">
+  <h1 class="text-2xl font-display font-semibold text-ink">Users</h1>
+  <form method="get" action="/admin/users" class="flex items-center gap-2">
+    <input name="q" value="{{ q }}" placeholder="Search by username or email"
+           class="bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink w-72" />
+    <button type="submit"
+            class="px-3 py-2 bg-cyan text-stage rounded font-medium text-sm">Search</button>
+  </form>
+</div>
+
+<section class="bg-stage-raised border border-hairline rounded-xl overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="text-ink-dim text-xs uppercase tracking-wider">
+      <tr class="border-b border-hairline">
+        <th class="text-left px-4 py-3">User</th>
+        <th class="text-left px-4 py-3">Plan</th>
+        <th class="text-right px-4 py-3">Credits</th>
+        <th class="text-center px-4 py-3">Testing</th>
+        <th class="text-left px-4 py-3">Grant credits</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-hairline">
+      {% for u in users %}
+      <tr>
+        <td class="px-4 py-3">
+          <div class="text-ink">{{ u.username }}</div>
+          <div class="text-ink-mute text-xs">{{ u.email or '—' }}</div>
+        </td>
+        <td class="px-4 py-3">
+          <span class="text-ink-dim">{{ u.active_plan or 'free' }}</span>
+          <span class="text-ink-mute text-xs ml-1">({{ u.plan_status or 'inactive' }})</span>
+        </td>
+        <td class="px-4 py-3 text-right text-ink">{{ u.credit_balance }}</td>
+        <td class="px-4 py-3 text-center">
+          <form method="post" action="/admin/users/{{ u.id }}/testing" class="inline">
+            <button type="submit"
+                    class="text-xs px-2 py-1 rounded border {% if u.is_testing %}border-success text-success{% else %}border-hairline text-ink-mute hover:text-ink{% endif %}">
+              {% if u.is_testing %}ON{% else %}off{% endif %}
+            </button>
+          </form>
+        </td>
+        <td class="px-4 py-3">
+          <form method="post" action="/admin/users/{{ u.id }}/credits"
+                class="flex items-center gap-2">
+            <input type="number" name="amount" min="1" value="10"
+                   class="bg-stage-sunken border border-hairline rounded px-2 py-1 text-sm text-ink w-20" />
+            <button type="submit"
+                    class="text-xs px-3 py-1 bg-cyan text-stage rounded font-medium">
+              + credits
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="px-4 py-6 text-center text-ink-mute">No users match.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

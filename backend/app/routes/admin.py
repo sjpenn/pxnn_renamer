@@ -1,12 +1,14 @@
+import json
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, Request
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..core.security import require_admin
-from ..database.models import User
+from ..database.models import ActivityLog, User
 from ..database.session import get_db
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
@@ -30,3 +32,95 @@ async def admin_dashboard(
             "title": "Admin · PxNN",
         },
     )
+
+
+@router.get("/users", response_class=HTMLResponse)
+async def admin_users_page(
+    request: Request,
+    q: str = "",
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    query = db.query(User).order_by(User.created_at.desc())
+    search = (q or "").strip()
+    if search:
+        like = f"%{search}%"
+        query = query.filter(
+            or_(User.username.ilike(like), User.email.ilike(like))
+        )
+    users = query.limit(200).all()
+    return templates.TemplateResponse(
+        request,
+        "admin/users.html",
+        {
+            "current_user": admin,
+            "users": users,
+            "q": search,
+            "title": "Users · PxNN Admin",
+        },
+    )
+
+
+@router.post("/users/{user_id}/credits")
+async def admin_grant_credits(
+    user_id: int,
+    amount: int = Form(...),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    if amount <= 0:
+        raise HTTPException(status_code=400, detail="Amount must be positive.")
+
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    previous = target.credit_balance
+    target.credit_balance = previous + amount
+    db.add(
+        ActivityLog(
+            user_id=target.id,
+            event_type="admin_credit_grant",
+            summary=f"Admin granted {amount} credits",
+            details_json=json.dumps(
+                {
+                    "granted_by_admin_id": admin.id,
+                    "granted_by_email": admin.email,
+                    "amount": amount,
+                    "previous_balance": previous,
+                    "new_balance": target.credit_balance,
+                }
+            ),
+        )
+    )
+    db.commit()
+    return RedirectResponse(url="/admin/users", status_code=303)
+
+
+@router.post("/users/{user_id}/testing")
+async def admin_toggle_testing(
+    user_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    target.is_testing = not bool(target.is_testing)
+    db.add(
+        ActivityLog(
+            user_id=target.id,
+            event_type="admin_testing_toggled",
+            summary=f"Testing mode {'enabled' if target.is_testing else 'disabled'}",
+            details_json=json.dumps(
+                {
+                    "toggled_by_admin_id": admin.id,
+                    "toggled_by_email": admin.email,
+                    "new_value": bool(target.is_testing),
+                }
+            ),
+        )
+    )
+    db.commit()
+    return RedirectResponse(url="/admin/users", status_code=303)
