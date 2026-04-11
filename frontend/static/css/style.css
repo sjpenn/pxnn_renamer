@@ -171,6 +171,8 @@ body > * { position: relative; z-index: 1; }
   border-radius: 1.25rem;
 }
 .hero-photo__img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
