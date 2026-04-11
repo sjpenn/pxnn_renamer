@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}PxNN it — Bulk audio file renamer for producers & labels{% endblock %}
+{% block title %}PxNN — Filename studio for hip hop & soul producers{% endblock %}
 
 {% block body %}
 {% include "partials/nav.html" %}
@@ -16,18 +16,19 @@
         {% include "partials/svg/spectrogram_grid.html" %}
     </div>
 
-    <div class="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-24 md:py-32 text-center">
-        <p class="text-[11px] font-mono font-medium uppercase tracking-[0.2em] text-cyan mb-5">&gt; BULK AUDIO FILE RENAMER</p>
-        <h1 class="font-display font-extrabold text-4xl md:text-6xl leading-tight text-ink">
-            Stop drowning in<br>
-            <span class="font-mono text-2xl md:text-4xl text-danger line-through opacity-90">"track_final_v2.wav"</span>
+    <div class="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-20 sm:py-24 md:py-32 text-center">
+        <p class="text-[11px] font-mono font-medium uppercase tracking-[0.2em] text-cyan mb-5">&gt; FILENAME STUDIO · HIP HOP &amp; SOUL</p>
+        <h1 class="font-display font-extrabold text-4xl sm:text-5xl md:text-6xl leading-[1.05] text-ink">
+            Name your beats<br>
+            <span class="text-cyan">like a label.</span>
         </h1>
-        <p class="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-ink-dim">
-            PxNN renames hundreds of audio files at once with clean, consistent, metadata-rich filenames.
+        <p class="mt-6 max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-ink-dim">
+            From MPC sessions to final masters, PxNN gives every beat the filename it deserves.
+            Batch-rename hundreds of tracks in seconds — built for beatmakers, crate diggers, and soul producers.
         </p>
-        <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <div class="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4">
             <a href="/register" class="btn btn-primary px-6 py-3">
-                Get Started Free
+                Start for free
             </a>
             <a href="#how-it-works" class="btn btn-ghost px-6 py-3">
                 See how it works
@@ -38,19 +39,19 @@
         <div class="mt-14 mx-auto max-w-2xl card">
             <div class="filename-stack">
                 <div class="filename-pair">
-                    <div class="filename-before">track_final_v2_FIX (1).wav</div>
+                    <div class="filename-before">beat_final_v2_FIX (1).wav</div>
                     <div class="filename-arrow material-symbols-outlined">arrow_downward</div>
-                    <div class="filename-after">JuneLake_Nightfall_Cmin_128BPM_2026.wav</div>
+                    <div class="filename-after">SoulSkies_LateNight_Amin_78BPM.wav</div>
                 </div>
                 <div class="filename-pair">
-                    <div class="filename-before">beat ideas 03 FULL.wav</div>
+                    <div class="filename-before">mpc session 03 FULL.wav</div>
                     <div class="filename-arrow material-symbols-outlined">arrow_downward</div>
-                    <div class="filename-after">JuneLake_Sunset_Amin_90BPM_2026.wav</div>
+                    <div class="filename-after">Dusty45_MidnightBloom_Dmin_84BPM.wav</div>
                 </div>
                 <div class="filename-pair">
-                    <div class="filename-before">Untitled Project 14.aif</div>
+                    <div class="filename-before">Untitled Beat 14.aif</div>
                     <div class="filename-arrow material-symbols-outlined">arrow_downward</div>
-                    <div class="filename-after">JuneLake_HorizonLine_Gmaj_120BPM_2026.aif</div>
+                    <div class="filename-after">WaxChapel_GoldChain_Ebmin_94BPM.aif</div>
                 </div>
             </div>
         </div>
@@ -58,67 +59,86 @@
 </section>
 
 {# ============================ PROBLEM ============================ #}
-<section id="problem" class="py-20 bg-stage">
+<section id="problem" class="py-16 sm:py-20 bg-stage">
     <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <article class="reveal-on-scroll card feature-card">
+        <div class="text-center mb-10 sm:mb-14">
+            <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; THE REAL PROBLEM</p>
+            <h2 class="mt-2 font-display font-extrabold text-3xl sm:text-4xl text-ink">Your beats deserve better filenames.</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+            <article class="reveal-on-scroll card feature-card relative overflow-hidden">
                 <span class="material-symbols-outlined text-4xl text-cyan">music_note</span>
-                <h2 class="mt-4 font-display font-bold text-2xl text-ink">Beat makers: every session is a mess</h2>
-                <ul class="mt-4 space-y-3 text-ink-dim">
-                    <li class="flex gap-3"><span class="text-danger">&bull;</span> Downloads folder full of "beat1.wav", "beat1_FINAL.wav", "beat1_FINAL_REAL.wav"</li>
-                    <li class="flex gap-3"><span class="text-danger">&bull;</span> Clients demand specific naming formats for every delivery</li>
-                    <li class="flex gap-3"><span class="text-danger">&bull;</span> Can't find last month's session when you need it</li>
+                <h3 class="mt-4 font-display font-bold text-2xl text-ink">Beatmakers: every session is chaos</h3>
+                <ul class="mt-4 space-y-3 text-ink-dim text-sm sm:text-base">
+                    <li class="flex gap-3"><span class="text-danger">&bull;</span> Downloads folder full of <span class="font-mono text-ink-dim">beat1.wav</span>, <span class="font-mono text-ink-dim">beat1_FINAL.wav</span>, <span class="font-mono text-ink-dim">beat1_FINAL_REAL.wav</span></li>
+                    <li class="flex gap-3"><span class="text-danger">&bull;</span> Every artist you sell beats to wants a different naming format</li>
+                    <li class="flex gap-3"><span class="text-danger">&bull;</span> Can't find that one joint from last month's MPC session when you need it</li>
                 </ul>
             </article>
-            <article class="reveal-on-scroll card feature-card">
-                <span class="material-symbols-outlined text-4xl text-cyan">album</span>
-                <h2 class="mt-4 font-display font-bold text-2xl text-ink">Labels: 500 demos a week, zero consistency</h2>
-                <ul class="mt-4 space-y-3 text-ink-dim">
-                    <li class="flex gap-3"><span class="text-danger">&bull;</span> Artists submit with inconsistent or missing metadata</li>
-                    <li class="flex gap-3"><span class="text-danger">&bull;</span> Manual rename takes 2 hours per batch, every batch</li>
-                    <li class="flex gap-3"><span class="text-danger">&bull;</span> Lost track of which version of which song from which artist</li>
-                </ul>
+            <article class="reveal-on-scroll card feature-card relative overflow-hidden">
+                <div class="absolute right-0 top-0 h-full w-2/5 opacity-20 pointer-events-none">
+                    <img src="/static/img/hero/vinyl-crate.jpg" alt="" class="h-full w-full object-cover" loading="lazy">
+                    <div class="absolute inset-0" style="background: linear-gradient(90deg, #13151c 0%, transparent 60%);"></div>
+                </div>
+                <div class="relative">
+                    <span class="material-symbols-outlined text-4xl text-cyan">album</span>
+                    <h3 class="mt-4 font-display font-bold text-2xl text-ink">Labels: 500 demos a week, zero consistency</h3>
+                    <ul class="mt-4 space-y-3 text-ink-dim text-sm sm:text-base">
+                        <li class="flex gap-3"><span class="text-danger">&bull;</span> Artists submit with inconsistent or missing metadata</li>
+                        <li class="flex gap-3"><span class="text-danger">&bull;</span> Manual rename takes 2 hours per batch, every batch</li>
+                        <li class="flex gap-3"><span class="text-danger">&bull;</span> Lost track of which version of which song from which artist</li>
+                    </ul>
+                </div>
             </article>
         </div>
     </div>
 </section>
 
 {# ============================ HOW IT WORKS ============================ #}
-<section id="how-it-works" class="py-20 bg-stage-raised">
+<section id="how-it-works" class="py-16 sm:py-20 bg-stage-raised">
     <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="font-display font-extrabold text-3xl md:text-4xl text-ink">How it works</h2>
-        <p class="mt-3 text-lg text-ink-dim">Three steps. Batch-renamed in seconds.</p>
-        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; THREE STEPS</p>
+        <h2 class="mt-2 font-display font-extrabold text-3xl md:text-4xl text-ink">From messy export to label-ready</h2>
+        <p class="mt-3 text-base sm:text-lg text-ink-dim">Drop, define, deliver. Seconds — not an afternoon.</p>
+        <div class="mt-10 sm:mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
             <article class="reveal-on-scroll card card-hover feature-card text-left">
                 <div class="font-display font-extrabold text-5xl text-cyan/80">01</div>
                 <div class="mt-2 text-cyan h-4">{% include "partials/svg/eq_bars.html" %}</div>
                 <span class="mt-6 material-symbols-outlined text-5xl text-cyan">upload_file</span>
-                <h3 class="mt-4 font-display font-bold text-xl text-ink">Upload</h3>
-                <p class="mt-2 text-ink-dim">Drag &amp; drop your audio files</p>
+                <h3 class="mt-4 font-display font-bold text-xl text-ink">Drop your session</h3>
+                <p class="mt-2 text-ink-dim">Drag your MPC export, stems folder, or beat pack — WAV, MP3, AIFF, FLAC.</p>
             </article>
             <article class="reveal-on-scroll card card-hover feature-card text-left">
                 <div class="font-display font-extrabold text-5xl text-cyan/80">02</div>
                 <div class="mt-2 text-cyan h-4">{% include "partials/svg/eq_bars.html" %}</div>
                 <span class="mt-6 material-symbols-outlined text-5xl text-cyan">tune</span>
-                <h3 class="mt-4 font-display font-bold text-xl text-ink">Define</h3>
-                <p class="mt-2 text-ink-dim">Set your format template</p>
+                <h3 class="mt-4 font-display font-bold text-xl text-ink">Set the format</h3>
+                <p class="mt-2 text-ink-dim">Build your template: <code class="font-mono text-xs text-cyan">{ARTIST}_{TITLE}_{KEY}_{BPM}</code></p>
             </article>
             <article class="reveal-on-scroll card card-hover feature-card text-left">
                 <div class="font-display font-extrabold text-5xl text-cyan/80">03</div>
                 <div class="mt-2 text-cyan h-4">{% include "partials/svg/eq_bars.html" %}</div>
                 <span class="mt-6 material-symbols-outlined text-5xl text-cyan">download</span>
-                <h3 class="mt-4 font-display font-bold text-xl text-ink">Export</h3>
-                <p class="mt-2 text-ink-dim">Download your renamed archive</p>
+                <h3 class="mt-4 font-display font-bold text-xl text-ink">Ship the archive</h3>
+                <p class="mt-2 text-ink-dim">Download a clean ZIP. Ready for the label, the client, or your DAW.</p>
             </article>
         </div>
     </div>
 </section>
 
 {# ============================ LIVE EXAMPLE ============================ #}
-<section class="py-20 bg-stage">
-    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <h2 class="text-center font-display font-extrabold text-3xl md:text-4xl text-ink">See it in action</h2>
-        <p class="mt-3 text-center text-lg text-ink-dim">Real examples from a real batch</p>
+<section class="relative py-16 sm:py-20 bg-stage overflow-hidden">
+    {# Piano keys accent at far right on desktop #}
+    <div class="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-[280px] h-[280px] opacity-15 pointer-events-none">
+        <img src="/static/img/hero/piano-keys.jpg" alt="" class="h-full w-full object-cover rounded-l-3xl" loading="lazy">
+        <div class="absolute inset-0 rounded-l-3xl" style="background: linear-gradient(90deg, #0a0b0f 0%, transparent 80%);"></div>
+    </div>
+    <div class="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; BEFORE / AFTER</p>
+            <h2 class="mt-2 font-display font-extrabold text-3xl md:text-4xl text-ink">See it on a real batch</h2>
+            <p class="mt-3 text-base sm:text-lg text-ink-dim">Pulled from a real beatmaker's export folder.</p>
+        </div>
         <div class="relative mt-10 card-inset overflow-hidden p-0">
             <div class="absolute inset-x-0 bottom-0 text-cyan opacity-[0.08] pointer-events-none">
                 {% include "partials/svg/waveform_line.html" %}
@@ -129,24 +149,24 @@
             </div>
             <div class="relative divide-y divide-hairline">
                 <div class="reveal-on-scroll grid grid-cols-2 divide-x divide-hairline">
-                    <div class="p-4 font-mono text-sm text-danger line-through opacity-80">track_final_v2 (1).wav</div>
-                    <div class="p-4 font-mono text-sm text-success font-semibold">JuneLake_Nightfall_Cmin_128BPM.wav</div>
+                    <div class="p-3 sm:p-4 font-mono text-xs sm:text-sm text-danger line-through opacity-80 break-all">track_final_v2 (1).wav</div>
+                    <div class="p-3 sm:p-4 font-mono text-xs sm:text-sm text-success font-semibold break-all">SoulSkies_LateNight_Amin_78BPM.wav</div>
                 </div>
                 <div class="reveal-on-scroll grid grid-cols-2 divide-x divide-hairline">
-                    <div class="p-4 font-mono text-sm text-danger line-through opacity-80">beat ideas 03 FULL.wav</div>
-                    <div class="p-4 font-mono text-sm text-success font-semibold">JuneLake_Sunset_Amin_90BPM.wav</div>
+                    <div class="p-3 sm:p-4 font-mono text-xs sm:text-sm text-danger line-through opacity-80 break-all">mpc session 03 FULL.wav</div>
+                    <div class="p-3 sm:p-4 font-mono text-xs sm:text-sm text-success font-semibold break-all">Dusty45_MidnightBloom_Dmin_84BPM.wav</div>
                 </div>
                 <div class="reveal-on-scroll grid grid-cols-2 divide-x divide-hairline">
-                    <div class="p-4 font-mono text-sm text-danger line-through opacity-80">Untitled Project 14.aif</div>
-                    <div class="p-4 font-mono text-sm text-success font-semibold">JuneLake_HorizonLine_Gmaj_120BPM.aif</div>
+                    <div class="p-3 sm:p-4 font-mono text-xs sm:text-sm text-danger line-through opacity-80 break-all">Untitled Beat 14.aif</div>
+                    <div class="p-3 sm:p-4 font-mono text-xs sm:text-sm text-success font-semibold break-all">WaxChapel_GoldChain_Ebmin_94BPM.aif</div>
                 </div>
                 <div class="reveal-on-scroll grid grid-cols-2 divide-x divide-hairline">
-                    <div class="p-4 font-mono text-sm text-danger line-through opacity-80">mix_master_real_final.mp3</div>
-                    <div class="p-4 font-mono text-sm text-success font-semibold">JuneLake_MidnightDrive_Dmin_140BPM.mp3</div>
+                    <div class="p-3 sm:p-4 font-mono text-xs sm:text-sm text-danger line-through opacity-80 break-all">mix master real final.mp3</div>
+                    <div class="p-3 sm:p-4 font-mono text-xs sm:text-sm text-success font-semibold break-all">NorthernLights_88Keys_Fmin_72BPM.mp3</div>
                 </div>
                 <div class="reveal-on-scroll grid grid-cols-2 divide-x divide-hairline">
-                    <div class="p-4 font-mono text-sm text-danger line-through opacity-80">nev song.wav</div>
-                    <div class="p-4 font-mono text-sm text-success font-semibold">JuneLake_FirstLight_Emaj_110BPM.wav</div>
+                    <div class="p-3 sm:p-4 font-mono text-xs sm:text-sm text-danger line-through opacity-80 break-all">new sample idea.wav</div>
+                    <div class="p-3 sm:p-4 font-mono text-xs sm:text-sm text-success font-semibold break-all">RhodesLoop_Sunday_Gmaj_68BPM.wav</div>
                 </div>
             </div>
         </div>
@@ -154,63 +174,74 @@
 </section>
 
 {# ============================ FEATURES ============================ #}
-<section id="features" class="py-20 bg-stage-raised">
-    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <h2 class="text-center font-display font-extrabold text-3xl md:text-4xl text-ink">Everything you need</h2>
-        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+<section id="features" class="relative py-16 sm:py-20 bg-stage-raised overflow-hidden">
+    {# Retro mic accent top-right on desktop #}
+    <div class="hidden lg:block absolute -right-20 -top-20 w-[320px] h-[320px] opacity-20 pointer-events-none">
+        <img src="/static/img/hero/retro-mic.jpg" alt="" class="h-full w-full object-cover rounded-full" loading="lazy">
+        <div class="absolute inset-0 rounded-full" style="background: radial-gradient(circle, transparent 40%, #13151c 80%);"></div>
+    </div>
+    <div class="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; EVERYTHING IN THE BOOTH</p>
+            <h2 class="mt-2 font-display font-extrabold text-3xl md:text-4xl text-ink">Built for the way you work</h2>
+        </div>
+        <div class="mt-10 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <article class="reveal-on-scroll card card-hover feature-card">
                 <div class="inline-flex h-12 w-12 items-center justify-center card-inset p-0">
                     <span class="material-symbols-outlined text-3xl text-cyan">bolt</span>
                 </div>
                 <h3 class="mt-4 font-display font-bold text-lg text-ink">Lightning fast</h3>
-                <p class="mt-2 text-sm text-ink-dim">Rename hundreds of files in seconds, not hours</p>
+                <p class="mt-2 text-sm text-ink-dim">500-file beat pack? Done before your coffee gets cold.</p>
             </article>
             <article class="reveal-on-scroll card card-hover feature-card">
                 <div class="inline-flex h-12 w-12 items-center justify-center card-inset p-0">
                     <span class="material-symbols-outlined text-3xl text-cyan">tune</span>
                 </div>
-                <h3 class="mt-4 font-display font-bold text-lg text-ink">Flexible templates</h3>
-                <p class="mt-2 text-sm text-ink-dim"><code class="font-mono text-xs text-cyan">{ARTIST}_{TITLE}_{KEY}_{BPM}</code> — build any format</p>
+                <h3 class="mt-4 font-display font-bold text-lg text-ink">Any naming format</h3>
+                <p class="mt-2 text-sm text-ink-dim"><code class="font-mono text-xs text-cyan">{ARTIST}_{TITLE}_{KEY}_{BPM}</code> — or whatever the label wants.</p>
             </article>
             <article class="reveal-on-scroll card card-hover feature-card">
                 <div class="inline-flex h-12 w-12 items-center justify-center card-inset p-0">
                     <span class="material-symbols-outlined text-3xl text-cyan">auto_fix_high</span>
                 </div>
-                <h3 class="mt-4 font-display font-bold text-lg text-ink">Precision cleanup</h3>
-                <p class="mt-2 text-sm text-ink-dim">Strip version tags, fix casing, normalize spaces automatically</p>
+                <h3 class="mt-4 font-display font-bold text-lg text-ink">Auto cleanup</h3>
+                <p class="mt-2 text-sm text-ink-dim">Strips <span class="font-mono text-ink-dim">FINAL</span>, <span class="font-mono text-ink-dim">v2</span>, <span class="font-mono text-ink-dim">(1)</span> — fixes casing and spaces without breaking a sweat.</p>
             </article>
             <article class="reveal-on-scroll card card-hover feature-card">
                 <div class="inline-flex h-12 w-12 items-center justify-center card-inset p-0">
-                    <span class="material-symbols-outlined text-3xl text-cyan">music_note</span>
+                    <span class="material-symbols-outlined text-3xl text-cyan">graphic_eq</span>
                 </div>
-                <h3 class="mt-4 font-display font-bold text-lg text-ink">All major formats</h3>
-                <p class="mt-2 text-sm text-ink-dim">WAV, MP3, AIFF, FLAC — every format you actually use</p>
+                <h3 class="mt-4 font-display font-bold text-lg text-ink">All formats</h3>
+                <p class="mt-2 text-sm text-ink-dim">WAV, MP3, AIFF, FLAC — every format from the MPC, the MacBook, or the tape deck.</p>
             </article>
             <article class="reveal-on-scroll card card-hover feature-card">
                 <div class="inline-flex h-12 w-12 items-center justify-center card-inset p-0">
                     <span class="material-symbols-outlined text-3xl text-cyan">history</span>
                 </div>
                 <h3 class="mt-4 font-display font-bold text-lg text-ink">Batch history</h3>
-                <p class="mt-2 text-sm text-ink-dim">Every rename is logged. Revisit, re-export, never lose work</p>
+                <p class="mt-2 text-sm text-ink-dim">Every rename logged. Revisit last month's session, re-export the ZIP in one click.</p>
             </article>
             <article class="reveal-on-scroll card card-hover feature-card">
                 <div class="inline-flex h-12 w-12 items-center justify-center card-inset p-0">
                     <span class="material-symbols-outlined text-3xl text-cyan">lock</span>
                 </div>
                 <h3 class="mt-4 font-display font-bold text-lg text-ink">Private by default</h3>
-                <p class="mt-2 text-sm text-ink-dim">Your files are processed and deleted. Nothing is stored</p>
+                <p class="mt-2 text-sm text-ink-dim">Your beats are processed and wiped. Nothing gets stored, ever.</p>
             </article>
         </div>
     </div>
 </section>
 
 {# ============================ PRICING ============================ #}
-<section id="pricing" class="py-20 bg-stage">
+<section id="pricing" class="py-16 sm:py-20 bg-stage">
     <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <h2 class="text-center font-display font-extrabold text-3xl md:text-4xl text-ink">Simple pricing</h2>
-        <p class="mt-3 text-center text-lg text-ink-dim">Pay as you go, or subscribe for monthly credits</p>
+        <div class="text-center">
+            <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; PRICING</p>
+            <h2 class="mt-2 font-display font-extrabold text-3xl md:text-4xl text-ink">Pay per beat pack, or go unlimited</h2>
+            <p class="mt-3 text-base sm:text-lg text-ink-dim">No lock-in. Cancel anytime. Credits never expire.</p>
+        </div>
 
-        <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="mt-10 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for option in payment_options %}
             <article class="reveal-on-scroll card card-hover feature-card {% if option.plan_type == 'subscription' and option.recommended %}card-active{% endif %}">
                 <p class="text-[11px] font-mono font-medium uppercase tracking-widest text-cyan">{{ option.accent }}</p>
@@ -233,28 +264,38 @@
 
 {# ============================ STATS ============================ #}
 {# Note: These are hardcoded marketing placeholder numbers, not real data. #}
-<section class="relative py-16 bg-stage-sunken overflow-hidden">
+<section class="relative py-12 sm:py-16 bg-stage-sunken overflow-hidden">
+    {# Drumsticks photo accent on left on desktop #}
+    <div class="hidden md:block absolute left-0 top-0 h-full w-[280px] opacity-20 pointer-events-none">
+        <img src="/static/img/hero/drum-sticks.jpg" alt="" class="h-full w-full object-cover" loading="lazy">
+        <div class="absolute inset-0" style="background: linear-gradient(90deg, transparent 0%, #07080b 90%);"></div>
+    </div>
     <div class="absolute inset-x-0 bottom-0 text-cyan opacity-[0.08] pointer-events-none">
         {% include "partials/svg/waveform_line.html" %}
     </div>
-    <div class="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+    <div class="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 text-center">
         <div>
-            <div class="font-display font-extrabold text-5xl text-cyan" data-count-to="50000" data-count-suffix="+">0</div>
-            <p class="mt-2 text-[11px] font-mono uppercase tracking-widest text-ink-dim">Files renamed</p>
+            <div class="font-display font-extrabold text-4xl sm:text-5xl text-cyan" data-count-to="50000" data-count-suffix="+">0</div>
+            <p class="mt-2 text-[11px] font-mono uppercase tracking-widest text-ink-dim">Beats renamed</p>
         </div>
         <div>
-            <div class="font-display font-extrabold text-5xl text-ink">2.3s</div>
+            <div class="font-display font-extrabold text-4xl sm:text-5xl text-ink">2.3s</div>
             <p class="mt-2 text-[11px] font-mono uppercase tracking-widest text-ink-dim">Average per file</p>
         </div>
         <div>
-            <div class="font-display font-extrabold text-5xl text-cyan" data-count-to="99" data-count-suffix=".7%">0</div>
-            <p class="mt-2 text-[11px] font-mono uppercase tracking-widest text-ink-dim">Customer satisfaction</p>
+            <div class="font-display font-extrabold text-4xl sm:text-5xl text-cyan" data-count-to="99" data-count-suffix=".7%">0</div>
+            <p class="mt-2 text-[11px] font-mono uppercase tracking-widest text-ink-dim">Producer approval</p>
         </div>
     </div>
 </section>
 
 {# ============================ FINAL CTA ============================ #}
-<section class="relative py-24 bg-stage overflow-hidden">
+<section class="relative py-20 sm:py-24 bg-stage overflow-hidden">
+    {# Stage-rap photo as muted background #}
+    <div class="absolute inset-0 pointer-events-none">
+        <img src="/static/img/hero/stage-rap.jpg" alt="" class="h-full w-full object-cover opacity-25" loading="lazy">
+        <div class="absolute inset-0" style="background: linear-gradient(180deg, rgba(10,11,15,0.85) 0%, rgba(10,11,15,0.65) 50%, rgba(10,11,15,0.95) 100%);"></div>
+    </div>
     <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 text-cyan opacity-15 pointer-events-none">
         {% include "partials/svg/waveform_line.html" %}
     </div>
@@ -262,9 +303,10 @@
         {% include "partials/svg/waveform_line.html" %}
     </div>
     <div class="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink">Ready to stop fighting your filenames?</h2>
+        <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; READY?</p>
+        <h2 class="mt-3 font-display font-extrabold text-3xl sm:text-4xl md:text-5xl text-ink leading-tight">Give your beats<br>the filenames they deserve.</h2>
         <a href="/register" class="mt-10 btn btn-primary inline-flex text-base px-8 py-4">
-            Get Started Free — No card required
+            Start for free — No card required
         </a>
     </div>
 </section>
