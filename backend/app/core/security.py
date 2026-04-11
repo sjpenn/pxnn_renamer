@@ -110,6 +110,16 @@ def get_current_user(
     )
 
 
+def set_pending_plan(request: Request, plan_key: str) -> None:
+    """Store a plan key in the session for post-registration checkout redirect."""
+    request.session["pending_plan"] = plan_key
+
+
+def pop_pending_plan(request: Request) -> Optional[str]:
+    """Retrieve and clear the pending plan from the session."""
+    return request.session.pop("pending_plan", None)
+
+
 def require_admin(
     current_user: User = Depends(get_current_user),
 ) -> User:
@@ -120,13 +130,3 @@ def require_admin(
             detail="Admin access required.",
         )
     return current_user
-
-
-def set_pending_plan(request: Request, plan_key: str) -> None:
-    """Store a plan key in the session for post-registration checkout redirect."""
-    request.session["pending_plan"] = plan_key
-
-
-def pop_pending_plan(request: Request) -> Optional[str]:
-    """Retrieve and clear the pending plan from the session."""
-    return request.session.pop("pending_plan", None)

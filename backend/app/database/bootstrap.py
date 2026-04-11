@@ -38,15 +38,15 @@ def bootstrap_database() -> None:
     _ensure_column("users", "active_plan", "ALTER TABLE users ADD COLUMN active_plan TEXT DEFAULT 'free'")
     _ensure_column("users", "plan_status", "ALTER TABLE users ADD COLUMN plan_status TEXT DEFAULT 'inactive'")
 
-    # Users — admin flag
-    _ensure_column("users", "is_admin", "ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE")
-
     # Users — new OAuth + subscription columns
     _ensure_column("users", "email", "ALTER TABLE users ADD COLUMN email TEXT")
     _ensure_column("users", "google_sub", "ALTER TABLE users ADD COLUMN google_sub TEXT")
     _ensure_column("users", "subscription_id", "ALTER TABLE users ADD COLUMN subscription_id TEXT")
     _ensure_column("users", "subscription_status", "ALTER TABLE users ADD COLUMN subscription_status TEXT")
     _ensure_column("users", "subscription_plan", "ALTER TABLE users ADD COLUMN subscription_plan TEXT")
+
+    # Users — admin flag
+    _ensure_column("users", "is_admin", "ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE")
 
     # Make password_hash nullable on existing PostgreSQL deployments
     _run_ddl_safe("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL")
