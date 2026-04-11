@@ -238,11 +238,11 @@
                                     </div>
                                 </div>
 
-                                <div class="rounded-2xl bg-cyan p-6 text-white ">
-                                    <p class="text-xs font-bold uppercase tracking-widest opacity-70 mb-3">Custom Strings</p>
-                                    <p class="text-xs leading-relaxed opacity-90 font-medium">
+                                <div class="rounded-2xl bg-cyan/10 border border-cyan/40 p-6 text-cyan">
+                                    <p class="text-xs font-bold uppercase tracking-widest opacity-80 mb-3">Custom Strings</p>
+                                    <p class="text-xs leading-relaxed text-ink-dim font-medium">
                                         You can mix tokens and freeform text like: <br>
-                                        <code class="mt-2 block bg-black/20 p-2 rounded font-mono text-[10px]">TITLE @ prodvaiii + @PRODUCERS</code>
+                                        <code class="mt-2 block bg-stage-sunken border border-hairline p-2 rounded font-mono text-[10px] text-cyan">TITLE @ prodvaiii + @PRODUCERS</code>
                                     </p>
                                 </div>
                             </div>
@@ -281,7 +281,7 @@
                             <div class="grid gap-6 md:grid-cols-2">
                                 <div class="rounded-xl bg-stage-sunken p-8 text-white shadow-glow-cyan">
                                     <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan mb-6">
-                                        <span class="material-symbols-outlined text-white">sim_card_download</span>
+                                        <span class="material-symbols-outlined text-stage">sim_card_download</span>
                                     </div>
                                     <p class="text-[10px] font-bold uppercase tracking-widest opacity-60">Export Ready</p>
                                     <p class="mt-2 font-display text-4xl font-bold" id="download-file-count">0 Files</p>
@@ -345,9 +345,9 @@
                                         <button id="logout-button" class="text-xs font-bold text-danger hover:text-danger">LOGOUT</button>
                                     </div>
                                     <div class="grid grid-cols-2 gap-3">
-                                        <div class="rounded-xl bg-cyan p-4 text-white">
-                                            <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">Power Credits</p>
-                                            <p id="auth-credit-balance" class="mt-1 text-2xl font-display font-bold">0</p>
+                                        <div class="rounded-xl bg-cyan/10 border border-cyan/40 p-4 text-cyan">
+                                            <p class="text-[10px] font-bold uppercase tracking-widest opacity-80">Power Credits</p>
+                                            <p id="auth-credit-balance" class="mt-1 text-2xl font-display font-bold text-ink">0</p>
                                         </div>
                                         <div class="rounded-xl bg-stage-raised border border-hairline p-4">
                                             <p class="text-[10px] font-bold uppercase tracking-widest text-ink-mute">Plan Status</p>
@@ -1043,7 +1043,7 @@
                             <p class="text-2xl font-display font-bold text-white">${priceLabel}</p>
                             <button
                                 type="button"
-                                class="mt-4 w-full rounded-xl bg-cyan py-2.5 text-[11px] font-bold uppercase tracking-widest text-white transition hover:bg-cyan/80 disabled:opacity-40 disabled:cursor-not-allowed"
+                                class="mt-4 w-full rounded-xl bg-cyan py-2.5 text-[11px] font-bold uppercase tracking-widest text-stage transition hover:bg-cyan/80 disabled:opacity-40 disabled:cursor-not-allowed"
                                 onclick="startCheckout('${escapeHtml(option.key)}')"
                                 ${disabled ? "disabled" : ""}
                             >
