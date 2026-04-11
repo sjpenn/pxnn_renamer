@@ -30,8 +30,8 @@
     {% for a in announcements %}
     <li class="py-3 flex items-center gap-3">
       <span class="w-64 truncate text-ink">{{ a.title }}</span>
-      <span class="w-24 text-xs text-ink-mute">{{ a.severity }}</span>
-      <span class="w-24 text-xs {% if a.is_published %}text-success{% else %}text-ink-mute{% endif %}">
+      <span class="w-24 text-xs text-ink-dim">{{ a.severity }}</span>
+      <span class="w-24 text-xs {% if a.is_published %}text-success{% else %}text-ink-dim{% endif %}">
         {{ 'published' if a.is_published else 'draft' }}
       </span>
       <form method="post" action="/admin/announcements/{{ a.id }}/publish">

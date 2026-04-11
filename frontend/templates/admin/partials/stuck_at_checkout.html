@@ -4,8 +4,8 @@
   <li class="py-2 flex items-center gap-3">
     <span class="text-ink w-40 truncate">{{ row.username }}</span>
     <span class="text-ink-dim w-56 truncate">{{ row.email }}</span>
-    <span class="text-ink-mute w-40">{{ row.last_stage }}</span>
-    <span class="text-ink-mute w-40">{{ row.last_stage_at.strftime('%Y-%m-%d %H:%M') if row.last_stage_at else '' }}</span>
+    <span class="text-ink-dim w-40">{{ row.last_stage }}</span>
+    <span class="text-ink-dim w-40">{{ row.last_stage_at.strftime('%Y-%m-%d %H:%M') if row.last_stage_at else '' }}</span>
     <button class="text-xs text-cyan hover:text-ink"
             onclick="navigator.clipboard.writeText('{{ row.email }}')">copy email</button>
   </li>

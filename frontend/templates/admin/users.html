@@ -27,11 +27,11 @@
       <tr>
         <td class="px-4 py-3">
           <div class="text-ink">{{ u.username }}</div>
-          <div class="text-ink-mute text-xs">{{ u.email or '—' }}</div>
+          <div class="text-ink-dim text-xs">{{ u.email or '—' }}</div>
         </td>
         <td class="px-4 py-3">
           <span class="text-ink-dim">{{ u.active_plan or 'free' }}</span>
-          <span class="text-ink-mute text-xs ml-1">({{ u.plan_status or 'inactive' }})</span>
+          <span class="text-ink-dim text-xs ml-1 opacity-80">({{ u.plan_status or 'inactive' }})</span>
         </td>
         <td class="px-4 py-3 text-right text-ink">{{ u.credit_balance }}</td>
         <td class="px-4 py-3 text-center">
