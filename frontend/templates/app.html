@@ -1517,4 +1517,33 @@
             });
         })();
     </script>
+<script>
+(function() {
+  var HEARTBEAT_URL = '/api/session/heartbeat';
+  var INTERVAL_MS = 60 * 1000;
+  var timer = null;
+
+  function ping() {
+    try {
+      fetch(HEARTBEAT_URL, { method: 'POST', credentials: 'same-origin', keepalive: true });
+    } catch (e) { /* best effort */ }
+  }
+
+  function start() {
+    if (timer) return;
+    ping();
+    timer = setInterval(ping, INTERVAL_MS);
+  }
+  function stop() {
+    if (timer) { clearInterval(timer); timer = null; }
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) { stop(); } else { start(); }
+  });
+
+  if (!document.hidden) start();
+  window.addEventListener('beforeunload', ping);
+})();
+</script>
 {% endblock %}

@@ -45,6 +45,9 @@
                         <a href="/app" class="sm:hidden block px-4 py-2 text-sm text-ink hover:bg-rail transition">Dashboard</a>
                         <a href="/app?billing=options" class="md:hidden block px-4 py-2 text-sm text-ink hover:bg-rail transition">Billing</a>
                         <a href="/profile" class="block px-4 py-2 text-sm text-ink hover:bg-rail transition">Profile</a>
+                        {% if current_user and current_user.is_admin %}
+                        <a href="/admin" class="block px-4 py-2 text-sm text-ink hover:bg-rail transition">Admin</a>
+                        {% endif %}
                         <div class="my-1 border-t border-hairline"></div>
                         <form method="post" action="/api/auth/logout" onsubmit="event.preventDefault(); fetch('/api/auth/logout', {method: 'POST'}).then(() => window.location.href = '/');">
                             <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-ink hover:bg-rail transition">
