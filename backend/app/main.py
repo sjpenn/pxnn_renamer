@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import Depends, FastAPI, Request
+from sqlalchemy.orm import Session
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -17,13 +18,16 @@ from .core.security import (
 )
 from .database.bootstrap import bootstrap_database
 from .database.models import User
+from .database.session import get_db
 from .routes.auth import router as auth_router
+from .routes.funnel import router as funnel_router
 from .routes.dashboard import router as dashboard_router
 from .routes.oauth import router as oauth_router
 from .routes.payments import router as payments_router
 from .routes.profile import router as profile_router
 from .routes.session_heartbeat import router as session_heartbeat_router
 from .routes.wizard import router as wizard_router
+from .services.funnel import log_funnel_event
 
 app = FastAPI(title="PxNN it")
 
@@ -60,6 +64,7 @@ app.include_router(dashboard_router)
 app.include_router(oauth_router)
 app.include_router(payments_router)
 app.include_router(profile_router)
+app.include_router(funnel_router)
 app.include_router(session_heartbeat_router)
 app.include_router(wizard_router)
 
@@ -68,9 +73,27 @@ app.include_router(wizard_router)
 async def home(
     request: Request,
     current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db),
 ):
     if current_user:
+        billing = request.query_params.get("billing")
+        if billing == "cancelled":
+            log_funnel_event(
+                db,
+                current_user,
+                event_type="checkout_abandoned",
+                summary="Checkout cancelled",
+            )
+            return RedirectResponse(url="/app?billing=cancelled", status_code=303)
+
+        log_funnel_event(
+            db,
+            current_user,
+            event_type="pricing_viewed",
+            summary="Viewed pricing",
+        )
         return RedirectResponse(url="/app", status_code=303)
+
     return templates.TemplateResponse(
         request,
         "home.html",
