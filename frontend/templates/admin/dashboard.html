@@ -1,0 +1,47 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<h1 class="text-2xl font-display font-semibold text-ink">Dashboard</h1>
+
+<section id="admin-kpis"
+         hx-get="/admin/partials/kpis"
+         hx-trigger="load, every 30s"
+         hx-swap="innerHTML"
+         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  <p class="text-ink-mute col-span-full">Loading KPIs…</p>
+</section>
+
+<section id="admin-funnel"
+         hx-get="/admin/partials/funnel?window=7"
+         hx-trigger="load, every 60s"
+         hx-swap="innerHTML"
+         class="bg-stage-raised border border-hairline rounded-xl p-4">
+  <p class="text-ink-mute">Loading funnel…</p>
+</section>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+  <section id="admin-online"
+           hx-get="/admin/partials/online"
+           hx-trigger="load, every 15s"
+           hx-swap="innerHTML"
+           class="bg-stage-raised border border-hairline rounded-xl p-4">
+    <p class="text-ink-mute">Loading active users…</p>
+  </section>
+
+  <section id="admin-activity"
+           hx-get="/admin/partials/activity"
+           hx-trigger="load, every 15s"
+           hx-swap="innerHTML"
+           class="bg-stage-raised border border-hairline rounded-xl p-4 lg:col-span-2">
+    <p class="text-ink-mute">Loading activity feed…</p>
+  </section>
+</div>
+
+<section id="admin-stuck"
+         hx-get="/admin/partials/stuck"
+         hx-trigger="load, every 60s"
+         hx-swap="innerHTML"
+         class="bg-stage-raised border border-hairline rounded-xl p-4">
+  <p class="text-ink-mute">Loading stuck-at-checkout list…</p>
+</section>
+{% endblock %}

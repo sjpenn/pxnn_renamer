@@ -27,6 +27,7 @@ from .routes.payments import router as payments_router
 from .routes.profile import router as profile_router
 from .routes.session_heartbeat import router as session_heartbeat_router
 from .routes.wizard import router as wizard_router
+from .routes.admin import router as admin_router
 from .services.funnel import log_funnel_event
 
 app = FastAPI(title="PxNN it")
@@ -67,6 +68,7 @@ app.include_router(profile_router)
 app.include_router(funnel_router)
 app.include_router(session_heartbeat_router)
 app.include_router(wizard_router)
+app.include_router(admin_router)
 
 
 @app.get("/", response_class=HTMLResponse)
