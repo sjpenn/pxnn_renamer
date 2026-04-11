@@ -139,3 +139,33 @@ def test_old_ui_comments_url_redirects_to_todos(client, db):
     r = client.get("/admin/ui-comments", follow_redirects=False)
     assert r.status_code == 303
     assert r.headers["location"] == "/admin/todos"
+
+
+def test_analyze_requires_admin(client, db):
+    _login(client, db, is_admin=False)
+    r = client.post("/admin/todos/analyze")
+    assert r.status_code == 403
+
+
+def test_analyze_creates_clusters(client, db, monkeypatch):
+    from backend.app.core.config import settings
+    monkeypatch.setattr(settings, "ANTHROPIC_API_KEY", None)
+    monkeypatch.setattr(settings, "OPENROUTER_API_KEY", None)
+    monkeypatch.setattr(settings, "AI_CLUSTERER_PROVIDER", "auto")
+
+    admin = _login(client, db, is_admin=True)
+    for body in [
+        "Make the dropzone bigger please",
+        "Dropzone target is too small to click",
+    ]:
+        db.add(UIComment(
+            author_id=admin.id,
+            block_key="dropzone",
+            page_path="/app",
+            body=body,
+        ))
+    db.commit()
+
+    r = client.post("/admin/todos/analyze", follow_redirects=False)
+    assert r.status_code == 303
+    assert db.query(CommentCluster).count() >= 1

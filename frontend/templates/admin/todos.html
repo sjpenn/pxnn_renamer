@@ -8,11 +8,22 @@
       {{ total_open }} open · inline notes from the workspace
     </p>
   </div>
-  <div class="flex gap-2 text-xs">
-    {% for s in ['all', 'open', 'in_progress', 'done', 'wont_do'] %}
-    <a href="/admin/todos?status={{ s }}"
-       class="px-3 py-1.5 rounded border {% if status_filter == s %}border-cyan text-cyan{% else %}border-hairline text-ink-dim hover:text-ink{% endif %} capitalize">{{ s.replace('_', ' ') }}</a>
-    {% endfor %}
+  <div class="flex items-center gap-2 flex-wrap">
+    <div class="flex gap-2 text-xs">
+      {% for s in ['all', 'open', 'in_progress', 'done', 'wont_do'] %}
+      <a href="/admin/todos?status={{ s }}"
+         class="px-3 py-1.5 rounded border {% if status_filter == s %}border-cyan text-cyan{% else %}border-hairline text-ink-dim hover:text-ink{% endif %} capitalize">{{ s.replace('_', ' ') }}</a>
+      {% endfor %}
+    </div>
+    <form method="post" action="/admin/todos/analyze">
+      <button type="submit"
+              {% if open_unclustered_count == 0 %}disabled{% endif %}
+              class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-magenta/10 border border-magenta text-magenta text-xs font-medium hover:bg-magenta hover:text-stage transition disabled:opacity-40 disabled:cursor-not-allowed">
+        <span class="material-symbols-outlined text-[14px] leading-none">auto_awesome</span>
+        analyze with AI
+        {% if open_unclustered_count > 0 %}<span class="opacity-70">({{ open_unclustered_count }})</span>{% endif %}
+      </button>
+    </form>
   </div>
 </div>
 

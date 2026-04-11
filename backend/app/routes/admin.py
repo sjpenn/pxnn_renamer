@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from ..core.security import require_admin
 from ..database.models import ActivityLog, Announcement, CommentCluster, UIComment, User
 from ..database.session import get_db
-from ..services import admin_stats
+from ..services import admin_stats, ai_clusterer
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "frontend" / "templates"))
@@ -373,6 +373,10 @@ async def admin_todos_page(
             "total_open": sum(
                 1 for r in comment_rows if r["comment"].status == "open"
             ),
+            "open_unclustered_count": sum(
+                1 for r in comment_rows
+                if r["comment"].status == "open" and r["comment"].cluster_id is None
+            ),
             "title": "Todos · PxNN Admin",
         },
     )
@@ -397,5 +401,39 @@ async def admin_todos_set_status(
         row.resolved_at = datetime.utcnow()
     else:
         row.resolved_at = None
+    db.commit()
+    return RedirectResponse(url="/admin/todos", status_code=303)
+
+
+@router.post("/todos/analyze")
+async def admin_todos_analyze(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    open_unclustered = (
+        db.query(UIComment)
+        .filter(
+            UIComment.status == "open",
+            UIComment.cluster_id.is_(None),
+        )
+        .all()
+    )
+    if not open_unclustered:
+        return RedirectResponse(url="/admin/todos", status_code=303)
+
+    clusters = ai_clusterer.cluster_notes(open_unclustered)
+    for cluster_data in clusters:
+        if not cluster_data.note_ids:
+            continue
+        cluster_row = CommentCluster(
+            title=cluster_data.title[:500],
+            summary=cluster_data.summary,
+        )
+        db.add(cluster_row)
+        db.flush()  # assign id
+        for note_id in cluster_data.note_ids:
+            note = db.query(UIComment).filter(UIComment.id == note_id).first()
+            if note and note.cluster_id is None and note.status == "open":
+                note.cluster_id = cluster_row.id
     db.commit()
     return RedirectResponse(url="/admin/todos", status_code=303)
