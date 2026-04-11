@@ -37,3 +37,6 @@ ENV/
 
 # Node (if any)
 node_modules/
+
+# Playwright MCP diagnostic artifacts
+.playwright-mcp/
