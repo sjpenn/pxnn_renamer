@@ -1,0 +1,8 @@
+{# Reusable sinusoidal waveform. Inherits color via currentColor.
+   Usage: <div class="text-cyan">{% include "partials/svg/waveform_line.html" %}</div> #}
+<svg viewBox="0 0 800 80" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M0 40 C 40 5, 80 75, 120 40 S 200 5, 240 40 S 320 75, 360 40 S 440 5, 480 40 S 560 75, 600 40 S 680 5, 720 40 S 800 75, 800 40"
+        fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <path d="M0 40 C 40 20, 80 60, 120 40 S 200 20, 240 40 S 320 60, 360 40 S 440 20, 480 40 S 560 60, 600 40 S 680 20, 720 40 S 800 60, 800 40"
+        fill="none" stroke="currentColor" stroke-width="0.8" stroke-linecap="round" opacity="0.35"/>
+</svg>
