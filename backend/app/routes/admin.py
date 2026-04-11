@@ -8,7 +8,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..core.security import require_admin
-from ..database.models import ActivityLog, User
+from ..database.models import ActivityLog, Announcement, User
 from ..database.session import get_db
 from ..services import admin_stats
 
@@ -201,3 +201,72 @@ async def partial_stuck(
         "admin/partials/stuck_at_checkout.html",
         {"rows": admin_stats.stuck_at_checkout(db, limit=20)},
     )
+
+
+@router.get("/announcements", response_class=HTMLResponse)
+async def admin_announcements_page(
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    rows = (
+        db.query(Announcement)
+        .order_by(Announcement.created_at.desc())
+        .all()
+    )
+    return templates.TemplateResponse(
+        request,
+        "admin/announcements.html",
+        {
+            "current_user": admin,
+            "announcements": rows,
+            "title": "Announcements · PxNN Admin",
+        },
+    )
+
+
+@router.post("/announcements")
+async def admin_announcements_create(
+    title: str = Form(...),
+    body: str = Form(...),
+    severity: str = Form("info"),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    db.add(
+        Announcement(
+            title=title,
+            body=body,
+            severity=severity,
+            is_published=False,
+            created_by_id=admin.id,
+        )
+    )
+    db.commit()
+    return RedirectResponse(url="/admin/announcements", status_code=303)
+
+
+@router.post("/announcements/{announcement_id}/publish")
+async def admin_announcements_publish(
+    announcement_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    row = db.query(Announcement).filter(Announcement.id == announcement_id).first()
+    if row:
+        row.is_published = not row.is_published
+        db.commit()
+    return RedirectResponse(url="/admin/announcements", status_code=303)
+
+
+@router.post("/announcements/{announcement_id}/delete")
+async def admin_announcements_delete(
+    announcement_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    row = db.query(Announcement).filter(Announcement.id == announcement_id).first()
+    if row:
+        db.delete(row)
+        db.commit()
+    return RedirectResponse(url="/admin/announcements", status_code=303)

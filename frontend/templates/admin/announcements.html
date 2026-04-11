@@ -1,0 +1,51 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<h1 class="text-2xl font-display font-semibold text-ink">Announcements</h1>
+
+<section class="bg-stage-raised border border-hairline rounded-xl p-4">
+  <h2 class="text-sm uppercase tracking-wider text-ink-dim mb-3">Publish new</h2>
+  <form method="post" action="/admin/announcements" class="space-y-3">
+    <input name="title" placeholder="Title" required
+           class="w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-ink" />
+    <textarea name="body" placeholder="Body" rows="3" required
+              class="w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-ink"></textarea>
+    <select name="severity"
+            class="bg-stage-sunken border border-hairline rounded px-3 py-2 text-ink">
+      <option value="info">Info</option>
+      <option value="success">Success</option>
+      <option value="warn">Warning</option>
+      <option value="danger">Danger</option>
+    </select>
+    <button type="submit"
+            class="px-4 py-2 bg-cyan text-stage rounded font-medium">
+      Save draft
+    </button>
+  </form>
+</section>
+
+<section class="bg-stage-raised border border-hairline rounded-xl p-4">
+  <h2 class="text-sm uppercase tracking-wider text-ink-dim mb-3">All announcements</h2>
+  <ul class="divide-y divide-hairline text-sm">
+    {% for a in announcements %}
+    <li class="py-3 flex items-center gap-3">
+      <span class="w-64 truncate text-ink">{{ a.title }}</span>
+      <span class="w-24 text-xs text-ink-mute">{{ a.severity }}</span>
+      <span class="w-24 text-xs {% if a.is_published %}text-success{% else %}text-ink-mute{% endif %}">
+        {{ 'published' if a.is_published else 'draft' }}
+      </span>
+      <form method="post" action="/admin/announcements/{{ a.id }}/publish">
+        <button class="text-xs text-cyan hover:text-ink">
+          {{ 'unpublish' if a.is_published else 'publish' }}
+        </button>
+      </form>
+      <form method="post" action="/admin/announcements/{{ a.id }}/delete">
+        <button class="text-xs text-danger hover:text-ink">delete</button>
+      </form>
+    </li>
+    {% else %}
+    <li class="py-3 text-ink-mute">No announcements yet.</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

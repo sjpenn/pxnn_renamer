@@ -28,6 +28,7 @@ from .routes.profile import router as profile_router
 from .routes.session_heartbeat import router as session_heartbeat_router
 from .routes.wizard import router as wizard_router
 from .routes.admin import router as admin_router
+from .services.announcements import get_active_announcement
 from .services.funnel import log_funnel_event
 
 app = FastAPI(title="PxNN it")
@@ -113,6 +114,7 @@ async def home(
 async def workspace(
     request: Request,
     current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db),
 ):
     if current_user is None:
         return RedirectResponse(url="/login", status_code=303)
@@ -128,6 +130,7 @@ async def workspace(
             "stripe_enabled": bool(settings.STRIPE_SECRET_KEY),
             "billing_notice": request.query_params.get("billing", ""),
             "google_oauth_enabled": bool(settings.GOOGLE_CLIENT_ID),
+            "announcement": get_active_announcement(db, current_user),
         },
     )
 

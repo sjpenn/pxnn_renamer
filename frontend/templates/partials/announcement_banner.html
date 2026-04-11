@@ -1,0 +1,26 @@
+{% if announcement %}
+<div id="announcement-banner-{{ announcement.id }}"
+     data-announcement-id="{{ announcement.id }}"
+     class="announcement-banner px-4 py-3 text-sm flex items-center justify-between
+            {% if announcement.severity == 'success' %}bg-success/10 text-success border-b border-success/40
+            {% elif announcement.severity == 'warn' %}bg-amber/10 text-amber border-b border-amber/40
+            {% elif announcement.severity == 'danger' %}bg-danger/10 text-danger border-b border-danger/40
+            {% else %}bg-cyan/10 text-cyan border-b border-cyan/40{% endif %}">
+  <div>
+    <strong class="mr-2">{{ announcement.title }}</strong>
+    <span>{{ announcement.body }}</span>
+  </div>
+  <button type="button"
+          onclick="localStorage.setItem('dismissed_announcement_id','{{ announcement.id }}'); this.closest('.announcement-banner').remove();"
+          class="text-xs opacity-70 hover:opacity-100">dismiss</button>
+</div>
+<script>
+(function() {
+  var id = '{{ announcement.id }}';
+  if (localStorage.getItem('dismissed_announcement_id') === id) {
+    var el = document.getElementById('announcement-banner-' + id);
+    if (el) el.remove();
+  }
+})();
+</script>
+{% endif %}
