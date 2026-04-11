@@ -232,3 +232,126 @@ def recent_activity(db: Session, limit: int = 50) -> List[dict]:
         }
         for a, username, email in rows
     ]
+
+
+# --------------------------------------------------------------------------- #
+# Funnel
+# --------------------------------------------------------------------------- #
+# Map our ordered funnel stages to the event_type values that gate them.
+# Some stages (registered) derive from User.created_at rather than an event.
+_FUNNEL_EVENT_BY_STAGE = {
+    "pricing_viewed": "pricing_viewed",
+    "plan_selected": "plan_selected",
+    "checkout_started": "payment_started",
+    "payment_completed": "payment_completed",
+}
+_FUNNEL_STAGE_ORDER = (
+    "registered",
+    "pricing_viewed",
+    "plan_selected",
+    "checkout_started",
+    "payment_completed",
+)
+# Stage priority for get_user_funnel_stage (higher wins)
+_STAGE_PRIORITY = {stage: i for i, stage in enumerate(_FUNNEL_STAGE_ORDER)}
+
+
+def funnel_stats(db: Session, window_days: int = 7) -> List[dict]:
+    now = _now()
+    cutoff = now - timedelta(days=window_days)
+
+    counts: dict[str, int] = {}
+    counts["registered"] = (
+        db.query(func.count(User.id)).filter(User.created_at >= cutoff).scalar() or 0
+    )
+    for stage, event_type in _FUNNEL_EVENT_BY_STAGE.items():
+        counts[stage] = (
+            db.query(func.count(func.distinct(ActivityLog.user_id)))
+            .filter(
+                ActivityLog.event_type == event_type,
+                ActivityLog.created_at >= cutoff,
+            )
+            .scalar()
+            or 0
+        )
+
+    result = []
+    prev = None
+    for stage in _FUNNEL_STAGE_ORDER:
+        users = int(counts.get(stage, 0))
+        if prev is None or prev == 0:
+            pct_of_prev = 100.0 if users else 0.0
+            dropoff = 0.0
+        else:
+            pct_of_prev = round((users / prev) * 100.0, 1)
+            dropoff = round(((prev - users) / prev) * 100.0, 1)
+        result.append(
+            {
+                "stage": stage,
+                "users": users,
+                "pct_of_prev": pct_of_prev,
+                "dropoff_pct": dropoff,
+            }
+        )
+        prev = users
+
+    # Final stage has no "next" — zero drop-off by definition.
+    if result:
+        result[-1]["dropoff_pct"] = 0.0
+    return result
+
+
+def stuck_at_checkout(db: Session, limit: int = 20) -> List[dict]:
+    """Users whose furthest stage is plan_selected or checkout_started."""
+    stuck_event_types = {"plan_selected", "payment_started"}
+    completers = {
+        row[0]
+        for row in db.query(ActivityLog.user_id)
+        .filter(ActivityLog.event_type == "payment_completed")
+        .all()
+    }
+
+    candidates = (
+        db.query(ActivityLog, User)
+        .join(User, ActivityLog.user_id == User.id)
+        .filter(ActivityLog.event_type.in_(stuck_event_types))
+        .order_by(ActivityLog.created_at.desc())
+        .all()
+    )
+
+    seen: set[int] = set()
+    rows: list[dict] = []
+    for log, user in candidates:
+        if user.id in seen or user.id in completers:
+            continue
+        seen.add(user.id)
+        rows.append(
+            {
+                "user_id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "last_stage": "checkout_started"
+                if log.event_type == "payment_started"
+                else "plan_selected",
+                "last_stage_at": log.created_at,
+            }
+        )
+        if len(rows) >= limit:
+            break
+    return rows
+
+
+def get_user_funnel_stage(db: Session, user_id: int) -> str:
+    """Return the furthest funnel stage a given user has reached."""
+    stage = "registered"
+    events = (
+        db.query(ActivityLog.event_type)
+        .filter(ActivityLog.user_id == user_id)
+        .all()
+    )
+    for (event_type,) in events:
+        for stage_name, event_name in _FUNNEL_EVENT_BY_STAGE.items():
+            if event_type == event_name:
+                if _STAGE_PRIORITY[stage_name] > _STAGE_PRIORITY[stage]:
+                    stage = stage_name
+    return stage
