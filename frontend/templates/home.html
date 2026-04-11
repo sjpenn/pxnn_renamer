@@ -314,9 +314,14 @@
 {% include "partials/footer.html" %}
 
 <script>
-// Reveal-on-scroll IntersectionObserver
+// Reveal-on-scroll IntersectionObserver with accessibility + safety-net
 (function() {
     const els = document.querySelectorAll('.reveal-on-scroll');
+    // Respect reduced-motion preference: show everything immediately.
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        els.forEach(el => el.classList.add('in-view'));
+        return;
+    }
     if (!('IntersectionObserver' in window)) {
         els.forEach(el => el.classList.add('in-view'));
         return;
@@ -328,8 +333,14 @@
                 io.unobserve(entry.target);
             }
         });
-    }, { threshold: 0.15 });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
     els.forEach(el => io.observe(el));
+
+    // Safety net: after 4s, force-reveal anything still hidden (covers edge cases
+    // where IntersectionObserver never fires for legitimately-visible items).
+    setTimeout(() => {
+        els.forEach(el => el.classList.add('in-view'));
+    }, 4000);
 })();
 
 // Stat counters

@@ -388,6 +388,23 @@ html {
     transform: translateY(0);
 }
 
+/* Accessibility: respect reduced-motion users — no fade/slide, always visible */
+@media (prefers-reduced-motion: reduce) {
+    .reveal-on-scroll {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+    .eq-bar,
+    .pill-processing,
+    .filename-pair {
+        animation: none !important;
+    }
+    html {
+        scroll-behavior: auto;
+    }
+}
+
 /* Filename morph hero animation — three stacked pairs cycle via animation-delay */
 .filename-stack {
     position: relative;
