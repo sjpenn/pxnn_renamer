@@ -1,0 +1,323 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - complementary "Skip links" [ref=e5]:
+        - link "Skip to main content" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e7]: Skip to main content
+        - button "Keyboard shortcuts" [ref=e8]:
+          - generic [ref=e9]: Keyboard shortcuts
+        - link "Accessibility Help external, opens new window" [ref=e10] [cursor=pointer]:
+          - /url: https://cloud.google.com/docs/accessibility?hl=en_US
+          - generic [ref=e11]:
+            - text: Accessibility Help
+            - generic "external, opens new window" [ref=e12]:
+              - img "external, opens new window" [ref=e13]:
+                - img [ref=e14]
+        - link "Accessibility Feedback external, opens new window" [ref=e16] [cursor=pointer]:
+          - /url: https://support.google.com/accessibility/contact/feedback?hl=en_US
+          - generic [ref=e17]:
+            - text: Accessibility Feedback
+            - generic "external, opens new window" [ref=e18]:
+              - img "external, opens new window" [ref=e19]:
+                - img [ref=e20]
+      - banner [ref=e23]:
+        - generic [ref=e24]:
+          - navigation [ref=e27]:
+            - button "Navigation menu (.)" [ref=e28] [cursor=pointer]:
+              - img [ref=e30]
+          - link "Google Cloud Platform Home" [ref=e32] [cursor=pointer]:
+            - /url: /
+            - generic:
+              - img
+          - button "You're currently working in PxNN-renamer. Hit enter to switch projects, folders, or organizations" [ref=e40]:
+            - generic [ref=e41]:
+              - img [ref=e43]
+              - generic [ref=e46]: PxNN-renamer
+        - search "Google Cloud Platform" [ref=e52]:
+          - combobox [ref=e53]:
+            - searchbox "Enter query to search for resources, docs, products, and more" [ref=e54]
+          - button "See all search results" [disabled]:
+            - generic:
+              - img
+            - generic: Search
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - button "Open or close Gemini Cloud Assist chat (Option G)" [ref=e60] [cursor=pointer]:
+              - img [ref=e62]
+            - button "Activate Cloud Shell (G then S)" [ref=e67] [cursor=pointer]:
+              - img [ref=e69]
+            - button "Open notifications" [ref=e74] [cursor=pointer]:
+              - img [ref=e76]
+            - button "Settings and utilities" [ref=e82] [cursor=pointer]:
+              - img [ref=e84]
+          - 'button "Account: Steve Penn (sjpenn@gedsio.com)" [ref=e90]':
+            - img [ref=e91]
+    - generic [ref=e100]:
+      - navigation "Breadcrumb" [ref=e484]:
+        - link "Google Auth Platform" [ref=e487] [cursor=pointer]:
+          - /url: /auth?project=pxnn-renamer
+          - img [ref=e490]
+          - generic [ref=e494]: Google Auth Platform
+        - list [ref=e495]:
+          - listitem [ref=e496]:
+            - generic [ref=e497]: /
+            - link "Clients" [ref=e500] [cursor=pointer]:
+              - /url: /auth/clients?project=pxnn-renamer
+              - generic [ref=e502]: Clients
+          - listitem [ref=e503]:
+            - generic [ref=e504]: /
+            - 'link "Client: 868064325572-f80esr5tsk289q7j9g9rml5c1pcdftvi.apps.googleusercontent.com" [ref=e507] [cursor=pointer]':
+              - /url: /auth/clients/868064325572-f80esr5tsk289q7j9g9rml5c1pcdftvi.apps.googleusercontent.com?project=pxnn-renamer
+              - generic [ref=e509]: "Client: 868064325572-f80esr5tsk289q7j9g9rml5c1pcdftvi.apps.googleusercontent.com"
+      - generic [ref=e111]:
+        - navigation "Google Auth Platform" [ref=e510]:
+          - generic [ref=e119]:
+            - list "Overview, 1 of 7 More options Branding, 2 of 7 More options Audience, 3 of 7 More options Clients, 4 of 7 More options Data Access, 5 of 7 More options Verification Center, 6 of 7 More options Settings, 7 of 7 More options" [ref=e512]:
+              - listitem [ref=e513]:
+                - generic [ref=e516]:
+                  - link "Overview, 1 of 7" [ref=e517] [cursor=pointer]:
+                    - /url: /auth/overview?project=pxnn-renamer
+                    - generic [ref=e518]:
+                      - img [ref=e521]
+                      - generic [ref=e523]: Overview
+                  - button "More options" [ref=e525] [cursor=pointer]:
+                    - img [ref=e527]
+              - listitem [ref=e529]:
+                - generic [ref=e532]:
+                  - link "Branding, 2 of 7" [ref=e533] [cursor=pointer]:
+                    - /url: /auth/branding?project=pxnn-renamer
+                    - generic [ref=e534]:
+                      - img [ref=e537]
+                      - generic [ref=e543]: Branding
+                  - button "More options" [ref=e545] [cursor=pointer]:
+                    - img [ref=e547]
+              - listitem [ref=e549]:
+                - generic [ref=e552]:
+                  - link "Audience, 3 of 7" [ref=e553] [cursor=pointer]:
+                    - /url: /auth/audience?project=pxnn-renamer
+                    - generic [ref=e554]:
+                      - img [ref=e557]
+                      - generic [ref=e559]: Audience
+                  - button "More options" [ref=e561] [cursor=pointer]:
+                    - img [ref=e563]
+              - listitem [ref=e565]:
+                - generic [ref=e568]:
+                  - link "Clients, 4 of 7" [ref=e569] [cursor=pointer]:
+                    - /url: /auth/clients?project=pxnn-renamer
+                    - generic [ref=e570]:
+                      - img [ref=e573]
+                      - generic [ref=e575]: Clients
+                  - button "More options" [ref=e577] [cursor=pointer]:
+                    - img [ref=e579]
+              - listitem [ref=e581]:
+                - generic [ref=e584]:
+                  - link "Data Access, 5 of 7" [ref=e585] [cursor=pointer]:
+                    - /url: /auth/scopes?project=pxnn-renamer
+                    - generic [ref=e586]:
+                      - img [ref=e589]
+                      - generic [ref=e592]: Data Access
+                  - button "More options" [ref=e594] [cursor=pointer]:
+                    - img [ref=e596]
+              - listitem [ref=e598]:
+                - generic [ref=e601]:
+                  - link "Verification Center, 6 of 7" [ref=e602] [cursor=pointer]:
+                    - /url: /auth/verification?project=pxnn-renamer
+                    - generic [ref=e603]:
+                      - img [ref=e606]
+                      - generic [ref=e609]: Verification Center
+                  - button "More options" [ref=e611] [cursor=pointer]:
+                    - img [ref=e613]
+              - listitem [ref=e615]:
+                - generic [ref=e618]:
+                  - link "Settings, 7 of 7" [ref=e619] [cursor=pointer]:
+                    - /url: /auth/settings?project=pxnn-renamer
+                    - generic [ref=e620]:
+                      - img [ref=e623]
+                      - generic [ref=e625]: Settings
+                  - button "More options" [ref=e627] [cursor=pointer]:
+                    - img [ref=e629]
+            - button "Toggle Google Auth Platform navigation menu" [pressed] [ref=e631] [cursor=pointer]:
+              - img [ref=e226]
+        - main [active] [ref=e229]:
+          - generic [ref=e641]:
+            - generic [ref=e644]:
+              - button "Back to previous page" [ref=e648] [cursor=pointer]:
+                - img [ref=e650]
+              - heading "Client ID for Web application" [level=1] [ref=e654]:
+                - generic [ref=e655]: Client ID for Web application
+              - button "Delete" [ref=e662]:
+                - img [ref=e664]
+                - generic [ref=e666]: Delete
+            - generic [ref=e670]:
+              - generic [ref=e675]:
+                - generic [ref=e677]:
+                  - generic [ref=e678]:
+                    - generic [ref=e680] [cursor=pointer]:
+                      - generic [ref=e681]:
+                        - text: Name
+                        - generic [ref=e682]: "*"
+                      - textbox "Name" [ref=e684]: PxNN
+                    - generic [ref=e687]: The name of your OAuth 2.0 client. This name is only used to identify the client in the console and will not be shown to end users.
+                  - generic [ref=e689]:
+                    - generic [ref=e691]:
+                      - img "Information" [ref=e692]:
+                        - img [ref=e693]
+                      - generic [ref=e697]:
+                        - text: The domains of the URIs you add below will be automatically added to your
+                        - link "OAuth consent screen" [ref=e698] [cursor=pointer]:
+                          - /url: /auth/branding?project=pxnn-renamer
+                        - text: as
+                        - link "authorized domains external, opens new window" [ref=e699] [cursor=pointer]:
+                          - /url: https://support.google.com/cloud/answer/6158849#authorized-domains
+                          - text: authorized domains
+                          - img "external, opens new window" [ref=e700]:
+                            - img [ref=e701]
+                        - text: .
+                    - group "Authorized JavaScript origins" [ref=e704]:
+                      - generic "Authorized JavaScript origins" [ref=e706]:
+                        - heading "Authorized JavaScript origins" [level=2] [ref=e708]
+                        - button "Help with Javascript origins" [ref=e710] [cursor=pointer]:
+                          - img [ref=e712]
+                      - generic [ref=e715]: For use with requests from a browser
+                      - group "Authorized JavaScript origins" [ref=e717]:
+                        - button "Add URI" [ref=e719]:
+                          - generic [ref=e721]:
+                            - img [ref=e723]
+                            - text: Add URI
+                    - group "Authorized redirect URIs" [ref=e726]:
+                      - generic "Authorized redirect URIs" [ref=e728]:
+                        - heading "Authorized redirect URIs" [level=2] [ref=e730]
+                        - button "Help with redirect URIs" [ref=e732] [cursor=pointer]:
+                          - img [ref=e734]
+                      - generic [ref=e737]: For use with requests from a web server
+                      - group "Authorized redirect URIs" [ref=e739]:
+                        - generic [ref=e740]:
+                          - group "Item 1" [ref=e741]:
+                            - generic [ref=e745] [cursor=pointer]:
+                              - generic [ref=e746]:
+                                - generic [ref=e747]: URIs 1
+                                - generic [ref=e748]: "*"
+                              - textbox "URIs 1" [ref=e750]:
+                                - /placeholder: https://www.example.com
+                                - text: http://localhost:8000/auth/google/callback
+                            - button "Delete item. Item 1" [ref=e752] [cursor=pointer]:
+                              - img [ref=e754]
+                          - group "Item 2" [ref=e756]:
+                            - generic [ref=e760] [cursor=pointer]:
+                              - generic [ref=e761]:
+                                - generic [ref=e762]: URIs 2
+                                - generic [ref=e763]: "*"
+                              - textbox "URIs 2" [ref=e765]:
+                                - /placeholder: https://www.example.com
+                                - text: https://pxnnrenamer-production.up.railway.app/auth/google/callback
+                            - button "Delete item. Item 2" [ref=e767] [cursor=pointer]:
+                              - img [ref=e769]
+                        - button "Add URI" [ref=e772]:
+                          - generic [ref=e774]:
+                            - img [ref=e776]
+                            - text: Add URI
+                - paragraph [ref=e778]: "Note: It may take 5 minutes to a few hours for settings to take effect"
+                - button "Save" [ref=e781]:
+                  - generic [ref=e782]: Save
+                - button "Cancel" [ref=e783]:
+                  - generic [ref=e784]: Cancel
+              - region "Page summary" [ref=e787]:
+                - heading "Additional information" [level=2] [ref=e789]:
+                  - generic [ref=e790]: Additional information
+                - generic [ref=e792]:
+                  - generic [ref=e793]:
+                    - generic [ref=e794]:
+                      - generic [ref=e795]:
+                        - term [ref=e796]: Client ID
+                        - definition [ref=e797]: 868064325572-f80esr5tsk289q7j9g9rml5c1pcdftvi.apps.googleusercontent.com
+                      - generic [ref=e798]:
+                        - term [ref=e799]: Creation date
+                        - definition [ref=e800]: April 9, 2026, 5:01:12 PM GMT-4
+                      - generic [ref=e801]:
+                        - term [ref=e802]: Last used date
+                        - definition [ref=e803]: "April 9, 2026 (Note: this data could be delayed by a day or more.)"
+                    - generic [ref=e805]:
+                      - img "Information" [ref=e806]:
+                        - img [ref=e807]
+                      - generic [ref=e811]:
+                        - text: Inactive OAuth clients are subject to deletion if they are not used for 6 months. You will be notified of deletion due to inactivity, and can restore clients up to 30 days after deletion.
+                        - link "Learn more about unused client deletion external, opens new window" [ref=e812] [cursor=pointer]:
+                          - /url: https://support.google.com/cloud/answer/15549257#unused-client-deletion
+                          - text: Learn more
+                          - img "external, opens new window" [ref=e813]:
+                            - img [ref=e814]
+                  - generic [ref=e816]:
+                    - heading "Client secrets" [level=2] [ref=e817]
+                    - generic [ref=e818]:
+                      - generic [ref=e819]:
+                        - text: If you are in the process of changing client secrets, you can manually rotate them without downtime.
+                        - link "Learn more about OAuth client secret rotation external, opens new window" [ref=e820] [cursor=pointer]:
+                          - /url: https://support.google.com/cloud/answer/6158849#rotate-client-secret
+                          - text: Learn more
+                          - img "external, opens new window" [ref=e821]:
+                            - img [ref=e822]
+                      - status [ref=e825]:
+                        - img "Warning" [ref=e826]:
+                          - img [ref=e827]
+                        - generic [ref=e831]: Having more than one secret increases security risks. Disable and delete the old secret once you have verified that your app is using the new secret instead of the old secret.
+                      - generic [ref=e833]:
+                        - img "Information" [ref=e834]:
+                          - img [ref=e835]
+                        - generic [ref=e839]:
+                          - text: Viewing and downloading client secrets is no longer available. If you have lost the secret below, please add a new one. Remember to store client secrets securely and treat them with extreme care. Secrets should never be checked into code repositories.
+                          - link "Learn more about OAuth client secret accessibility changes external, opens new window" [ref=e840] [cursor=pointer]:
+                            - /url: https://support.google.com/cloud/answer/15549257#client-secret-hashing
+                            - text: Learn more
+                            - img "external, opens new window" [ref=e841]:
+                              - img [ref=e842]
+                      - generic [ref=e844]:
+                        - generic [ref=e845]:
+                          - term [ref=e846]: Client secret
+                          - definition [ref=e847]:
+                            - generic [ref=e848]:
+                              - text: "****bAwm"
+                              - button "To delete this secret, disable the secret first. Delete client secret" [disabled] [ref=e850]:
+                                - img [ref=e852]
+                        - generic [ref=e854]:
+                          - term [ref=e855]: Creation date
+                          - definition [ref=e856]:
+                            - generic [ref=e857]: April 9, 2026, 5:01:12 PM GMT-4
+                        - generic [ref=e858]:
+                          - term [ref=e859]: Status
+                          - definition [ref=e860]:
+                            - generic [ref=e861]:
+                              - img [ref=e863]
+                              - text: Enabled
+                              - button "Disable client secret" [ref=e867]:
+                                - generic [ref=e868]: Disable
+                      - generic [ref=e869]:
+                        - generic [ref=e870]:
+                          - term [ref=e871]: Client secret
+                          - definition [ref=e872]:
+                            - generic [ref=e873]:
+                              - text: "****RomV"
+                              - button "To delete this secret, disable the secret first. Delete client secret" [disabled] [ref=e875]:
+                                - img [ref=e877]
+                        - generic [ref=e879]:
+                          - term [ref=e880]: Creation date
+                          - definition [ref=e881]:
+                            - generic [ref=e882]: April 10, 2026, 1:22:41 PM GMT-4
+                        - generic [ref=e883]:
+                          - term [ref=e884]: Status
+                          - definition [ref=e885]:
+                            - generic [ref=e886]:
+                              - img [ref=e888]
+                              - text: Enabled
+                              - button "Disable client secret" [ref=e892]:
+                                - generic [ref=e893]: Disable
+                      - button "Add client secret" [disabled] [ref=e896]:
+                        - img [ref=e898]
+                        - generic [ref=e900]: Add secret
+  - iframe [ref=e476]:
+    
+  - iframe [ref=e477]:
+    
+  - iframe [ref=e479]:
+    
+  - paragraph [ref=e904]: Credentials – APIs & Services – PxNN-renamer – Google Cloud console

@@ -1,0 +1,296 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - complementary [ref=e545]:
+        - link [ref=e546] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e7]: Skip to main content
+        - button [ref=e547]:
+          - generic [ref=e9]: Keyboard shortcuts
+        - link [ref=e548] [cursor=pointer]:
+          - /url: https://cloud.google.com/docs/accessibility?hl=en_US
+          - generic [ref=e11]:
+            - text: Accessibility Help
+            - img [ref=e550]:
+              - img [ref=e14]
+        - link [ref=e551] [cursor=pointer]:
+          - /url: https://support.google.com/accessibility/contact/feedback?hl=en_US
+          - generic [ref=e17]:
+            - text: Accessibility Feedback
+            - img [ref=e553]:
+              - img [ref=e20]
+      - banner [ref=e23]:
+        - generic [ref=e24]:
+          - navigation [ref=e27]:
+            - button [ref=e554] [cursor=pointer]:
+              - img [ref=e30]
+          - link [ref=e555] [cursor=pointer]:
+            - /url: /
+            - generic:
+              - img
+          - button [ref=e556]:
+            - generic [ref=e268]:
+              - img [ref=e270]
+              - generic [ref=e273]: PxNN-renamer
+        - search [ref=e557]:
+          - combobox [ref=e47]:
+            - searchbox [ref=e558]
+          - button [disabled]:
+            - generic:
+              - img
+            - generic: Search
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - button [ref=e559] [cursor=pointer]:
+              - img [ref=e279]
+            - button [ref=e560] [cursor=pointer]:
+              - img [ref=e283]
+            - button [ref=e561] [cursor=pointer]:
+              - img [ref=e59]
+            - button [ref=e562] [cursor=pointer]:
+              - img [ref=e67]
+          - button [ref=e563]:
+            - img [ref=e288]
+    - generic [ref=e80]:
+      - navigation [ref=e564]:
+        - link [ref=e565] [cursor=pointer]:
+          - /url: /auth?project=pxnn-renamer
+          - img [ref=e299]
+          - generic [ref=e303]: Google Auth Platform
+        - list [ref=e304]:
+          - listitem [ref=e305]:
+            - generic [ref=e306]: /
+            - link [ref=e566] [cursor=pointer]:
+              - /url: /auth/branding?project=pxnn-renamer
+              - generic [ref=e311]: Branding
+      - generic [ref=e91]:
+        - navigation [ref=e567]:
+          - generic [ref=e99]:
+            - list [ref=e568]:
+              - listitem [ref=e114]:
+                - generic [ref=e117]:
+                  - link [ref=e569] [cursor=pointer]:
+                    - /url: /auth/overview
+                    - generic [ref=e119]:
+                      - img [ref=e122]
+                      - generic [ref=e124]: Overview
+                  - button [ref=e570] [cursor=pointer]:
+                    - img [ref=e128]
+              - listitem [ref=e130]:
+                - generic [ref=e133]:
+                  - link [ref=e571] [cursor=pointer]:
+                    - /url: /auth/branding
+                    - generic [ref=e135]:
+                      - img [ref=e138]
+                      - generic [ref=e144]: Branding
+                  - button [ref=e572] [cursor=pointer]:
+                    - img [ref=e148]
+              - listitem [ref=e150]:
+                - generic [ref=e153]:
+                  - link [ref=e573] [cursor=pointer]:
+                    - /url: /auth/audience
+                    - generic [ref=e155]:
+                      - img [ref=e158]
+                      - generic [ref=e160]: Audience
+                  - button [ref=e574] [cursor=pointer]:
+                    - img [ref=e164]
+              - listitem [ref=e166]:
+                - generic [ref=e169]:
+                  - link [ref=e575] [cursor=pointer]:
+                    - /url: /auth/clients
+                    - generic [ref=e171]:
+                      - img [ref=e174]
+                      - generic [ref=e176]: Clients
+                  - button [ref=e576] [cursor=pointer]:
+                    - img [ref=e180]
+              - listitem [ref=e182]:
+                - generic [ref=e185]:
+                  - link [ref=e577] [cursor=pointer]:
+                    - /url: /auth/scopes
+                    - generic [ref=e187]:
+                      - img [ref=e190]
+                      - generic [ref=e193]: Data Access
+                  - button [ref=e578] [cursor=pointer]:
+                    - img [ref=e197]
+              - listitem [ref=e199]:
+                - generic [ref=e202]:
+                  - link [ref=e579] [cursor=pointer]:
+                    - /url: /auth/verification
+                    - generic [ref=e204]:
+                      - img [ref=e207]
+                      - generic [ref=e210]: Verification Center
+                  - button [ref=e580] [cursor=pointer]:
+                    - img [ref=e214]
+              - listitem [ref=e216]:
+                - generic [ref=e219]:
+                  - link [ref=e581] [cursor=pointer]:
+                    - /url: /auth/settings
+                    - generic [ref=e221]:
+                      - img [ref=e224]
+                      - generic [ref=e226]: Settings
+                  - button [ref=e582] [cursor=pointer]:
+                    - img [ref=e230]
+            - button [pressed] [ref=e583] [cursor=pointer]:
+              - img [ref=e237]
+        - main [ref=e240]:
+          - generic [ref=e322]:
+            - heading [level=1] [ref=e584]:
+              - generic [ref=e329]: Branding
+            - generic [ref=e333]:
+              - generic [ref=e335]:
+                - generic [ref=e337]:
+                  - text: App information
+                  - paragraph [ref=e338]: This shows in the consent screen, and helps end users know who you are and contact you
+                  - generic [ref=e339]:
+                    - generic [ref=e341] [cursor=pointer]:
+                      - generic [ref=e342]:
+                        - text: App name
+                        - generic [ref=e343]: "*"
+                      - textbox [ref=e585]: PxNN-renamer
+                    - generic [ref=e348]: The name of the app asking for consent
+                  - generic [ref=e350]:
+                    - generic [ref=e352] [cursor=pointer]:
+                      - generic [ref=e353]:
+                        - text: User support email
+                        - generic [ref=e354]: "*"
+                      - combobox [ref=e586]:
+                        - generic [ref=e357]:
+                          - generic [ref=e359]: sjpenn@gedsio.com
+                          - img [ref=e361]
+                    - generic [ref=e365]:
+                      - text: For users to contact you with questions about their consent.
+                      - link [ref=e587] [cursor=pointer]:
+                        - /url: https://support.google.com/cloud/answer/10311615#user-support-email
+                        - text: Learn more
+                        - img [ref=e588]:
+                          - img [ref=e368]
+                  - generic [ref=e371]:
+                    - heading [level=3] [ref=e589]: App logo
+                    - paragraph [ref=e373]:
+                      - text: This is your logo. It helps people recognize your app and is displayed on the OAuth consent screen. After you upload a logo, you will need to submit your app for verification unless the app is configured for internal use only or has a publishing status of "Testing".
+                      - link [ref=e590] [cursor=pointer]:
+                        - /url: https://support.google.com/cloud/answer/9110914
+                        - text: Learn more
+                        - img [ref=e591]:
+                          - img [ref=e376]
+                    - img [ref=e592]
+                    - button [ref=e593]:
+                      - img [ref=e382]:
+                        - img [ref=e383]
+                      - generic [ref=e385]: Remove
+                    - heading [level=4] [ref=e594]:
+                      - button [ref=e595]:
+                        - generic [ref=e392]:
+                          - img [ref=e394]:
+                            - img [ref=e395]
+                          - text: Change logo
+                        - img [ref=e398]:
+                          - img [ref=e399]
+                  - text: App domain
+                  - paragraph [ref=e401]: To protect you and your users, Google only allows apps using OAuth to use Authorized Domains. The following information will be shown to your users on the consent screen.
+                  - generic [ref=e404]:
+                    - generic [ref=e406] [cursor=pointer]:
+                      - generic [ref=e407]: Application home page
+                      - textbox [ref=e596]
+                    - generic [ref=e412]: Provide users a link to your home page
+                  - generic [ref=e416]:
+                    - generic [ref=e418] [cursor=pointer]:
+                      - generic [ref=e419]: Application privacy policy link
+                      - textbox [ref=e597]
+                    - generic [ref=e424]: Provide users a link to your public privacy policy
+                  - generic [ref=e428]:
+                    - generic [ref=e430] [cursor=pointer]:
+                      - generic [ref=e431]: Application terms of service link
+                      - textbox [ref=e598]
+                    - generic [ref=e436]: Provide users a link to your public terms of service
+                  - group [ref=e599]:
+                    - generic [ref=e600]:
+                      - heading [level=2] [ref=e601]: Authorized domains
+                      - button [ref=e602] [cursor=pointer]:
+                        - img [ref=e448]
+                    - generic [ref=e451]:
+                      - text: When a domain is used on the consent screen or in an OAuth client’s configuration, it must be pre-registered here. If your app needs to go through verification, please go to the
+                      - link [ref=e603] [cursor=pointer]:
+                        - /url: https://search.google.com/search-console/about
+                        - text: Google Search Console
+                      - text: to check if your domains are authorized.
+                      - link [ref=e604] [cursor=pointer]:
+                        - /url: https://support.google.com/cloud/answer/7650096
+                        - text: Learn more
+                        - img [ref=e605]:
+                          - img [ref=e455]
+                      - text: about the authorized domain limit.
+                    - group [ref=e606]:
+                      - generic [ref=e459]:
+                        - group [ref=e607]:
+                          - generic [ref=e464] [cursor=pointer]:
+                            - generic [ref=e465]:
+                              - generic [ref=e466]: Authorized domain 1
+                              - generic [ref=e467]: "*"
+                            - textbox [ref=e608]:
+                              - /placeholder: example.com
+                              - text: pxnn-renamer-production.up.railway.app
+                          - button [ref=e609] [cursor=pointer]:
+                            - img [ref=e473]
+                        - group [ref=e610]:
+                          - generic [ref=e479] [cursor=pointer]:
+                            - generic [ref=e480]:
+                              - generic [ref=e481]: Authorized domain 2
+                              - generic [ref=e482]: "*"
+                            - textbox [ref=e611]:
+                              - /placeholder: example.com
+                              - text: pxnnrenamer-production.up.railway.app
+                          - button [disabled] [ref=e612]:
+                            - img [ref=e488]
+                      - button [ref=e613]:
+                        - generic [ref=e493]:
+                          - img [ref=e495]
+                          - text: Add domain
+                  - text: Developer contact information
+                  - generic [ref=e499]:
+                    - generic [ref=e501] [cursor=pointer]:
+                      - generic [ref=e502]:
+                        - text: Email addresses
+                        - generic [ref=e503]: "*"
+                      - grid [ref=e505]:
+                        - row [ref=e614]:
+                          - gridcell [ref=e615]:
+                            - generic [ref=e508]: sjpenn@gmail.com
+                          - gridcell [ref=e616]:
+                            - button [ref=e617]:
+                              - img [ref=e511]:
+                                - img [ref=e512]
+                        - row [ref=e618]:
+                          - gridcell [ref=e619]:
+                            - generic [ref=e516]: sjpenn@gedsio.com
+                          - gridcell [ref=e620]:
+                            - button [ref=e621]:
+                              - img [ref=e519]:
+                                - img [ref=e520]
+                        - textbox [ref=e622]
+                    - generic [ref=e525]: These email addresses are for Google to notify you about any changes to your project.
+                - button [disabled] [ref=e623]:
+                  - generic [ref=e530]: Save
+                - button [disabled] [ref=e624]:
+                  - generic [ref=e532]: Discard changes
+              - region [ref=e625]:
+                - heading [level=2] [ref=e626]:
+                  - generic [ref=e537]: Verification status
+                - paragraph [ref=e538]:
+                  - img [ref=e540]
+                  - text: Your branding needs to be verified before it can be shown to users.
+                - button [disabled] [ref=e627]:
+                  - generic [ref=e543]: Verify branding
+  - iframe [ref=e264]:
+    
+  - iframe [ref=e265]:
+    
+  - alertdialog "Do you want to delete this logo permanently?" [ref=e631]:
+    - generic [ref=e635]:
+      - heading "Do you want to delete this logo permanently?" [active] [level=1] [ref=e636]
+      - generic [ref=e638]: This change will be saved after you click the "Save" button at the bottom of the page.
+      - generic [ref=e639]:
+        - button "Cancel" [ref=e640]:
+          - generic [ref=e641]: Cancel
+        - button "Continue" [ref=e644]:
+          - generic [ref=e645]: Continue

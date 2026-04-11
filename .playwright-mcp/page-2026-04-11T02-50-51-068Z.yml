@@ -1,0 +1,38 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - progressbar [ref=e6]
+    - main [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e18]:
+          - img [ref=e20]
+          - generic [ref=e25]: Sign in with Google
+        - generic [ref=e26]:
+          - 'heading "Access blocked: Authorization Error" [level=1] [ref=e27]'
+          - generic [ref=e34]: sjpenn@gedsio.com
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - text: You can't sign in to this app because it doesn't comply with Google's OAuth 2.0 policy for keeping apps secure.
+          - text: You can let the app developer know that this app doesn't comply with one or more Google validation rules.
+          - link "Learn more about this error" [ref=e44] [cursor=pointer]:
+            - /url: https://developers.google.com/identity/protocols/oauth2/policies#secure-response-handling
+        - generic [ref=e45]:
+          - text: If you are a developer of PxNN-renamer, see
+          - button "error details" [ref=e46] [cursor=pointer]
+          - text: .
+        - generic [ref=e47]: "Error 400: invalid_request"
+  - contentinfo [ref=e52]:
+    - combobox "Change language English (United States)" [ref=e56] [cursor=pointer]:
+      - generic:
+        - generic: English (United States)
+      - generic:
+        - img
+    - list [ref=e58]:
+      - listitem [ref=e59]:
+        - link "Help" [ref=e60] [cursor=pointer]:
+          - /url: https://support.google.com/accounts?hl=en-US&p=account_iph
+      - listitem [ref=e61]:
+        - link "Privacy" [ref=e62] [cursor=pointer]:
+          - /url: https://accounts.google.com/TOS?loc=US&hl=en-US&privacy=true
+      - listitem [ref=e63]:
+        - link "Terms" [ref=e64] [cursor=pointer]:
+          - /url: https://accounts.google.com/TOS?loc=US&hl=en-US

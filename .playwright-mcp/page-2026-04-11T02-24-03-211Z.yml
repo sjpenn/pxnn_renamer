@@ -1,0 +1,156 @@
+- generic [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - link "sync_alt PxNN it" [ref=e5] [cursor=pointer]:
+        - /url: /app
+        - generic [ref=e6]: sync_alt
+        - text: PxNN it
+      - generic [ref=e7]:
+        - link "Dashboard" [ref=e8] [cursor=pointer]:
+          - /url: /app
+        - link "Billing" [ref=e9] [cursor=pointer]:
+          - /url: /app?billing=options
+        - generic [ref=e10]:
+          - button "account_circle testuser_bugreport expand_more" [active] [ref=e11] [cursor=pointer]:
+            - generic [ref=e12]: account_circle
+            - generic [ref=e13]: testuser_bugreport
+            - generic [ref=e14]: expand_more
+          - generic [ref=e165]:
+            - generic [ref=e166]: testuser_bugreport
+            - link "Profile" [ref=e167] [cursor=pointer]:
+              - /url: /profile
+            - button "Logout" [ref=e170] [cursor=pointer]
+  - generic [ref=e15]:
+    - complementary [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - generic [ref=e20]: sync_alt
+          - generic [ref=e21]:
+            - paragraph [ref=e22]: PxNN Renamer
+            - paragraph [ref=e23]: Precision Studio
+        - generic [ref=e24]:
+          - paragraph [ref=e25]: Wizard Workflow
+          - navigation "Wizard steps" [ref=e26]:
+            - button "01 Add Files Stage tracks & inspect hints" [ref=e27] [cursor=pointer]:
+              - generic [ref=e28]: "01"
+              - generic [ref=e29]:
+                - generic [ref=e30]: Add Files
+                - generic [ref=e31]: Stage tracks & inspect hints
+            - button "02 Define Metadata Set artist & clean producers" [ref=e32] [cursor=pointer]:
+              - generic [ref=e33]: "02"
+              - generic [ref=e34]:
+                - generic [ref=e35]: Define Metadata
+                - generic [ref=e36]: Set artist & clean producers
+            - button "03 Export Archive Review and download" [ref=e37] [cursor=pointer]:
+              - generic [ref=e38]: "03"
+              - generic [ref=e39]:
+                - generic [ref=e40]: Export Archive
+                - generic [ref=e41]: Review and download
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - paragraph [ref=e44]: Session Stats
+            - generic [ref=e45]:
+              - generic [ref=e46]:
+                - generic [ref=e47]: Batched
+                - generic [ref=e48]: "0"
+              - generic [ref=e49]:
+                - generic [ref=e50]: Ready
+                - generic [ref=e51]: "No"
+          - generic [ref=e52]:
+            - generic [ref=e53]:
+              - generic [ref=e54]: account_circle
+              - paragraph [ref=e55]: Account
+            - paragraph [ref=e56]: Sign in to save metadata history and unlock batch exports.
+            - generic [ref=e57]:
+              - generic [ref=e58]: "Credits: 0"
+              - generic [ref=e59]: Free
+    - main [ref=e60]:
+      - generic [ref=e61]:
+        - paragraph [ref=e63]: Active Session
+        - generic [ref=e64]:
+          - generic [ref=e65]: Sync your metadata across devices
+          - generic [ref=e66]: Waiting for files
+      - generic [ref=e70]:
+        - generic [ref=e72]:
+          - paragraph [ref=e73]: "Status: Active Batch"
+          - heading "Rename Wizard" [level=2] [ref=e74]
+          - paragraph [ref=e75]: Upload your tracks below. We'll automatically identify BPM, artist, and version data.
+        - generic [ref=e76]:
+          - generic [ref=e77]:
+            - generic [ref=e78]:
+              - paragraph [ref=e79]: Process Step 01
+              - heading "Stage Source Files" [level=3] [ref=e80]
+              - paragraph [ref=e81]: Our precision parser will extract BPM, artist, and version metadata from your filenames.
+            - generic [ref=e83]:
+              - generic [ref=e85]: upload_file
+              - heading "Drag & Drop audio files" [level=3] [ref=e86]
+              - paragraph [ref=e87]: Or click to browse storage
+            - generic [ref=e88]:
+              - generic [ref=e89]:
+                - generic [ref=e90]: info
+                - paragraph [ref=e91]: Workflow Tip
+              - paragraph [ref=e92]: The fastest path is to define the artist once at Step 2. We'll automatically identify BPM and mix versions wherever possible.
+          - generic [ref=e93]:
+            - generic [ref=e95]: analytics
+            - heading "Workspace Overview" [level=3] [ref=e96]
+            - paragraph [ref=e97]: Access your batch history and account settings below.
+          - generic [ref=e98]:
+            - generic [ref=e100]:
+              - generic [ref=e101]:
+                - generic [ref=e102]:
+                  - generic [ref=e104]: check_circle
+                  - heading "Username" [level=3] [ref=e105]
+                  - paragraph [ref=e106]: Session synced to your profile
+                - button "LOGOUT" [ref=e107] [cursor=pointer]
+              - generic [ref=e108]:
+                - generic [ref=e109]:
+                  - paragraph [ref=e110]: Power Credits
+                  - paragraph [ref=e111]: "0"
+                - generic [ref=e112]:
+                  - paragraph [ref=e113]: Plan Status
+                  - paragraph [ref=e114]: Free
+            - generic [ref=e115]:
+              - generic [ref=e116]:
+                - generic [ref=e117]:
+                  - generic [ref=e119]: dashboard
+                  - heading "Project Activity" [level=3] [ref=e120]
+                - generic [ref=e121]: Offline Buffer
+              - generic [ref=e122]:
+                - generic [ref=e123]:
+                  - paragraph [ref=e124]: Batches
+                  - paragraph [ref=e125]: "0"
+                - generic [ref=e126]:
+                  - paragraph [ref=e127]: Files
+                  - paragraph [ref=e128]: "0"
+                - generic [ref=e129]:
+                  - paragraph [ref=e130]: Exports
+                  - paragraph [ref=e131]: "0"
+          - generic [ref=e132]:
+            - generic [ref=e134]:
+              - heading "Rename Batches" [level=4] [ref=e135]
+              - generic [ref=e136]: 0 ITEMS
+            - generic [ref=e139]:
+              - heading "Activity Log" [level=4] [ref=e140]
+              - generic [ref=e141]: 0 EVENTS
+      - complementary [ref=e143]:
+        - generic [ref=e144]:
+          - generic [ref=e145]:
+            - generic [ref=e146]:
+              - paragraph [ref=e147]: Real-time Preview
+              - heading "Detected State" [level=3] [ref=e148]
+            - generic [ref=e149]: EMPTY
+          - generic [ref=e150]:
+            - generic [ref=e151]:
+              - generic [ref=e152]:
+                - heading "Upload Queue" [level=4] [ref=e153]
+                - generic [ref=e154]: 0 files
+              - list [ref=e155]:
+                - listitem [ref=e156]:
+                  - paragraph [ref=e157]: No files staged yet.
+            - generic [ref=e158]:
+              - generic [ref=e159]:
+                - heading "Rename Preview" [level=4] [ref=e160]
+                - generic [ref=e161]: 0 items
+              - list [ref=e162]:
+                - listitem [ref=e163]:
+                  - paragraph [ref=e164]: Final names will generate here.

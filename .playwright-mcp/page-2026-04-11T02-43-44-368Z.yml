@@ -1,0 +1,228 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - complementary "Skip links" [ref=e1193]:
+        - link "Skip to main content" [ref=e1194] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e7]: Skip to main content
+        - button "Keyboard shortcuts" [ref=e1195]:
+          - generic [ref=e9]: Keyboard shortcuts
+        - link "Accessibility Help external, opens new window" [ref=e1196] [cursor=pointer]:
+          - /url: https://cloud.google.com/docs/accessibility?hl=en_US
+          - generic [ref=e11]:
+            - text: Accessibility Help
+            - generic "external, opens new window" [ref=e1197]:
+              - img "external, opens new window" [ref=e1198]:
+                - img [ref=e14]
+        - link "Accessibility Feedback external, opens new window" [ref=e1199] [cursor=pointer]:
+          - /url: https://support.google.com/accessibility/contact/feedback?hl=en_US
+          - generic [ref=e17]:
+            - text: Accessibility Feedback
+            - generic "external, opens new window" [ref=e1200]:
+              - img "external, opens new window" [ref=e1201]:
+                - img [ref=e20]
+      - banner [ref=e23]:
+        - generic [ref=e24]:
+          - navigation [ref=e27]:
+            - button "Navigation menu (.)" [ref=e1202] [cursor=pointer]:
+              - img [ref=e30]
+          - link "Google Cloud Platform Home" [ref=e1203] [cursor=pointer]:
+            - /url: /
+            - generic:
+              - img
+          - button "You're currently working in PxNN-renamer. Hit enter to switch projects, folders, or organizations" [ref=e1204]:
+            - generic [ref=e41]:
+              - img [ref=e43]
+              - generic [ref=e46]: PxNN-renamer
+        - search "Google Cloud Platform" [ref=e1205]:
+          - combobox [ref=e53]:
+            - searchbox "Enter query to search for resources, docs, products, and more" [ref=e1206]
+          - button "See all search results" [disabled]:
+            - generic:
+              - img
+            - generic: Search
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - button "Open or close Gemini Cloud Assist chat (Option G)" [ref=e1207] [cursor=pointer]:
+              - img [ref=e62]
+            - button "Activate Cloud Shell (G then S)" [ref=e1208] [cursor=pointer]:
+              - img [ref=e69]
+            - button "Open notifications" [ref=e1209] [cursor=pointer]:
+              - img [ref=e76]
+            - button "Settings and utilities" [ref=e1210] [cursor=pointer]:
+              - img [ref=e84]
+          - 'button "Account: Steve Penn (sjpenn@gedsio.com)" [ref=e1211]':
+            - img [ref=e91]
+    - generic [ref=e100]:
+      - navigation "Breadcrumb" [ref=e1212]:
+        - link "Google Auth Platform" [ref=e1213] [cursor=pointer]:
+          - /url: /auth?project=pxnn-renamer
+          - img [ref=e490]
+          - generic [ref=e494]: Google Auth Platform
+        - list [ref=e495]:
+          - listitem [ref=e905]:
+            - generic [ref=e906]: /
+            - link "Audience" [ref=e1214] [cursor=pointer]:
+              - /url: /auth/audience?project=pxnn-renamer
+              - generic [ref=e911]: Audience
+      - generic [ref=e111]:
+        - navigation "Google Auth Platform" [ref=e1215]:
+          - generic [ref=e119]:
+            - list "Overview, 1 of 7 More options Branding, 2 of 7 More options Audience, 3 of 7 More options Clients, 4 of 7 More options Data Access, 5 of 7 More options Verification Center, 6 of 7 More options Settings, 7 of 7 More options" [ref=e1216]:
+              - listitem [ref=e513]:
+                - generic [ref=e516]:
+                  - link "Overview, 1 of 7" [ref=e1217] [cursor=pointer]:
+                    - /url: /auth/overview?project=pxnn-renamer
+                    - generic [ref=e518]:
+                      - img [ref=e521]
+                      - generic [ref=e523]: Overview
+                  - button "More options" [ref=e1218] [cursor=pointer]:
+                    - img [ref=e527]
+              - listitem [ref=e529]:
+                - generic [ref=e532]:
+                  - link "Branding, 2 of 7" [ref=e1219] [cursor=pointer]:
+                    - /url: /auth/branding?project=pxnn-renamer
+                    - generic [ref=e534]:
+                      - img [ref=e537]
+                      - generic [ref=e543]: Branding
+                  - button "More options" [ref=e1220] [cursor=pointer]:
+                    - img [ref=e547]
+              - listitem [ref=e549]:
+                - generic [ref=e552]:
+                  - link "Audience, 3 of 7" [ref=e1221] [cursor=pointer]:
+                    - /url: /auth/audience?project=pxnn-renamer
+                    - generic [ref=e554]:
+                      - img [ref=e557]
+                      - generic [ref=e559]: Audience
+                  - button "More options" [ref=e1222] [cursor=pointer]:
+                    - img [ref=e563]
+              - listitem [ref=e565]:
+                - generic [ref=e568]:
+                  - link "Clients, 4 of 7" [ref=e1223] [cursor=pointer]:
+                    - /url: /auth/clients?project=pxnn-renamer
+                    - generic [ref=e570]:
+                      - img [ref=e573]
+                      - generic [ref=e575]: Clients
+                  - button "More options" [ref=e1224] [cursor=pointer]:
+                    - img [ref=e579]
+              - listitem [ref=e581]:
+                - generic [ref=e584]:
+                  - link "Data Access, 5 of 7" [ref=e1225] [cursor=pointer]:
+                    - /url: /auth/scopes?project=pxnn-renamer
+                    - generic [ref=e586]:
+                      - img [ref=e589]
+                      - generic [ref=e592]: Data Access
+                  - button "More options" [ref=e1226] [cursor=pointer]:
+                    - img [ref=e596]
+              - listitem [ref=e598]:
+                - generic [ref=e601]:
+                  - link "Verification Center, 6 of 7" [ref=e1227] [cursor=pointer]:
+                    - /url: /auth/verification?project=pxnn-renamer
+                    - generic [ref=e603]:
+                      - img [ref=e606]
+                      - generic [ref=e609]: Verification Center
+                  - button "More options" [ref=e1228] [cursor=pointer]:
+                    - img [ref=e613]
+              - listitem [ref=e615]:
+                - generic [ref=e618]:
+                  - link "Settings, 7 of 7" [ref=e1229] [cursor=pointer]:
+                    - /url: /auth/settings?project=pxnn-renamer
+                    - generic [ref=e620]:
+                      - img [ref=e623]
+                      - generic [ref=e625]: Settings
+                  - button "More options" [ref=e1230] [cursor=pointer]:
+                    - img [ref=e629]
+            - button "Toggle Google Auth Platform navigation menu" [pressed] [ref=e1231] [cursor=pointer]:
+              - img [ref=e226]
+        - main [ref=e229]:
+          - generic [ref=e917]:
+            - heading "Audience" [level=1] [ref=e1232]:
+              - generic [ref=e924]: Audience
+            - generic [ref=e926]:
+              - generic [ref=e927]:
+                - generic [ref=e929]:
+                  - text: Publishing status
+                  - button "Help popup" [ref=e1233] [cursor=pointer]:
+                    - img [ref=e933]
+                - paragraph [ref=e935]: Testing
+                - button "Publish app" [ref=e1234]:
+                  - generic [ref=e938]: Publish app
+              - generic [ref=e939]:
+                - generic [ref=e940]: User type
+                - paragraph [ref=e941]:
+                  - text: External
+                  - button "Help popup" [ref=e1235] [cursor=pointer]:
+                    - img [ref=e945]
+                - button "Make internal" [ref=e1236]:
+                  - generic [ref=e949]: Make internal
+              - generic [ref=e950]:
+                - text: OAuth user cap
+                - button "Help with OAuth user cap" [ref=e1237] [cursor=pointer]:
+                  - img [ref=e954]
+              - generic [ref=e957]:
+                - group "Expanded group contents" [ref=e1238]:
+                  - generic [ref=e961]:
+                    - paragraph [ref=e962]:
+                      - text: While publishing status is set to "Testing", only test users are able to access the app. Allowed user cap prior to app verification is 100, and is counted over the entire lifetime of the app.
+                      - link "Learn more about user quota restrictions external, opens new window" [ref=e1239] [cursor=pointer]:
+                        - /url: https://support.google.com/cloud/answer/7454865
+                        - text: Learn more
+                        - img "external, opens new window" [ref=e1240]:
+                          - img [ref=e965]
+                    - generic [ref=e979]: 3 users (4 test, -1 other) / 100 user cap
+                    - button "Help with other user" [ref=e1241] [cursor=pointer]:
+                      - img [ref=e983]
+                    - generic [ref=e985]: Test users
+                    - button "Add users" [active] [ref=e1242]:
+                      - generic [ref=e987]:
+                        - img [ref=e989]:
+                          - img [ref=e990]
+                        - text: Add users
+                    - generic [ref=e995]:
+                      - img [ref=e997]
+                      - generic [ref=e999]: Filter
+                      - group "Filter" [ref=e1243]:
+                        - combobox "Filter" [ref=e1244]: Enter property name or value
+                      - button "Help with filtering." [ref=e1245] [cursor=pointer]:
+                        - img [ref=e1006]
+                    - grid "Test users , Navigate table with arrow keys. Enter key to interact with cell. Tab to navigate inside cell. Escape to exit cell." [ref=e1246]:
+                      - rowgroup [ref=e1016]:
+                        - row "User information Actions" [ref=e1247]:
+                          - columnheader "User information" [ref=e1248]:
+                            - generic [ref=e1020]: User information
+                          - columnheader "Actions" [ref=e1249]
+                      - rowgroup [ref=e1023]:
+                        - row "jasondpenn@gmail.com" [ref=e1250]:
+                          - gridcell "jasondpenn@gmail.com" [ref=e1251]
+                          - gridcell [ref=e1026]:
+                            - button [ref=e1027] [cursor=pointer]:
+                              - img [ref=e1029]:
+                                - img [ref=e1030]
+                        - row "sjpenn@gedsio.com" [ref=e1252]:
+                          - gridcell "sjpenn@gedsio.com" [ref=e1253]
+                          - gridcell [ref=e1254]:
+                            - button [ref=e1255] [cursor=pointer]:
+                              - img [ref=e1257]:
+                                - img [ref=e1258]
+                        - row "sjpenn@gmail.com" [ref=e1261]:
+                          - gridcell "sjpenn@gmail.com" [ref=e1262]
+                          - gridcell [ref=e1035]:
+                            - button [ref=e1036] [cursor=pointer]:
+                              - img [ref=e1038]:
+                                - img [ref=e1039]
+                        - row "sndpenn@gmail.com" [ref=e1263]:
+                          - gridcell "sndpenn@gmail.com" [ref=e1264]
+                          - gridcell [ref=e1044]:
+                            - button [ref=e1045] [cursor=pointer]:
+                              - img [ref=e1047]:
+                                - img [ref=e1048]
+                - button "Show less" [expanded] [ref=e1265]:
+                  - generic [ref=e1053]:
+                    - img [ref=e1055]
+                    - text: Show less
+  - iframe [ref=e476]:
+    
+  - iframe [ref=e477]:
+    
+  - iframe [ref=e479]:
+    

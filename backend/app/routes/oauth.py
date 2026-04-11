@@ -70,7 +70,7 @@ def _resolve_or_create_google_user(db: Session, google_sub: str, email: str) -> 
 async def google_login(request: Request):
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=503, detail="Google OAuth is not configured.")
-    redirect_uri = settings.GOOGLE_REDIRECT_URI
+    redirect_uri = settings.GOOGLE_REDIRECT_URI.strip()
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
