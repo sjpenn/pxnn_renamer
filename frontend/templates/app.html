@@ -130,13 +130,18 @@
                                 </p>
                             </div>
 
-                            <div class="dropzone p-12 transition-all" id="dropzone">
-                                <div class="flex flex-col items-center justify-center text-center">
+                            <div class="dropzone p-12 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
+                                 id="dropzone"
+                                 role="button"
+                                 tabindex="0"
+                                 aria-label="Choose audio files to upload, or drag and drop them here">
+                                <div class="flex flex-col items-center justify-center text-center pointer-events-none">
                                     <div class="text-cyan h-4 mx-auto mb-4 flex justify-center">{% include "partials/svg/eq_bars.html" %}</div>
                                     <h3 class="font-display font-extrabold text-xl text-ink">Drag &amp; drop audio files</h3>
+                                    <p class="mt-1 text-sm text-ink-dim">or <span class="text-cyan font-medium underline underline-offset-2">click to browse</span></p>
                                     <p class="mt-2 text-[11px] font-mono uppercase tracking-widest text-ink-dim">&gt; MP3 · WAV · AIFF · FLAC</p>
-                                    <input type="file" id="file-input" multiple class="hidden" accept=".wav,.mp3,.aif,.aiff,.flac">
                                 </div>
+                                <input type="file" id="file-input" multiple class="hidden" accept=".wav,.mp3,.aif,.aiff,.flac">
                             </div>
 
                             <div class="rounded-2xl bg-stage-sunken p-5 text-white ">
@@ -1389,6 +1394,22 @@
             event.preventDefault();
             dropzone.classList.remove("is-dragging");
             await uploadFiles(event.dataTransfer.files);
+        });
+
+        // Click anywhere in the dropzone to open the native file picker.
+        // The inner content uses pointer-events-none so the click target is
+        // unambiguously the dropzone itself.
+        dropzone.addEventListener("click", () => {
+            fileInput.click();
+        });
+
+        // Keyboard affordance: Enter or Space opens the picker when the
+        // dropzone is focused.
+        dropzone.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                fileInput.click();
+            }
         });
 
         renameForm.addEventListener("input", schedulePreviewRefresh);
