@@ -1,0 +1,15 @@
+<h2 class="text-sm uppercase tracking-wider text-ink-dim mb-3">Stuck at Checkout</h2>
+<ul class="divide-y divide-hairline text-sm">
+  {% for row in rows %}
+  <li class="py-2 flex items-center gap-3">
+    <span class="text-ink w-40 truncate">{{ row.username }}</span>
+    <span class="text-ink-dim w-56 truncate">{{ row.email }}</span>
+    <span class="text-ink-mute w-40">{{ row.last_stage }}</span>
+    <span class="text-ink-mute w-40">{{ row.last_stage_at.strftime('%Y-%m-%d %H:%M') if row.last_stage_at else '' }}</span>
+    <button class="text-xs text-cyan hover:text-ink"
+            onclick="navigator.clipboard.writeText('{{ row.email }}')">copy email</button>
+  </li>
+  {% else %}
+  <li class="py-2 text-ink-mute">Nobody stuck right now.</li>
+  {% endfor %}
+</ul>

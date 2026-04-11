@@ -1,0 +1,36 @@
+<div class="bg-stage-raised border border-hairline rounded-xl p-4">
+  <div class="text-xs uppercase tracking-wider text-ink-dim">Users</div>
+  <div class="text-3xl font-display font-semibold mt-1 text-ink">{{ users.total }}</div>
+  <div class="text-xs text-ink-dim mt-2">
+    +{{ users.new_today }} today · +{{ users.new_week }} week · +{{ users.new_month }} month
+  </div>
+  <div class="text-xs text-ink-mute mt-1">
+    Active: {{ sessions.active_now }} now · {{ users.active_today }} today
+  </div>
+</div>
+
+<div class="bg-stage-raised border border-hairline rounded-xl p-4">
+  <div class="text-xs uppercase tracking-wider text-ink-dim">Revenue</div>
+  <div class="text-3xl font-display font-semibold mt-1 text-ink">${{ '%.2f' % (revenue.total_cents / 100) }}</div>
+  <div class="text-xs text-ink-dim mt-2">
+    ${{ '%.2f' % (revenue.today_cents / 100) }} today ·
+    ${{ '%.2f' % (revenue.week_cents / 100) }} week ·
+    ${{ '%.2f' % (revenue.month_cents / 100) }} month
+  </div>
+</div>
+
+<div class="bg-stage-raised border border-hairline rounded-xl p-4">
+  <div class="text-xs uppercase tracking-wider text-ink-dim">Plans</div>
+  <div class="text-3xl font-display font-semibold mt-1 text-ink">{{ plans.paid }}</div>
+  <div class="text-xs text-ink-dim mt-2">
+    Paid · {{ plans.trial }} trial · {{ plans.free }} free
+  </div>
+</div>
+
+<div class="bg-stage-raised border border-hairline rounded-xl p-4">
+  <div class="text-xs uppercase tracking-wider text-ink-dim">Credits</div>
+  <div class="text-3xl font-display font-semibold mt-1 text-ink">{{ credits.outstanding }}</div>
+  <div class="text-xs text-ink-dim mt-2">
+    Outstanding · {{ credits.consumed_today }} today · {{ credits.consumed_week }} week
+  </div>
+</div>

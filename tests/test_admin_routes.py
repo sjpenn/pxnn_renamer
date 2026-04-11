@@ -28,3 +28,30 @@ def test_admin_dashboard_ok_for_admin(client, db):
     r = client.get("/admin")
     assert r.status_code == 200
     assert "Admin" in r.text
+
+
+def test_partials_are_admin_only(client, db):
+    _login_as(client, db, is_admin=False)
+    for path in (
+        "/admin/partials/kpis",
+        "/admin/partials/activity",
+        "/admin/partials/online",
+        "/admin/partials/funnel",
+        "/admin/partials/stuck",
+    ):
+        assert client.get(path).status_code == 403
+
+
+def test_kpi_partial_renders(client, db):
+    _login_as(client, db, is_admin=True)
+    r = client.get("/admin/partials/kpis")
+    assert r.status_code == 200
+    assert "Users" in r.text
+    assert "Revenue" in r.text
+
+
+def test_funnel_partial_renders(client, db):
+    _login_as(client, db, is_admin=True)
+    r = client.get("/admin/partials/funnel?window=7")
+    assert r.status_code == 200
+    assert "registered" in r.text.lower()

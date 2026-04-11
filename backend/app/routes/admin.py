@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from ..core.security import require_admin
 from ..database.models import ActivityLog, User
 from ..database.session import get_db
+from ..services import admin_stats
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "frontend" / "templates"))
@@ -124,3 +125,79 @@ async def admin_toggle_testing(
     )
     db.commit()
     return RedirectResponse(url="/admin/users", status_code=303)
+
+
+@router.get("/partials/kpis", response_class=HTMLResponse)
+async def partial_kpis(
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return templates.TemplateResponse(
+        request,
+        "admin/partials/kpi_cards.html",
+        {
+            "users": admin_stats.user_counts(db),
+            "revenue": admin_stats.revenue_stats(db),
+            "plans": admin_stats.plan_breakdown(db),
+            "credits": admin_stats.credit_stats(db),
+            "sessions": admin_stats.session_stats(db),
+        },
+    )
+
+
+@router.get("/partials/activity", response_class=HTMLResponse)
+async def partial_activity(
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return templates.TemplateResponse(
+        request,
+        "admin/partials/activity_feed.html",
+        {"rows": admin_stats.recent_activity(db, limit=50)},
+    )
+
+
+@router.get("/partials/online", response_class=HTMLResponse)
+async def partial_online(
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return templates.TemplateResponse(
+        request,
+        "admin/partials/online_now.html",
+        {"sessions": admin_stats.session_stats(db)},
+    )
+
+
+@router.get("/partials/funnel", response_class=HTMLResponse)
+async def partial_funnel(
+    request: Request,
+    window: int = 7,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    window_days = max(1, min(window, 365))
+    return templates.TemplateResponse(
+        request,
+        "admin/partials/funnel_widget.html",
+        {
+            "window_days": window_days,
+            "stages": admin_stats.funnel_stats(db, window_days=window_days),
+        },
+    )
+
+
+@router.get("/partials/stuck", response_class=HTMLResponse)
+async def partial_stuck(
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return templates.TemplateResponse(
+        request,
+        "admin/partials/stuck_at_checkout.html",
+        {"rows": admin_stats.stuck_at_checkout(db, limit=20)},
+    )

@@ -1,0 +1,27 @@
+<div class="flex items-center justify-between mb-3">
+  <h2 class="text-sm uppercase tracking-wider text-ink-dim">Purchase Funnel · {{ window_days }}d</h2>
+  <div class="flex gap-2 text-xs">
+    {% for w in [1, 7, 30] %}
+    <a class="px-2 py-1 rounded border border-hairline text-ink-dim hover:text-ink hover:border-cyan cursor-pointer"
+       hx-get="/admin/partials/funnel?window={{ w }}"
+       hx-target="#admin-funnel"
+       hx-swap="innerHTML">{{ w }}d</a>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="space-y-2">
+  {% set max_users = stages[0].users if stages and stages[0].users > 0 else 1 %}
+  {% for stage in stages %}
+  <div class="flex items-center gap-3 text-sm">
+    <span class="w-40 text-ink capitalize">{{ stage.stage.replace('_', ' ') }}</span>
+    <div class="flex-1 bg-stage-sunken rounded h-4 relative overflow-hidden">
+      <div class="bg-cyan h-4"
+           style="width: {{ (stage.users / max_users * 100) | round(1) }}%"></div>
+    </div>
+    <span class="w-12 text-right text-ink">{{ stage.users }}</span>
+    <span class="w-16 text-right text-ink-mute">{{ stage.pct_of_prev }}%</span>
+    <span class="w-16 text-right text-danger">-{{ stage.dropoff_pct }}%</span>
+  </div>
+  {% endfor %}
+</div>

@@ -1,0 +1,6 @@
+<h2 class="text-sm uppercase tracking-wider text-ink-dim mb-3">Active Now</h2>
+<div class="text-4xl font-display font-semibold text-ink">{{ sessions.active_now }}</div>
+<div class="text-xs text-ink-dim mt-2">
+  Sessions today: {{ sessions.sessions_today }}<br>
+  Avg duration today: {{ (sessions.avg_duration_today_s // 60) }}m {{ sessions.avg_duration_today_s % 60 }}s
+</div>
