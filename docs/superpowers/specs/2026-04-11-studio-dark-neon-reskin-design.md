@@ -53,7 +53,7 @@ All three fonts are already loaded in `base.html` via Google Fonts. No new fonts
 
 ### 3.3 Shape & elevation
 
-- **Radii:** `sm=8px`, `md=12px`, `lg=16px`, `xl=20px`, `pill=full`. The previous `rounded-3xl`/`4xl` (24px/32px) are dropped as too bubbly for a console aesthetic.
+- **Radii:** `sm=8px`, `md=12px`, `lg=16px`, `xl=20px`, `pill=full`. The previous custom `rounded-3xl`/`4xl` (24px/32px) are dropped as too bubbly for a console aesthetic. **Remediation:** the 30 existing usages of `rounded-3xl` / `rounded-4xl` across `home.html` (14), `app.html` (8), `profile.html` (6), `auth/login.html` (1), and `auth/register.html` (1) must be rewritten — `rounded-3xl` → `rounded-xl`, `rounded-4xl` → `rounded-xl`. Verified by grep returning zero hits for `rounded-3xl` and `rounded-4xl` in `frontend/`.
 - **Shadows:** flat by default. Elevation comes from `stage-raised` vs `stage` contrast and `hairline` borders. One glow utility reserved: `shadow-glow-cyan = 0 0 24px rgba(0,240,255,0.18)`, used only on primary CTAs (hover/focus) and the current-step indicator.
 - **Grain:** a 2% SVG noise overlay applied via `body::before` as a data URI. No extra HTTP request.
 
@@ -120,7 +120,7 @@ No drop shadows by default — elevation is carried by surface contrast.
 .table tr:hover bg-rail/50
 ```
 
-Filename and "new name" columns always render in Geist Mono. This is the single biggest visual cue that the app is a DAW-adjacent tool.
+All `.table td` cells default to Geist Mono via the class definition above — this is deliberate. Filename lists, size readouts, format tags, and preview "new name" columns all render mono, which is the single biggest visual cue that the app is a DAW-adjacent tool. Header cells (`th`) stay in Inter (sans) because they're short uppercase labels and already have their own styling.
 
 ### 4.6 Status pills
 
@@ -186,15 +186,16 @@ No change — continue using Material Symbols Outlined (Google Fonts) already lo
 - Single-row, `ink-dim`, `hairline` top border, small wordmark + © line + Privacy / Terms / Contact links.
 
 ### 5.4 `home.html` (landing)
-Sections in order:
+The current file has 8 sections (verified from the source). Each maps 1:1 to a reskin treatment:
 
-1. **Hero** — `stage` bg with `spectrogram_grid` SVG tiled in the upper half. Hero photo A (dark studio) sits full-bleed at ~25% opacity behind copy. Kicker `BULK AUDIO FILE RENAMER` in mono small caps, cyan. H1 Manrope 800 (existing copy). Red strikethrough `"track_final_v2.wav"` becomes `danger` color on dark. Subcopy `ink-dim`. CTAs: `btn-primary` "Get Started Free" + `btn-ghost` "See how it works". The existing filename-stack card becomes a `.card` with Geist-Mono filenames, `success`-colored arrow icons, `ink-dim` struck-through before-names; the downward arrow gets a cyan glow.
-2. **Problem** — two side-by-side `.card`s, each with a cyan Material Symbols icon at top. Bullet markers render in `danger`.
-3. **Solution / How it works** — three-up step cards with giant `01 / 02 / 03` in Manrope 800 and a small cyan `eq_bars` SVG under each number. Hover applies `.card-hover`.
-4. **Features grid** — 6 feature cards, each with a Material Symbols icon in cyan on a `.card-inset` square. Body text `ink-dim`.
-5. **Social proof / testimonial** (if present) — testimonial card with a small cyan `waveform_line` divider above the quote.
-6. **Pricing** (if present) — three plan cards. Recommended plan uses `.card-active`. Price in Manrope 800 with `/mo` in small Geist Mono.
-7. **Final CTA** — full-bleed `stage-sunken` band with `waveform_line` SVG running across the background in cyan + magenta split-tone. One centered `btn-primary`.
+1. **HERO** (line 8) — `stage` bg with `spectrogram_grid` SVG tiled in the upper half. Hero photo A (dark studio) sits full-bleed at ~25% opacity behind copy. Kicker `BULK AUDIO FILE RENAMER` in mono small caps, cyan. H1 Manrope 800 (existing copy). Red strikethrough `"track_final_v2.wav"` becomes `danger` color on dark. Subcopy `ink-dim`. CTAs: `btn-primary` "Get Started Free" + `btn-ghost` "See how it works". The existing filename-stack card becomes a `.card` with Geist-Mono filenames, `success`-colored arrow icons, `ink-dim` struck-through before-names; the downward arrow gets a cyan glow.
+2. **PROBLEM** (line 51) — two side-by-side `.card`s, each with a cyan Material Symbols icon at top. Bullet markers render in `danger`.
+3. **HOW IT WORKS** (line 77) — three-up step cards with giant `01 / 02 / 03` in Manrope 800 and a small cyan `eq_bars` SVG under each number. Hover applies `.card-hover`.
+4. **LIVE EXAMPLE** (line 105) — a `.card-inset` container wrapping the existing example. Before filenames in Geist Mono `ink-dim` with strikethrough; after filenames in Geist Mono `ink`; match pills to the right. A faint `waveform_line` SVG sits behind the example at low opacity as visual interest.
+5. **FEATURES** (line 141) — six feature cards, each with a Material Symbols icon in cyan on a `.card-inset` square. Body text `ink-dim`.
+6. **PRICING** (line 180) — three plan cards. Recommended plan uses `.card-active`. Price in Manrope 800 with `/mo` in small Geist Mono.
+7. **STATS** (line 208) — full-bleed `stage-sunken` band with 3–4 giant metric numerals in Manrope 800 and mono small-caps labels beneath. A single cyan `waveform_line` runs across the bottom edge as a divider.
+8. **FINAL CTA** (line 227) — full-bleed `stage` band with a `waveform_line` SVG across the background in cyan + magenta split-tone. One centered `btn-primary`.
 
 ### 5.5 `app.html` (wizard)
 **No file split.** Reskin in place.
@@ -257,7 +258,16 @@ All checks must pass before the work is claimed complete.
 ### 7.1 Visual
 
 - [ ] Every reskinned template renders cleanly at 375px, 768px, 1280px, and 1920px: `base.html`, `home.html`, `app.html`, `auth/login.html`, `auth/register.html`, `profile.html`, `partials/nav.html`, `partials/footer.html`.
-- [ ] Grep for residual Precision Slate tokens returns zero hits across `frontend/`: `primary-container`, `surface-bright`, `deep-slate`, `surface-container-high`, `primary-fixed`, `primary-fixed-dim`, `inverse-surface`, `inverse-on-surface`, `on-secondary`, `outline` (as a color token), `secondary` (as a color token).
+- [ ] Grep for residual Precision Slate tokens across `frontend/` returns zero hits. Use these exact search terms so unrelated Tailwind utilities don't false-positive:
+  - `primary-container`, `primary-fixed`, `primary-fixed-dim`
+  - `surface-bright`, `surface-container-high`
+  - `deep-slate`
+  - `inverse-surface`, `inverse-on-surface`
+  - `on-secondary`
+  - Prefixed forms for the ambiguous tokens: `bg-secondary`, `text-secondary`, `border-secondary`, `ring-secondary`
+  - Prefixed forms for the custom `outline` color token: `bg-outline`, `text-outline`, `border-outline`, `ring-outline` (do **not** grep bare `outline`, which matches Tailwind's outline utility)
+  - The entire old `theme.extend.colors` block in `base.html` must be gone.
+- [ ] Grep returns zero hits for `rounded-3xl` and `rounded-4xl` across `frontend/`.
 - [ ] Every interactive element has a visible `:focus-visible` cyan ring.
 - [ ] Contrast: `ink` on `stage` and `ink` on `stage-raised` both meet WCAG AA for body text (4.5:1). `ink-dim` is never used for body copy smaller than 18px.
 
