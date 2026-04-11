@@ -92,7 +92,7 @@
                     <div id="header-auth-pill" class="text-xs font-medium text-ink-dim">
                         Sync your metadata across devices
                     </div>
-                    <div id="status-pill" class="inline-flex items-center gap-2 rounded-full bg-surface-container-high px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan">
+                    <div id="status-pill" class="inline-flex items-center gap-2 rounded-full bg-rail px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan">
                         <span class="h-2 w-2 rounded-full bg-cyan animate-pulse"></span>
                         Waiting for files
                     </div>
@@ -309,7 +309,7 @@
                         </section>
 
                         <div class="pt-12 border-t border-hairline hidden md:block">
-                            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-container-high text-ink-dim mb-4">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-rail text-ink-dim mb-4">
                                 <span class="material-symbols-outlined">analytics</span>
                             </div>
                             <h3 class="text-xl font-display font-bold text-ink">Workspace Overview</h3>
@@ -363,7 +363,7 @@
                             <div class="rounded-xl border border-hairline bg-stage-raised p-6">
                                 <div class="flex items-center justify-between mb-6">
                                     <div class="space-y-1">
-                                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-container-high text-ink-dim">
+                                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-rail text-ink-dim">
                                             <span class="material-symbols-outlined text-sm">dashboard</span>
                                         </div>
                                         <h3 class="text-xl font-bold text-ink">Project Activity</h3>
@@ -421,7 +421,7 @@
                             <p class="text-[10px] font-bold uppercase tracking-widest text-ink-mute">Real-time Preview</p>
                             <h3 class="text-xl font-display font-bold text-ink">Detected State</h3>
                         </div>
-                        <div id="preview-badge" class="px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold text-cyan">EMPTY</div>
+                        <div id="preview-badge" class="px-3 py-1 bg-rail rounded-full text-[10px] font-bold text-cyan">EMPTY</div>
                     </div>
 
                     <div class="mt-8 space-y-6">
@@ -689,7 +689,7 @@
 
         function setStatus(text, type = "idle") {
             const colors = {
-                idle: "bg-surface-container-high text-cyan",
+                idle: "bg-rail text-cyan",
                 working: "bg-stage-raised text-cyan",
                 ready: "bg-success/15 text-success",
                 alert: "bg-danger/10 text-danger"
@@ -767,7 +767,7 @@
                             <p class="truncate text-xs font-bold text-ink">${escapeHtml(file.name)}</p>
                             <div class="mt-1 flex items-center gap-3 opacity-60">
                                 <span class="text-[10px] font-bold uppercase tracking-widest text-ink-dim">${escapeHtml(file.extracted_fields.bpm > 0 ? file.extracted_fields.bpm + ' BPM' : '120 BPM')}</span>
-                                <span class="h-1 w-1 rounded-full bg-secondary"></span>
+                                <span class="h-1 w-1 rounded-full bg-ink-dim"></span>
                                 <span class="text-[10px] font-bold text-ink-dim uppercase tracking-widest">${file.extension ? file.extension.toUpperCase() : 'WAV'}</span>
                             </div>
                         </div>
@@ -856,7 +856,7 @@
                 `;
                 previewCount.textContent = "0 items";
                 previewBadge.textContent = "EMPTY";
-                previewBadge.className = "px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold text-cyan";
+                previewBadge.className = "px-3 py-1 bg-rail rounded-full text-[10px] font-bold text-cyan";
                 return;
             }
 
@@ -926,7 +926,7 @@
                 dashboardUserBadge.className = "px-3 py-1 bg-success/15 rounded-full text-[10px] font-bold text-success uppercase tracking-widest";
             } else {
                 dashboardUserBadge.textContent = "WAITING";
-                dashboardUserBadge.className = "px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold text-cyan uppercase tracking-widest";
+                dashboardUserBadge.className = "px-3 py-1 bg-rail rounded-full text-[10px] font-bold text-cyan uppercase tracking-widest";
             }
 
             dashboardTotalBatches.textContent = String(summary.total_batches || 0);
@@ -1075,7 +1075,7 @@
 
         function setStatus(text, type = "idle") {
             const colors = {
-                idle: "bg-surface-container-high text-cyan",
+                idle: "bg-rail text-cyan",
                 working: "bg-stage-raised text-cyan",
                 ready: "bg-success/15 text-success",
                 alert: "bg-danger/10 text-danger"
