@@ -105,8 +105,8 @@
                 <div class="rounded-xl border border-hairline bg-stage-raised p-8 ">
                     <div class="flex items-start justify-between border-b border-hairline pb-6">
                         <div class="space-y-1">
-                            <p class="text-[11px] font-bold uppercase tracking-widest text-ink-dim opacity-60">Status: Active Batch</p>
-                            <h2 class="text-3xl font-display font-bold text-ink">Rename Wizard</h2>
+                            <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; WORKSPACE</p>
+                            <h2 class="text-3xl font-display font-extrabold text-ink">Rename Wizard</h2>
                             <p id="workspace-subtitle" class="max-w-2xl text-sm leading-6 text-ink-dim font-medium">
                                 Upload your tracks below. We'll automatically identify BPM, artist, and version data.
                             </p>
@@ -118,20 +118,18 @@
                         <!-- Step 1: File Staging -->
                         <section class="wizard-panel space-y-8" data-step-panel="1">
                             <div class="space-y-2">
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-cyan bg-stage-raised inline-block px-2 py-0.5 rounded">Process Step 01</p>
-                                <h3 class="text-2xl font-display font-bold text-ink">Stage Source Files</h3>
+                                <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; STEP 01 · STAGE FILES</p>
+                                <h3 class="text-2xl font-display font-extrabold text-ink">Stage Source Files</h3>
                                 <p class="max-w-2xl text-sm leading-6 text-ink-dim font-medium">
                                     Our precision parser will extract BPM, artist, and version metadata from your filenames.
                                 </p>
                             </div>
 
-                            <div class="rounded-xl border-2 border-dashed border-hairline bg-stage-raised p-12 transition-all hover:border-cyan/40 dropzone" id="dropzone">
+                            <div class="dropzone p-12 transition-all" id="dropzone">
                                 <div class="flex flex-col items-center justify-center text-center">
-                                    <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-stage text-cyan ">
-                                        <span class="material-symbols-outlined text-3xl">upload_file</span>
-                                    </div>
-                                    <h3 class="text-lg font-bold text-ink">Drag & Drop audio files</h3>
-                                    <p class="mt-2 text-sm text-ink-dim font-medium">Or click to browse storage</p>
+                                    <div class="text-cyan h-4 mx-auto mb-4 flex justify-center">{% include "partials/svg/eq_bars.html" %}</div>
+                                    <h3 class="font-display font-extrabold text-xl text-ink">Drag &amp; drop audio files</h3>
+                                    <p class="mt-2 text-[11px] font-mono uppercase tracking-widest text-ink-dim">&gt; MP3 · WAV · AIFF · FLAC</p>
                                     <input type="file" id="file-input" multiple class="hidden" accept=".wav,.mp3,.aif,.aiff,.flac">
                                 </div>
                             </div>
@@ -150,8 +148,8 @@
                         <!-- Step 2: Metadata Definition -->
                         <section class="wizard-panel hidden space-y-8" data-step-panel="2">
                             <div class="space-y-2">
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-cyan bg-stage-raised inline-block px-2 py-0.5 rounded">Process Step 02</p>
-                                <h3 class="text-2xl font-display font-bold text-ink">Define Metadata Rules</h3>
+                                <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; STEP 02 · RULE BUILDER</p>
+                                <h3 class="text-2xl font-display font-extrabold text-ink">Define Metadata Rules</h3>
                                 <p class="max-w-xl text-sm leading-6 text-ink-dim font-medium">
                                     Set batch defaults first. Producers accept semicolon-separated values like <span class="font-bold text-ink">PMHITSS; REALLYINDIG0</span>.
                                 </p>
@@ -259,8 +257,8 @@
                         <!-- Step 3: Review & Download -->
                         <section class="wizard-panel hidden space-y-8" data-step-panel="3">
                             <div class="space-y-2">
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-cyan bg-stage-raised inline-block px-2 py-0.5 rounded">Process Step 03</p>
-                                <h3 class="text-2xl font-display font-bold text-ink">Final Review & Export</h3>
+                                <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; STEP 03 · COMMIT BATCH</p>
+                                <h3 class="text-2xl font-display font-extrabold text-ink">Final Review & Export</h3>
                                 <p class="max-w-xl text-sm leading-6 text-ink-dim font-medium">
                                     Your standardized archive is ready. Verify the final names in the preview rail before downloading.
                                 </p>
