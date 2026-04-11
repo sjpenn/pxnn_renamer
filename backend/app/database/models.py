@@ -22,6 +22,7 @@ class User(Base):
     active_plan = Column(String, default="free", nullable=False)
     plan_status = Column(String, default="inactive", nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    is_admin = Column(Boolean, default=False, nullable=False)
 
     collections = relationship("FileCollection", back_populates="owner", cascade="all, delete-orphan")
     activity_logs = relationship("ActivityLog", back_populates="user", cascade="all, delete-orphan")

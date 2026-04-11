@@ -38,6 +38,9 @@ def bootstrap_database() -> None:
     _ensure_column("users", "active_plan", "ALTER TABLE users ADD COLUMN active_plan TEXT DEFAULT 'free'")
     _ensure_column("users", "plan_status", "ALTER TABLE users ADD COLUMN plan_status TEXT DEFAULT 'inactive'")
 
+    # Users — admin flag
+    _ensure_column("users", "is_admin", "ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE")
+
     # Users — new OAuth + subscription columns
     _ensure_column("users", "email", "ALTER TABLE users ADD COLUMN email TEXT")
     _ensure_column("users", "google_sub", "ALTER TABLE users ADD COLUMN google_sub TEXT")
@@ -136,3 +139,23 @@ def bootstrap_database() -> None:
                 "ON payment_records (stripe_invoice_id) WHERE stripe_invoice_id IS NOT NULL"
             )
         )
+
+    # Promote configured admin email (idempotent)
+    from .models import User as _UserModel
+    from ..core.config import settings as _settings
+
+    email = (_settings.ADMIN_BOOTSTRAP_EMAIL or "").strip().lower()
+    if email:
+        from sqlalchemy.orm import Session as _Session
+        db = _Session(bind=engine)
+        try:
+            match = (
+                db.query(_UserModel)
+                .filter(_UserModel.email.ilike(email))
+                .first()
+            )
+            if match and not match.is_admin:
+                match.is_admin = True
+                db.commit()
+        finally:
+            db.close()

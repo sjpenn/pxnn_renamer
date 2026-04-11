@@ -110,6 +110,18 @@ def get_current_user(
     )
 
 
+def require_admin(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Require the authenticated user to have is_admin=True."""
+    if not getattr(current_user, "is_admin", False):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required.",
+        )
+    return current_user
+
+
 def set_pending_plan(request: Request, plan_key: str) -> None:
     """Store a plan key in the session for post-registration checkout redirect."""
     request.session["pending_plan"] = plan_key

@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: Optional[str] = None
     GOOGLE_CLIENT_SECRET: Optional[str] = None
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/auth/google/callback"
+    ADMIN_BOOTSTRAP_EMAIL: str = "sjpenn@gmail.com"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
