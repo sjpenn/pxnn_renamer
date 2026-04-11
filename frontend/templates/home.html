@@ -233,28 +233,37 @@
 
 {# ============================ STATS ============================ #}
 {# Note: These are hardcoded marketing placeholder numbers, not real data. #}
-<section class="py-16 bg-inverse-surface text-inverse-on-surface">
-    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+<section class="relative py-16 bg-stage-sunken overflow-hidden">
+    <div class="absolute inset-x-0 bottom-0 text-cyan opacity-[0.08] pointer-events-none">
+        {% include "partials/svg/waveform_line.html" %}
+    </div>
+    <div class="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
         <div>
-            <div class="font-display font-extrabold text-5xl" data-count-to="50000" data-count-suffix="+">0</div>
-            <p class="mt-2 text-sm uppercase tracking-widest opacity-70">Files renamed</p>
+            <div class="font-display font-extrabold text-5xl text-cyan" data-count-to="50000" data-count-suffix="+">0</div>
+            <p class="mt-2 text-[11px] font-mono uppercase tracking-widest text-ink-dim">Files renamed</p>
         </div>
         <div>
-            <div class="font-display font-extrabold text-5xl">2.3s</div>
-            <p class="mt-2 text-sm uppercase tracking-widest opacity-70">Average per file</p>
+            <div class="font-display font-extrabold text-5xl text-ink">2.3s</div>
+            <p class="mt-2 text-[11px] font-mono uppercase tracking-widest text-ink-dim">Average per file</p>
         </div>
         <div>
-            <div class="font-display font-extrabold text-5xl" data-count-to="99" data-count-suffix=".7%">0</div>
-            <p class="mt-2 text-sm uppercase tracking-widest opacity-70">Customer satisfaction</p>
+            <div class="font-display font-extrabold text-5xl text-cyan" data-count-to="99" data-count-suffix=".7%">0</div>
+            <p class="mt-2 text-[11px] font-mono uppercase tracking-widest text-ink-dim">Customer satisfaction</p>
         </div>
     </div>
 </section>
 
 {# ============================ FINAL CTA ============================ #}
-<section class="py-20 bg-gradient-to-br from-primary-container to-deep-slate text-white">
-    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="font-display font-extrabold text-3xl md:text-5xl">Ready to stop fighting your filenames?</h2>
-        <a href="/register" class="mt-8 inline-block rounded-xl bg-white px-8 py-4 font-bold text-primary-container hover:bg-white/90 transition shadow-xl">
+<section class="relative py-24 bg-stage overflow-hidden">
+    <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 text-cyan opacity-15 pointer-events-none">
+        {% include "partials/svg/waveform_line.html" %}
+    </div>
+    <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 text-magenta opacity-10 pointer-events-none translate-y-1">
+        {% include "partials/svg/waveform_line.html" %}
+    </div>
+    <div class="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink">Ready to stop fighting your filenames?</h2>
+        <a href="/register" class="mt-10 btn btn-primary inline-flex text-base px-8 py-4">
             Get Started Free — No card required
         </a>
     </div>
