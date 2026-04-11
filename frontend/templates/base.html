@@ -25,21 +25,24 @@
                         mono: ['Geist Mono', 'monospace'],
                     },
                     colors: {
-                        'primary-container': '#0052cc',
-                        'primary-fixed': '#dae2ff',
-                        'primary-fixed-dim': '#b2c5ff',
-                        'secondary': '#4c5d8d',
-                        'inverse-surface': '#233144',
-                        'inverse-on-surface': '#eaf1ff',
-                        'surface-bright': '#f8f9ff',
-                        'surface-container-high': '#dce9ff',
-                        'on-secondary': '#ffffff',
-                        'outline': '#737685',
-                        'deep-slate': '#1a1f2e',
+                        stage:           '#0a0b0f',
+                        'stage-raised':  '#13151c',
+                        'stage-sunken':  '#07080b',
+                        rail:            '#1c1f2a',
+                        hairline:        '#232836',
+                        ink:             '#eef2ff',
+                        'ink-dim':       '#8b92a8',
+                        'ink-mute':      '#545a6e',
+                        cyan:            '#00f0ff',
+                        'cyan-soft':     '#0088a3',
+                        magenta:         '#ff2d95',
+                        amber:           '#ffb300',
+                        success:         '#2de89a',
+                        danger:          '#ff4e5b',
                     },
-                    borderRadius: {
-                        '3xl': '1.5rem',
-                        '4xl': '2rem',
+                    boxShadow: {
+                        'glow-cyan':    '0 0 24px rgba(0, 240, 255, 0.18)',
+                        'glow-magenta': '0 0 24px rgba(255, 45, 149, 0.18)',
                     },
                 },
             },
@@ -50,7 +53,7 @@
 
     {% block extra_head %}{% endblock %}
 </head>
-<body class="min-h-full font-sans text-deep-slate antialiased {% block body_class %}bg-surface-bright{% endblock %}">
+<body class="min-h-full font-sans text-ink antialiased relative {% block body_class %}bg-stage{% endblock %}">
     {% block body %}{% endblock %}
 </body>
 </html>
