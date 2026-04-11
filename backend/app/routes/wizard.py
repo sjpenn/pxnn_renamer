@@ -838,7 +838,7 @@ async def download_archive(
             source_path = originals_dir / file_item["stored_name"]
             archive.write(source_path, arcname=preview_lookup[file_item["id"]])
 
-    if collection.download_count == 0:
+    if collection.download_count == 0 and not has_unlimited_access(current_user):
         current_user.credit_balance -= 1
         _log_activity(
             db,

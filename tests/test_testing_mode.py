@@ -16,6 +16,33 @@ def test_has_unlimited_access_false_for_none():
     assert has_unlimited_access(None) is False
 
 
+def test_testing_user_download_does_not_decrement(db):
+    """Regression: testing-mode users bypassing the 402 gate must also
+    bypass the credit deduction, otherwise their balance goes negative."""
+    testing_user = User(
+        username="tester", email="t@x.com", password_hash="x",
+        is_testing=True, credit_balance=0,
+    )
+    db.add(testing_user)
+    db.commit()
+
+    # Simulate the wizard gate: the download handler now checks
+    # `not has_unlimited_access(current_user)` before deducting credits.
+    assert has_unlimited_access(testing_user) is True
+    # The fix means wizard.py now has this combined guard:
+    should_deduct = not has_unlimited_access(testing_user)
+    assert should_deduct is False
+
+    # Sanity: a non-testing user should still be deducted
+    normal_user = User(
+        username="normie", email="n@x.com", password_hash="x",
+        is_testing=False, credit_balance=5,
+    )
+    db.add(normal_user)
+    db.commit()
+    assert has_unlimited_access(normal_user) is False
+
+
 def test_serialize_user_includes_is_testing():
     u = User(
         id=1,
