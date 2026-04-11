@@ -147,6 +147,8 @@ def bootstrap_database() -> None:
 
     # UserSession table is handled by create_all above — no migration helper needed.
 
+    # UIComment table is handled by create_all above — no migration helper needed.
+
     # Promote configured admin email (idempotent)
     from .models import User as _UserModel
     from ..core.config import settings as _settings

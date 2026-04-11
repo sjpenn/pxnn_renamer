@@ -139,3 +139,18 @@ class UserSession(Base):
     duration_seconds = Column(Integer, nullable=True)
     user_agent = Column(String, nullable=True)
     ip_hash = Column(String, nullable=True)
+
+
+class UIComment(Base):
+    __tablename__ = "ui_comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    author_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    block_key = Column(String, nullable=False, index=True)
+    page_path = Column(String, nullable=False, index=True)
+    body = Column(Text, nullable=False)
+    status = Column(String, default="open", nullable=False, index=True)  # open | resolved
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    resolved_at = Column(DateTime, nullable=True)
+
+    author = relationship("User")
