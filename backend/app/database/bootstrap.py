@@ -144,6 +144,8 @@ def bootstrap_database() -> None:
     _ensure_column("announcements", "target_funnel_stage", "ALTER TABLE announcements ADD COLUMN target_funnel_stage TEXT")
     _ensure_column("announcements", "target_plan_status", "ALTER TABLE announcements ADD COLUMN target_plan_status TEXT")
 
+    # UserSession table is handled by create_all above — no migration helper needed.
+
     # Promote configured admin email (idempotent)
     from .models import User as _UserModel
     from ..core.config import settings as _settings

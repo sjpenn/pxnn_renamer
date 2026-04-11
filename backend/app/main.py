@@ -22,6 +22,7 @@ from .routes.dashboard import router as dashboard_router
 from .routes.oauth import router as oauth_router
 from .routes.payments import router as payments_router
 from .routes.profile import router as profile_router
+from .routes.session_heartbeat import router as session_heartbeat_router
 from .routes.wizard import router as wizard_router
 
 app = FastAPI(title="PxNN it")
@@ -59,6 +60,7 @@ app.include_router(dashboard_router)
 app.include_router(oauth_router)
 app.include_router(payments_router)
 app.include_router(profile_router)
+app.include_router(session_heartbeat_router)
 app.include_router(wizard_router)
 
 
