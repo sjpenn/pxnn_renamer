@@ -9,7 +9,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..core.security import require_admin
-from ..database.models import ActivityLog, Announcement, UIComment, User
+from ..database.models import ActivityLog, Announcement, CommentCluster, UIComment, User
 from ..database.session import get_db
 from ..services import admin_stats
 
@@ -278,38 +278,11 @@ async def admin_announcements_delete(
 # --------------------------------------------------------------------------- #
 
 
-@router.get("/ui-comments", response_class=HTMLResponse)
-async def admin_ui_comments_page(
-    request: Request,
-    status: str = "all",
+@router.get("/ui-comments")
+async def admin_ui_comments_legacy_redirect(
     admin: User = Depends(require_admin),
-    db: Session = Depends(get_db),
 ):
-    query = (
-        db.query(UIComment, User.username, User.email)
-        .join(User, UIComment.author_id == User.id)
-        .order_by(UIComment.created_at.desc())
-    )
-    if status in ("open", "resolved"):
-        query = query.filter(UIComment.status == status)
-    rows = [
-        {
-            "comment": c,
-            "author_username": username,
-            "author_email": email,
-        }
-        for c, username, email in query.all()
-    ]
-    return templates.TemplateResponse(
-        request,
-        "admin/ui_comments.html",
-        {
-            "current_user": admin,
-            "rows": rows,
-            "status_filter": status,
-            "title": "UI Comments · PxNN Admin",
-        },
-    )
+    return RedirectResponse(url="/admin/todos", status_code=303)
 
 
 @router.post("/ui-comments/{comment_id}/resolve")
@@ -341,3 +314,88 @@ async def admin_ui_comments_delete(
         db.delete(row)
         db.commit()
     return RedirectResponse(url="/admin/ui-comments", status_code=303)
+
+
+# --------------------------------------------------------------------------- #
+# Todos — the richer replacement for the raw UI-comment list
+# --------------------------------------------------------------------------- #
+VALID_TODO_STATUSES = {"open", "in_progress", "done", "wont_do"}
+
+
+@router.get("/todos", response_class=HTMLResponse)
+async def admin_todos_page(
+    request: Request,
+    status: str = "all",
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    # Fetch all comments (with author metadata), most recent first
+    query = (
+        db.query(UIComment, User.username, User.email)
+        .join(User, UIComment.author_id == User.id)
+        .order_by(UIComment.created_at.desc())
+    )
+    if status in VALID_TODO_STATUSES:
+        query = query.filter(UIComment.status == status)
+
+    comment_rows = [
+        {
+            "comment": c,
+            "author_username": username,
+            "author_email": email,
+        }
+        for c, username, email in query.all()
+    ]
+
+    # Fetch clusters; attach the relevant comments to each
+    clusters = db.query(CommentCluster).order_by(CommentCluster.created_at.desc()).all()
+    clustered_ids = set()
+    grouped = []
+    for cluster in clusters:
+        rows_in_cluster = [
+            r for r in comment_rows if r["comment"].cluster_id == cluster.id
+        ]
+        if rows_in_cluster:
+            grouped.append({"cluster": cluster, "rows": rows_in_cluster})
+            for r in rows_in_cluster:
+                clustered_ids.add(r["comment"].id)
+
+    unclustered = [r for r in comment_rows if r["comment"].id not in clustered_ids]
+
+    return templates.TemplateResponse(
+        request,
+        "admin/todos.html",
+        {
+            "current_user": admin,
+            "grouped": grouped,
+            "unclustered": unclustered,
+            "status_filter": status,
+            "total_open": sum(
+                1 for r in comment_rows if r["comment"].status == "open"
+            ),
+            "title": "Todos · PxNN Admin",
+        },
+    )
+
+
+@router.post("/todos/{comment_id}/status")
+async def admin_todos_set_status(
+    comment_id: int,
+    status: str = Form(...),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    if status not in VALID_TODO_STATUSES:
+        raise HTTPException(status_code=400, detail="Invalid status.")
+
+    row = db.query(UIComment).filter(UIComment.id == comment_id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Todo not found.")
+
+    row.status = status
+    if status in ("done", "wont_do"):
+        row.resolved_at = datetime.utcnow()
+    else:
+        row.resolved_at = None
+    db.commit()
+    return RedirectResponse(url="/admin/todos", status_code=303)

@@ -16,8 +16,9 @@ from .core.security import (
     serialize_user,
     set_pending_plan,
 )
+from sqlalchemy import func
 from .database.bootstrap import bootstrap_database
-from .database.models import User
+from .database.models import UIComment, User
 from .database.session import get_db
 from .routes.auth import router as auth_router
 from .routes.funnel import router as funnel_router
@@ -133,6 +134,15 @@ async def workspace(
             "billing_notice": request.query_params.get("billing", ""),
             "google_oauth_enabled": bool(settings.GOOGLE_CLIENT_ID),
             "announcement": get_active_announcement(db, current_user),
+            "ui_comment_counts": dict(
+                db.query(UIComment.block_key, func.count(UIComment.id))
+                .filter(
+                    UIComment.page_path == "/app",
+                    UIComment.status == "open",
+                )
+                .group_by(UIComment.block_key)
+                .all()
+            ),
         },
     )
 

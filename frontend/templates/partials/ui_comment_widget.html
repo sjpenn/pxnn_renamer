@@ -3,12 +3,16 @@
 {% if current_user and current_user.is_admin %}
 {% set widget_id = "uicw-" ~ block_key | replace(".", "-") | replace("/", "-") %}
 <div class="ui-comment-widget absolute top-2 right-2 z-20 text-xs" data-widget-id="{{ widget_id }}">
+  {% set ui_count = (ui_comment_counts or {}).get(block_key, 0) %}
   <button type="button"
           class="ui-comment-toggle inline-flex items-center gap-1 rounded-md border border-hairline bg-stage-sunken/80 px-2 py-1 text-ink-dim hover:text-cyan hover:border-cyan transition"
-          aria-label="Leave a UI note for this block"
-          title="Leave a UI note">
+          aria-label="Leave a UI note for this block{% if ui_count %} ({{ ui_count }} open){% endif %}"
+          title="Leave a UI note{% if ui_count %} ({{ ui_count }} open){% endif %}">
     <span class="material-symbols-outlined text-[14px] leading-none">edit_note</span>
     <span class="hidden sm:inline">note</span>
+    {% if ui_count > 0 %}
+    <span class="ui-comment-count inline-flex items-center justify-center min-w-[1.25rem] h-4 px-1 rounded-full bg-cyan text-stage text-[10px] font-bold leading-none">{{ ui_count }}</span>
+    {% endif %}
   </button>
 
   <form class="ui-comment-form hidden absolute top-full right-0 mt-2 w-72 rounded-xl border border-hairline bg-stage-raised p-3 shadow-glow-cyan"

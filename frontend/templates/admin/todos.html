@@ -1,0 +1,136 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="flex items-center justify-between gap-4 flex-wrap">
+  <div>
+    <h1 class="text-2xl font-display font-semibold text-ink">Todos</h1>
+    <p class="text-sm text-ink-dim mt-1">
+      {{ total_open }} open · inline notes from the workspace
+    </p>
+  </div>
+  <div class="flex gap-2 text-xs">
+    {% for s in ['all', 'open', 'in_progress', 'done', 'wont_do'] %}
+    <a href="/admin/todos?status={{ s }}"
+       class="px-3 py-1.5 rounded border {% if status_filter == s %}border-cyan text-cyan{% else %}border-hairline text-ink-dim hover:text-ink{% endif %} capitalize">{{ s.replace('_', ' ') }}</a>
+    {% endfor %}
+  </div>
+</div>
+
+{% macro todo_card(row) %}
+{% set c = row.comment %}
+<article class="border border-hairline rounded-lg p-4 bg-stage-sunken">
+  <header class="flex items-center justify-between mb-2 flex-wrap gap-2">
+    <div class="flex items-center gap-3 text-xs flex-wrap">
+      <span class="font-mono text-cyan">{{ c.block_key }}</span>
+      <span class="text-ink-dim">{{ c.page_path }}</span>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
+            {% if c.status == 'done' %}bg-success/10 text-success
+            {% elif c.status == 'in_progress' %}bg-cyan/10 text-cyan
+            {% elif c.status == 'wont_do' %}bg-danger/10 text-danger
+            {% else %}bg-ink-mute/10 text-ink-dim{% endif %}">
+        {{ c.status.replace('_', ' ') }}
+      </span>
+    </div>
+    <div class="flex items-center gap-3 text-xs">
+      <span class="text-ink-dim">{{ row.author_username }}</span>
+      <span class="text-ink-dim">{{ c.created_at.strftime('%Y-%m-%d %H:%M') if c.created_at else '' }}</span>
+    </div>
+  </header>
+  <p class="text-sm text-ink whitespace-pre-wrap mb-3">{{ c.body }}</p>
+  <footer class="flex items-center justify-between gap-2 flex-wrap">
+    <div class="flex gap-1 flex-wrap">
+      {% for s in ['open', 'in_progress', 'done', 'wont_do'] %}
+      {% if c.status != s %}
+      <form method="post" action="/admin/todos/{{ c.id }}/status" class="inline">
+        <input type="hidden" name="status" value="{{ s }}">
+        <button class="text-[11px] px-2 py-1 rounded border border-hairline text-ink-dim hover:text-ink hover:border-cyan">→ {{ s.replace('_', ' ') }}</button>
+      </form>
+      {% endif %}
+      {% endfor %}
+    </div>
+    <form method="post" action="/admin/ui-comments/{{ c.id }}/delete">
+      <button class="text-[11px] text-danger hover:text-ink">delete</button>
+    </form>
+  </footer>
+</article>
+{% endmacro %}
+
+{% if grouped %}
+<section class="space-y-6">
+  {% for group in grouped %}
+  <section class="bg-stage-raised border border-hairline rounded-xl p-5 space-y-3" data-cluster-id="{{ group.cluster.id }}">
+    <header class="flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-lg font-display font-semibold text-ink">{{ group.cluster.title }}</h2>
+        {% if group.cluster.summary %}
+        <p class="text-sm text-ink-dim mt-1">{{ group.cluster.summary }}</p>
+        {% endif %}
+        <p class="text-xs text-ink-mute mt-1">{{ group.rows | length }} note{{ 's' if group.rows|length != 1 else '' }}</p>
+      </div>
+      <button type="button"
+              class="copy-markdown-btn text-[11px] px-3 py-1.5 rounded border border-cyan text-cyan hover:bg-cyan hover:text-stage transition"
+              data-cluster-id="{{ group.cluster.id }}">
+        copy as markdown
+      </button>
+    </header>
+    <div class="space-y-3">
+      {% for row in group.rows %}
+        {{ todo_card(row) }}
+      {% endfor %}
+    </div>
+    {% set _notes = [] %}
+    {% for r in group.rows %}
+      {% set _ = _notes.append({"block_key": r.comment.block_key, "body": r.comment.body, "status": r.comment.status}) %}
+    {% endfor %}
+    <script type="application/json" id="cluster-md-{{ group.cluster.id }}">
+      {{ {"title": group.cluster.title, "summary": group.cluster.summary or "", "notes": _notes} | tojson }}
+    </script>
+  </section>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if unclustered %}
+<section class="bg-stage-raised border border-hairline rounded-xl p-5 space-y-3">
+  <header>
+    <h2 class="text-lg font-display font-semibold text-ink">Unclustered</h2>
+    <p class="text-xs text-ink-mute mt-1">{{ unclustered | length }} note{{ 's' if unclustered|length != 1 else '' }}</p>
+  </header>
+  <div class="space-y-3">
+    {% for row in unclustered %}
+      {{ todo_card(row) }}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if not grouped and not unclustered %}
+<section class="bg-stage-raised border border-hairline rounded-xl p-12 text-center">
+  <p class="text-ink-dim">No todos yet. Leave a note on any block from the workspace.</p>
+</section>
+{% endif %}
+
+<script>
+(function() {
+  document.querySelectorAll('.copy-markdown-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var clusterId = btn.dataset.clusterId;
+      var script = document.getElementById('cluster-md-' + clusterId);
+      if (!script) return;
+      var data = JSON.parse(script.textContent);
+      var md = '## ' + data.title + '\n\n';
+      if (data.summary) md += data.summary + '\n\n';
+      md += '**Notes (' + data.notes.length + '):**\n\n';
+      data.notes.forEach(function(n) {
+        md += '- [' + (n.status === 'done' ? 'x' : ' ') + '] `' + n.block_key + '` — ' + n.body.replace(/\n+/g, ' ') + '\n';
+      });
+      navigator.clipboard.writeText(md).then(function() {
+        var original = btn.textContent;
+        btn.textContent = 'copied ✓';
+        setTimeout(function() { btn.textContent = original; }, 1500);
+      });
+    });
+  });
+})();
+</script>
+{% endblock %}

@@ -149,8 +149,20 @@ class UIComment(Base):
     block_key = Column(String, nullable=False, index=True)
     page_path = Column(String, nullable=False, index=True)
     body = Column(Text, nullable=False)
-    status = Column(String, default="open", nullable=False, index=True)  # open | resolved
+    status = Column(String, default="open", nullable=False, index=True)  # open | in_progress | done | wont_do
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     resolved_at = Column(DateTime, nullable=True)
+    cluster_id = Column(Integer, ForeignKey("comment_clusters.id", ondelete="SET NULL"), nullable=True, index=True)
 
     author = relationship("User")
+
+
+class CommentCluster(Base):
+    __tablename__ = "comment_clusters"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    summary = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    notes = relationship("UIComment", backref="cluster")
