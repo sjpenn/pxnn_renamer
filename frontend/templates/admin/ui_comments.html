@@ -1,0 +1,46 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="flex items-center justify-between">
+  <h1 class="text-2xl font-display font-semibold text-ink">UI Comments</h1>
+  <div class="flex gap-2 text-xs">
+    <a href="/admin/ui-comments?status=all"
+       class="px-3 py-1.5 rounded border {% if status_filter == 'all' %}border-cyan text-cyan{% else %}border-hairline text-ink-dim hover:text-ink{% endif %}">All</a>
+    <a href="/admin/ui-comments?status=open"
+       class="px-3 py-1.5 rounded border {% if status_filter == 'open' %}border-cyan text-cyan{% else %}border-hairline text-ink-dim hover:text-ink{% endif %}">Open</a>
+    <a href="/admin/ui-comments?status=resolved"
+       class="px-3 py-1.5 rounded border {% if status_filter == 'resolved' %}border-cyan text-cyan{% else %}border-hairline text-ink-dim hover:text-ink{% endif %}">Resolved</a>
+  </div>
+</div>
+
+<section class="bg-stage-raised border border-hairline rounded-xl p-4 space-y-4">
+  {% for row in rows %}
+  <article class="border border-hairline rounded-lg p-4 bg-stage-sunken">
+    <header class="flex items-center justify-between mb-2">
+      <div class="flex items-center gap-3 text-xs">
+        <span class="font-mono text-cyan">{{ row.comment.block_key }}</span>
+        <span class="text-ink-dim">{{ row.comment.page_path }}</span>
+        <span class="{% if row.comment.status == 'resolved' %}text-success{% else %}text-ink-dim{% endif %}">
+          {{ row.comment.status }}
+        </span>
+      </div>
+      <div class="flex items-center gap-3 text-xs">
+        <span class="text-ink-dim">{{ row.author_username }}</span>
+        <span class="text-ink-mute">{{ row.comment.created_at.strftime('%Y-%m-%d %H:%M') if row.comment.created_at else '' }}</span>
+        <form method="post" action="/admin/ui-comments/{{ row.comment.id }}/resolve">
+          <button class="text-xs text-cyan hover:text-ink">
+            {{ 'reopen' if row.comment.status == 'resolved' else 'resolve' }}
+          </button>
+        </form>
+        <form method="post" action="/admin/ui-comments/{{ row.comment.id }}/delete">
+          <button class="text-xs text-danger hover:text-ink">delete</button>
+        </form>
+      </div>
+    </header>
+    <p class="text-sm text-ink whitespace-pre-wrap">{{ row.comment.body }}</p>
+  </article>
+  {% else %}
+  <p class="text-sm text-ink-dim text-center py-6">No comments yet.</p>
+  {% endfor %}
+</section>
+{% endblock %}

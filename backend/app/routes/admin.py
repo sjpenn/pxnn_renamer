@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
@@ -8,7 +9,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..core.security import require_admin
-from ..database.models import ActivityLog, Announcement, User
+from ..database.models import ActivityLog, Announcement, UIComment, User
 from ..database.session import get_db
 from ..services import admin_stats
 
@@ -270,3 +271,73 @@ async def admin_announcements_delete(
         db.delete(row)
         db.commit()
     return RedirectResponse(url="/admin/announcements", status_code=303)
+
+
+# --------------------------------------------------------------------------- #
+# UI Comments — admin notes about individual UI blocks
+# --------------------------------------------------------------------------- #
+
+
+@router.get("/ui-comments", response_class=HTMLResponse)
+async def admin_ui_comments_page(
+    request: Request,
+    status: str = "all",
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    query = (
+        db.query(UIComment, User.username, User.email)
+        .join(User, UIComment.author_id == User.id)
+        .order_by(UIComment.created_at.desc())
+    )
+    if status in ("open", "resolved"):
+        query = query.filter(UIComment.status == status)
+    rows = [
+        {
+            "comment": c,
+            "author_username": username,
+            "author_email": email,
+        }
+        for c, username, email in query.all()
+    ]
+    return templates.TemplateResponse(
+        request,
+        "admin/ui_comments.html",
+        {
+            "current_user": admin,
+            "rows": rows,
+            "status_filter": status,
+            "title": "UI Comments · PxNN Admin",
+        },
+    )
+
+
+@router.post("/ui-comments/{comment_id}/resolve")
+async def admin_ui_comments_resolve(
+    comment_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    row = db.query(UIComment).filter(UIComment.id == comment_id).first()
+    if row:
+        if row.status == "resolved":
+            row.status = "open"
+            row.resolved_at = None
+        else:
+            row.status = "resolved"
+            row.resolved_at = datetime.utcnow()
+        db.commit()
+    return RedirectResponse(url="/admin/ui-comments", status_code=303)
+
+
+@router.post("/ui-comments/{comment_id}/delete")
+async def admin_ui_comments_delete(
+    comment_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    row = db.query(UIComment).filter(UIComment.id == comment_id).first()
+    if row:
+        db.delete(row)
+        db.commit()
+    return RedirectResponse(url="/admin/ui-comments", status_code=303)

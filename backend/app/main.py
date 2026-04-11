@@ -28,6 +28,7 @@ from .routes.profile import router as profile_router
 from .routes.session_heartbeat import router as session_heartbeat_router
 from .routes.wizard import router as wizard_router
 from .routes.admin import router as admin_router
+from .routes.ui_comments import router as ui_comments_router
 from .services.announcements import get_active_announcement
 from .services.funnel import log_funnel_event
 
@@ -70,6 +71,7 @@ app.include_router(funnel_router)
 app.include_router(session_heartbeat_router)
 app.include_router(wizard_router)
 app.include_router(admin_router)
+app.include_router(ui_comments_router)
 
 
 @app.get("/", response_class=HTMLResponse)
