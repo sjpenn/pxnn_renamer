@@ -155,6 +155,8 @@ def bootstrap_database() -> None:
 
     # Campaign, CampaignVariant, CampaignImage — brand-new tables, handled by create_all above — no _ensure_column needed.
 
+    # PricingOverride, Promotion — brand-new tables, handled by create_all above — no _ensure_column needed.
+
     # Promote configured admin email (idempotent)
     from .models import User as _UserModel
     from ..core.config import settings as _settings

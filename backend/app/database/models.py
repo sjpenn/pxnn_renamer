@@ -215,3 +215,35 @@ class CampaignImage(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     campaign = relationship("Campaign", back_populates="images")
+
+
+class PricingOverride(Base):
+    __tablename__ = "pricing_overrides"
+
+    id = Column(Integer, primary_key=True, index=True)
+    plan_key = Column(String, unique=True, nullable=False, index=True)
+    label = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+    amount_cents = Column(Integer, nullable=True)
+    credits = Column(Integer, nullable=True)
+    accent = Column(String, nullable=True)
+    is_visible = Column(Boolean, default=True, nullable=False)
+    sort_order = Column(Integer, default=0, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    updated_by_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
+
+class Promotion(Base):
+    __tablename__ = "promotions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    plan_key = Column(String, nullable=False, index=True)
+    bonus_credits = Column(Integer, nullable=False)
+    headline = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=False, nullable=False, index=True)
+    starts_at = Column(DateTime, nullable=True)
+    ends_at = Column(DateTime, nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
