@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from ..core.security import require_admin
 from ..database.models import ActivityLog, Announcement, Campaign, CampaignImage, CampaignVariant, CommentCluster, UIComment, User
 from ..database.session import get_db
-from ..services import admin_stats, ai_clusterer
+from ..services import admin_stats, ai_clusterer, campaign_generator
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "frontend" / "templates"))
@@ -540,3 +540,27 @@ async def admin_campaigns_delete(
         db.delete(campaign)
         db.commit()
     return RedirectResponse(url="/admin/campaigns", status_code=303)
+
+
+@router.post("/campaigns/{campaign_id}/generate-copy")
+async def admin_campaigns_generate_copy(
+    campaign_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found.")
+
+    variants = campaign_generator.generate_copy(campaign)
+    for v in variants:
+        db.add(CampaignVariant(
+            campaign_id=campaign.id,
+            headline=v.headline,
+            primary_text=v.primary_text,
+            description=v.description,
+            cta=v.cta,
+        ))
+    campaign.status = "ready"
+    db.commit()
+    return RedirectResponse(url=f"/admin/campaigns/{campaign.id}", status_code=303)
