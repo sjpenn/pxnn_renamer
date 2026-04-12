@@ -1,0 +1,106 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="flex items-center justify-between">
+  <div>
+    <h1 class="text-2xl font-display font-semibold text-ink">{{ campaign.name }}</h1>
+    <p class="text-sm text-ink-dim mt-1">
+      {{ campaign.target_audience | truncate(80) }} · {{ campaign.tone }} ·
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
+            {% if campaign.status == 'ready' %}bg-success/10 text-success
+            {% elif campaign.status == 'generating' %}bg-cyan/10 text-cyan
+            {% else %}bg-ink-mute/10 text-ink-dim{% endif %}">
+        {{ campaign.status }}
+      </span>
+    </p>
+  </div>
+  <div class="flex items-center gap-3">
+    <form method="post" action="/admin/campaigns/{{ campaign.id }}/generate-copy">
+      <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-cyan/10 border border-cyan text-cyan text-xs font-medium hover:bg-cyan hover:text-stage transition">
+        <span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+        generate copy
+      </button>
+    </form>
+    <form method="post" action="/admin/campaigns/{{ campaign.id }}/generate-images">
+      <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-magenta/10 border border-magenta text-magenta text-xs font-medium hover:bg-magenta hover:text-stage transition">
+        <span class="material-symbols-outlined text-[14px]">image</span>
+        generate images
+      </button>
+    </form>
+  </div>
+</div>
+
+<section class="bg-stage-raised border border-hairline rounded-xl p-6">
+  <h2 class="text-sm uppercase tracking-wider text-ink-dim mb-3">Brief</h2>
+  <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+    <div>
+      <dt class="text-ink-dim text-xs uppercase tracking-widest">Product</dt>
+      <dd class="text-ink mt-1">{{ campaign.product_description }}</dd>
+    </div>
+    <div>
+      <dt class="text-ink-dim text-xs uppercase tracking-widest">Audience</dt>
+      <dd class="text-ink mt-1">{{ campaign.target_audience }}</dd>
+    </div>
+    {% if campaign.offer %}
+    <div>
+      <dt class="text-ink-dim text-xs uppercase tracking-widest">Offer</dt>
+      <dd class="text-ink mt-1">{{ campaign.offer }}</dd>
+    </div>
+    {% endif %}
+    <div>
+      <dt class="text-ink-dim text-xs uppercase tracking-widest">Tone · Placements</dt>
+      <dd class="text-ink mt-1 capitalize">{{ campaign.tone }} · {{ campaign.placements }}</dd>
+    </div>
+  </dl>
+</section>
+
+{% if campaign.variants %}
+<section class="bg-stage-raised border border-hairline rounded-xl p-6">
+  <h2 class="text-sm uppercase tracking-wider text-ink-dim mb-3">Copy Variants ({{ campaign.variants | length }})</h2>
+  <div class="grid gap-4">
+    {% for v in campaign.variants %}
+    <article class="border border-hairline rounded-lg p-4 bg-stage-sunken">
+      <div class="flex justify-between items-start mb-2">
+        <h3 class="font-display font-semibold text-ink">{{ v.headline }}</h3>
+        <span class="text-[10px] font-mono text-ink-mute">#{{ loop.index }}</span>
+      </div>
+      <p class="text-sm text-ink-dim whitespace-pre-wrap">{{ v.primary_text }}</p>
+      {% if v.description %}
+      <p class="text-xs text-ink-mute mt-2 italic">{{ v.description }}</p>
+      {% endif %}
+      <div class="flex items-center justify-between mt-3">
+        <span class="text-xs text-cyan font-medium">{{ v.cta }}</span>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if campaign.images %}
+<section class="bg-stage-raised border border-hairline rounded-xl p-6">
+  <h2 class="text-sm uppercase tracking-wider text-ink-dim mb-3">Images ({{ campaign.images | length }})</h2>
+  <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+    {% for img in campaign.images %}
+    <div class="rounded-lg overflow-hidden border border-hairline bg-stage-sunken">
+      {% if img.image_url %}
+      <img src="{{ img.image_url }}" alt="{{ img.prompt | truncate(60) }}" class="w-full aspect-square object-cover" />
+      {% else %}
+      <div class="w-full aspect-square flex items-center justify-center text-ink-mute text-xs">generating...</div>
+      {% endif %}
+      <div class="p-2">
+        <p class="text-[10px] text-ink-mute truncate">{{ img.prompt | truncate(50) }}</p>
+        <span class="text-[10px] text-ink-dim">{{ img.aspect_ratio }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if not campaign.variants and not campaign.images %}
+<section class="bg-stage-raised border border-hairline rounded-xl p-12 text-center">
+  <p class="text-ink-dim">Campaign created. Hit "generate copy" or "generate images" above to create ad variants.</p>
+</section>
+{% endif %}
+{% endblock %}

@@ -153,6 +153,8 @@ def bootstrap_database() -> None:
     _ensure_column("ui_comments", "cluster_id", "ALTER TABLE ui_comments ADD COLUMN cluster_id INTEGER")
     # CommentCluster table is handled by create_all above — no migration helper needed.
 
+    # Campaign, CampaignVariant, CampaignImage — brand-new tables, handled by create_all above — no _ensure_column needed.
+
     # Promote configured admin email (idempotent)
     from .models import User as _UserModel
     from ..core.config import settings as _settings

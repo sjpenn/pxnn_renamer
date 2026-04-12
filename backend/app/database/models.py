@@ -166,3 +166,52 @@ class CommentCluster(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     notes = relationship("UIComment", backref="cluster")
+
+
+class Campaign(Base):
+    __tablename__ = "campaigns"
+
+    id = Column(Integer, primary_key=True, index=True)
+    admin_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String, nullable=False)
+    product_description = Column(Text, nullable=False)
+    target_audience = Column(Text, nullable=False)
+    offer = Column(Text, nullable=True)
+    tone = Column(String, default="authentic", nullable=False)
+    placements = Column(String, default="feed,story", nullable=False)
+    status = Column(String, default="draft", nullable=False)  # draft | generating | ready | exported
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    variants = relationship("CampaignVariant", back_populates="campaign", cascade="all, delete-orphan")
+    images = relationship("CampaignImage", back_populates="campaign", cascade="all, delete-orphan")
+    admin = relationship("User")
+
+
+class CampaignVariant(Base):
+    __tablename__ = "campaign_variants"
+
+    id = Column(Integer, primary_key=True, index=True)
+    campaign_id = Column(Integer, ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False, index=True)
+    headline = Column(String, nullable=False)
+    primary_text = Column(Text, nullable=False)
+    description = Column(String, nullable=True)
+    cta = Column(String, default="Learn More", nullable=False)
+    is_favorite = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    campaign = relationship("Campaign", back_populates="variants")
+
+
+class CampaignImage(Base):
+    __tablename__ = "campaign_images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    campaign_id = Column(Integer, ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False, index=True)
+    prompt = Column(Text, nullable=False)
+    image_url = Column(String, nullable=True)
+    image_path = Column(String, nullable=True)
+    aspect_ratio = Column(String, default="1:1", nullable=False)
+    is_favorite = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    campaign = relationship("Campaign", back_populates="images")

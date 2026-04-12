@@ -9,7 +9,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..core.security import require_admin
-from ..database.models import ActivityLog, Announcement, CommentCluster, UIComment, User
+from ..database.models import ActivityLog, Announcement, Campaign, CampaignImage, CampaignVariant, CommentCluster, UIComment, User
 from ..database.session import get_db
 from ..services import admin_stats, ai_clusterer
 
@@ -437,3 +437,106 @@ async def admin_todos_analyze(
                 note.cluster_id = cluster_row.id
     db.commit()
     return RedirectResponse(url="/admin/todos", status_code=303)
+
+
+# --------------------------------------------------------------------------- #
+# Campaigns — AI-generated ad creative for Meta
+# --------------------------------------------------------------------------- #
+
+
+@router.get("/campaigns", response_class=HTMLResponse)
+async def admin_campaigns_list(
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    campaigns = (
+        db.query(Campaign)
+        .order_by(Campaign.created_at.desc())
+        .all()
+    )
+    return templates.TemplateResponse(
+        request,
+        "admin/campaigns.html",
+        {
+            "current_user": admin,
+            "campaigns": campaigns,
+            "title": "Campaigns · PxNN Admin",
+        },
+    )
+
+
+@router.get("/campaigns/new", response_class=HTMLResponse)
+async def admin_campaigns_new(
+    request: Request,
+    admin: User = Depends(require_admin),
+):
+    return templates.TemplateResponse(
+        request,
+        "admin/campaign_new.html",
+        {
+            "current_user": admin,
+            "title": "New Campaign · PxNN Admin",
+        },
+    )
+
+
+@router.post("/campaigns")
+async def admin_campaigns_create(
+    name: str = Form(...),
+    product_description: str = Form(...),
+    target_audience: str = Form(...),
+    offer: str = Form(""),
+    tone: str = Form("authentic"),
+    placements: str = Form("feed,story"),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    campaign = Campaign(
+        admin_id=admin.id,
+        name=name,
+        product_description=product_description,
+        target_audience=target_audience,
+        offer=offer or None,
+        tone=tone,
+        placements=placements,
+        status="draft",
+    )
+    db.add(campaign)
+    db.commit()
+    db.refresh(campaign)
+    return RedirectResponse(url=f"/admin/campaigns/{campaign.id}", status_code=303)
+
+
+@router.get("/campaigns/{campaign_id}", response_class=HTMLResponse)
+async def admin_campaigns_detail(
+    campaign_id: int,
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found.")
+    return templates.TemplateResponse(
+        request,
+        "admin/campaign_detail.html",
+        {
+            "current_user": admin,
+            "campaign": campaign,
+            "title": f"{campaign.name} · PxNN Admin",
+        },
+    )
+
+
+@router.post("/campaigns/{campaign_id}/delete")
+async def admin_campaigns_delete(
+    campaign_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+    if campaign:
+        db.delete(campaign)
+        db.commit()
+    return RedirectResponse(url="/admin/campaigns", status_code=303)
