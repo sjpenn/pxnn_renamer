@@ -242,8 +242,8 @@ def _handle_subscription_updated(db: Session, subscription: dict) -> None:
 
 
 @router.get("/api/payments/options")
-async def payment_options():
-    return {"payment_options": get_payment_options()}
+async def payment_options(db: Session = Depends(get_db)):
+    return {"payment_options": get_payment_options(db)}
 
 
 @router.post("/api/payments/checkout")

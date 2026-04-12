@@ -1,3 +1,7 @@
+from typing import Optional
+
+from sqlalchemy.orm import Session
+
 from .config import settings
 
 PAYMENT_PLANS = {
@@ -65,23 +69,43 @@ def _format_amount(amount_cents: int) -> str:
     return f"${dollars:.2f}"
 
 
-def get_payment_options() -> list[dict]:
+def get_payment_options(db: Optional[Session] = None) -> list[dict]:
+    overrides_by_key = {}
+    if db is not None:
+        from ..database.models import PricingOverride
+        for row in db.query(PricingOverride).all():
+            overrides_by_key[row.plan_key] = row
+
     options = []
     for key, plan in PAYMENT_PLANS.items():
+        override = overrides_by_key.get(key)
+        label = (override.label if override and override.label else plan["label"])
+        description = (override.description if override and override.description else plan["description"])
+        amount_cents = (override.amount_cents if override and override.amount_cents is not None else plan["amount_cents"])
+        credits = (override.credits if override and override.credits is not None else plan["credits"])
+        accent = (override.accent if override and override.accent else plan["accent"])
+        is_visible = override.is_visible if override else True
+        sort_order = override.sort_order if override else 0
+
+        if not is_visible:
+            continue
+
         price_id = getattr(settings, plan["price_id_setting"])
         options.append(
             {
                 "key": key,
-                "label": plan["label"],
-                "description": plan["description"],
-                "amount_cents": plan["amount_cents"],
-                "amount_label": _format_amount(plan["amount_cents"]),
-                "credits": plan["credits"],
-                "accent": plan["accent"],
+                "label": label,
+                "description": description,
+                "amount_cents": amount_cents,
+                "amount_label": _format_amount(amount_cents),
+                "credits": credits,
+                "accent": accent,
                 "stripe_price_id": price_id,
                 "plan_type": plan["plan_type"],
+                "sort_order": sort_order,
             }
         )
+    options.sort(key=lambda o: o["sort_order"])
     return options
 
 

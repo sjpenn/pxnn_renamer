@@ -106,7 +106,7 @@ async def home(
         {
             "current_user": None,
             "page": "home",
-            "payment_options": get_payment_options(),
+            "payment_options": get_payment_options(db),
             "stripe_enabled": bool(settings.STRIPE_SECRET_KEY),
             "google_oauth_enabled": bool(settings.GOOGLE_CLIENT_ID),
         },
@@ -129,7 +129,7 @@ async def workspace(
             "current_user": current_user,
             "page": "app",
             "initial_user": serialize_user(current_user),
-            "payment_options": get_payment_options(),
+            "payment_options": get_payment_options(db),
             "stripe_enabled": bool(settings.STRIPE_SECRET_KEY),
             "billing_notice": request.query_params.get("billing", ""),
             "google_oauth_enabled": bool(settings.GOOGLE_CLIENT_ID),

@@ -97,5 +97,5 @@ async def get_dashboard(
             }
             for payment in payments
         ],
-        "payment_options": get_payment_options(),
+        "payment_options": get_payment_options(db),
     }
