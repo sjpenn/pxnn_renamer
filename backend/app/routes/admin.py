@@ -9,10 +9,12 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..core.security import require_admin
-from ..database.models import ActivityLog, Announcement, Campaign, CampaignImage, CampaignVariant, CommentCluster, PricingOverride, Promotion, UIComment, User
+from ..database.models import ActivityLog, Announcement, Campaign, CampaignImage, CampaignVariant, CommentCluster, PricingOverride, Promotion, SiteSettings, UIComment, User
 from ..database.session import get_db
 from ..core.pricing import PAYMENT_PLANS
 from ..services import admin_stats, ai_clusterer, campaign_generator, image_generator
+from ..services.site_settings import get_setting, set_setting
+from ..services.promo_generator import generate_promo
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "frontend" / "templates"))
@@ -509,9 +511,22 @@ async def admin_pricing_page(
         {
             "current_user": admin,
             "plans": plans,
+            "trial_credits": get_setting(db, "trial_credits", "5"),
             "title": "Pricing · PxNN Admin",
         },
     )
+
+
+@router.post("/settings/trial_credits")
+async def admin_set_trial_credits(
+    trial_credits: int = Form(...),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    if trial_credits < 0:
+        raise HTTPException(status_code=400, detail="Trial credits cannot be negative.")
+    set_setting(db, "trial_credits", str(trial_credits), admin_id=admin.id)
+    return RedirectResponse(url="/admin/pricing", status_code=303)
 
 
 @router.post("/pricing/{plan_key}")
@@ -602,6 +617,35 @@ async def admin_promotions_page(
             "title": "Promotions · PxNN Admin",
         },
     )
+
+
+@router.post("/promotions/generate")
+async def admin_promotions_generate(
+    plan_key: str = Form(...),
+    bonus_credits: int = Form(10),
+    admin: User = Depends(require_admin),
+):
+    if plan_key not in PAYMENT_PLANS:
+        raise HTTPException(status_code=400, detail="Unknown plan key.")
+
+    plan = PAYMENT_PLANS[plan_key]
+    suggestion = generate_promo(
+        plan_label=plan["label"],
+        plan_credits=plan["credits"],
+        bonus_credits=bonus_credits,
+    )
+
+    from datetime import timedelta
+    now = datetime.utcnow()
+    starts_at = now.strftime("%Y-%m-%dT%H:%M")
+    ends_at = (now + timedelta(days=suggestion.duration_days)).strftime("%Y-%m-%dT%H:%M")
+
+    return {
+        "headline": suggestion.headline,
+        "description": suggestion.description,
+        "starts_at": starts_at,
+        "ends_at": ends_at,
+    }
 
 
 @router.post("/promotions")

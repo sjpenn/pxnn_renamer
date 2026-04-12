@@ -7,6 +7,23 @@
     <p class="mt-1 text-sm text-ink-dim">Override plan display values. Empty fields use defaults. Stripe prices remain unchanged.</p>
   </div>
 
+  <!-- Site Settings -->
+  <form action="/admin/settings/trial_credits" method="POST"
+        class="rounded-xl border border-cyan/20 bg-stage-raised p-5 flex flex-wrap items-end gap-4">
+    <div>
+      <p class="text-[10px] font-bold uppercase tracking-widest text-cyan mb-1">Site Settings</p>
+      <label class="block text-[10px] font-bold uppercase tracking-widest text-ink-mute mb-1">
+        Free Trial Credits for New Users
+      </label>
+      <input type="number" name="trial_credits" value="{{ trial_credits }}" min="0"
+             class="w-32 rounded-lg border border-hairline bg-stage px-3 py-2 text-sm text-ink placeholder-ink-mute focus:border-cyan focus:outline-none">
+    </div>
+    <button type="submit" class="px-4 py-2 rounded-lg bg-cyan text-stage text-xs font-bold uppercase tracking-widest hover:bg-cyan/80 transition">
+      Save
+    </button>
+    <p class="text-xs text-ink-mute">New users receive this many free download credits on registration.</p>
+  </form>
+
   <div class="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
     {% for plan in plans %}
     <form action="/admin/pricing/{{ plan.key }}" method="POST"

@@ -27,7 +27,13 @@
                class="w-full rounded-lg border border-hairline bg-stage px-3 py-2 text-sm text-ink placeholder-ink-mute focus:border-cyan focus:outline-none">
       </div>
       <div>
-        <label class="block text-[10px] font-bold uppercase tracking-widest text-ink-mute mb-1">Headline</label>
+        <label class="block text-[10px] font-bold uppercase tracking-widest text-ink-mute mb-1">
+          Headline
+          <button type="button" id="ai-generate-btn" onclick="generatePromo()"
+                  class="ml-2 text-cyan font-bold normal-case tracking-normal hover:text-cyan/80 transition">
+            Generate with AI
+          </button>
+        </label>
         <input type="text" name="headline" required placeholder="Buy 50 credits, get 20 FREE!"
                class="w-full rounded-lg border border-hairline bg-stage px-3 py-2 text-sm text-ink placeholder-ink-mute focus:border-cyan focus:outline-none">
       </div>
@@ -107,4 +113,50 @@
   </div>
   {% endif %}
 </div>
+<script>
+async function generatePromo() {
+  const btn = document.getElementById('ai-generate-btn');
+  const form = btn.closest('form');
+  const planSelect = form.querySelector('select[name="plan_key"]');
+  const bonusInput = form.querySelector('input[name="bonus_credits"]');
+  const headlineInput = form.querySelector('input[name="headline"]');
+  const descInput = form.querySelector('input[name="description"]');
+  const startsInput = form.querySelector('input[name="starts_at"]');
+  const endsInput = form.querySelector('input[name="ends_at"]');
+
+  const planKey = planSelect ? planSelect.value : '';
+  const bonusCredits = bonusInput ? bonusInput.value : '10';
+
+  if (!planKey) { alert('Select a plan first.'); return; }
+  if (!bonusCredits || parseInt(bonusCredits) <= 0) { alert('Enter bonus credits first.'); return; }
+
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
+
+  try {
+    const formData = new FormData();
+    formData.append('plan_key', planKey);
+    formData.append('bonus_credits', bonusCredits);
+
+    const response = await fetch('/admin/promotions/generate', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) throw new Error('Generation failed');
+
+    const data = await response.json();
+    if (headlineInput) headlineInput.value = data.headline || '';
+    if (descInput) descInput.value = data.description || '';
+    if (startsInput) startsInput.value = data.starts_at || '';
+    if (endsInput) endsInput.value = data.ends_at || '';
+  } catch (err) {
+    alert('AI generation failed — using defaults. Check API keys.');
+    console.error(err);
+  } finally {
+    btn.textContent = 'Generate with AI';
+    btn.disabled = false;
+  }
+}
+</script>
 {% endblock %}
