@@ -136,6 +136,7 @@ async def workspace(
             "billing_notice": request.query_params.get("billing", ""),
             "google_oauth_enabled": bool(settings.GOOGLE_CLIENT_ID),
             "announcement": get_active_announcement(db, current_user),
+            "active_promo": get_active_promotion(db),
             "ui_comment_counts": dict(
                 db.query(UIComment.block_key, func.count(UIComment.id))
                 .filter(

@@ -76,6 +76,7 @@
                             <span class="text-xs font-bold text-cyan">Credits: <span id="account-sidebar-credits">0</span></span>
                             <span id="account-sidebar-plan" class="text-[10px] font-bold uppercase tracking-wider bg-stage-raised/50 px-2 py-0.5 rounded-md text-cyan">Free</span>
                         </div>
+                            <span class="text-[10px] text-ink-mute block mt-0.5">1 credit = 1 export</span>
                     </div>
                 </div>
             </div>
@@ -292,6 +293,21 @@
                                         <span class="material-symbols-outlined text-sm">download</span>
                                         DOWNLOAD ARCHIVE
                                     </a>
+                                    <div id="credit-cost-indicator" class="mt-3 text-center text-xs font-medium">
+                                        <span id="credit-cost-first" class="hidden text-amber">
+                                            <span class="material-symbols-outlined text-xs align-middle">toll</span>
+                                            This will use 1 credit
+                                        </span>
+                                        <span id="credit-cost-free" class="hidden text-success">
+                                            <span class="material-symbols-outlined text-xs align-middle">check_circle</span>
+                                            Free re-download
+                                        </span>
+                                        <span id="credit-cost-none" class="hidden text-danger">
+                                            <span class="material-symbols-outlined text-xs align-middle">error</span>
+                                            You need 1 credit to export &mdash;
+                                            <button onclick="openBilling()" class="underline text-cyan">Buy credits</button>
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <div class="rounded-xl border border-hairline bg-stage-raised p-8">
@@ -371,6 +387,18 @@
                                             </button>
                                         </div>
                                     </div>
+                                    {% if active_promo %}
+                                    <div id="app-promo-callout" class="rounded-xl border border-cyan/30 bg-gradient-to-r from-cyan/10 to-purple-500/5 p-4">
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-cyan mb-1">Promotion</p>
+                                        <p class="text-sm font-bold text-ink">{{ active_promo.headline }}</p>
+                                        {% if active_promo.description %}
+                                        <p class="mt-1 text-xs text-ink-dim">{{ active_promo.description }}</p>
+                                        {% endif %}
+                                        <button onclick="openBilling()" class="mt-3 px-4 py-2 rounded-lg bg-cyan text-stage text-[10px] font-bold uppercase tracking-widest hover:bg-cyan/80 transition">
+                                            Get It Now
+                                        </button>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -501,6 +529,7 @@
             fileEdits: {},
             totalSize: "0 B",
             downloadUrl: "#",
+            downloadCount: 0,
             user: initialUser,
             dashboard: emptyDashboard(),
             paymentOptions: initialPaymentOptions
@@ -1311,6 +1340,8 @@
             const payload = await response.json();
             state.preview = payload.preview;
             state.downloadUrl = payload.download_url;
+            state.downloadCount = 0;
+            updateCreditIndicator();
             state.unlockedStep = 3;
             renderPreviewList();
             updateSummary();
@@ -1361,7 +1392,30 @@
 
             setStatus("Archive downloaded", "ready");
             setBanner("Archive downloaded successfully.", "success");
+            state.downloadCount = (state.downloadCount || 0) + 1;
+            updateCreditIndicator();
             await loadDashboard();
+        }
+
+        function updateCreditIndicator() {
+            const first = document.getElementById("credit-cost-first");
+            const free = document.getElementById("credit-cost-free");
+            const none = document.getElementById("credit-cost-none");
+            if (!first || !free || !none) return;
+
+            first.classList.add("hidden");
+            free.classList.add("hidden");
+            none.classList.add("hidden");
+
+            if (state.downloadCount && state.downloadCount > 0) {
+                free.classList.remove("hidden");
+            } else if (state.user && state.user.credit_balance > 0) {
+                first.classList.remove("hidden");
+            } else if (state.user && state.user.is_testing) {
+                free.classList.remove("hidden");
+            } else {
+                none.classList.remove("hidden");
+            }
         }
 
         let refreshTimer = null;
