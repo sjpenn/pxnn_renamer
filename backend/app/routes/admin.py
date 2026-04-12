@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from ..core.security import require_admin
 from ..database.models import ActivityLog, Announcement, Campaign, CampaignImage, CampaignVariant, CommentCluster, UIComment, User
 from ..database.session import get_db
-from ..services import admin_stats, ai_clusterer, campaign_generator
+from ..services import admin_stats, ai_clusterer, campaign_generator, image_generator
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "frontend" / "templates"))
@@ -562,5 +562,29 @@ async def admin_campaigns_generate_copy(
             cta=v.cta,
         ))
     campaign.status = "ready"
+    db.commit()
+    return RedirectResponse(url=f"/admin/campaigns/{campaign.id}", status_code=303)
+
+
+@router.post("/campaigns/{campaign_id}/generate-images")
+async def admin_campaigns_generate_images(
+    campaign_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found.")
+
+    images = image_generator.generate_images(campaign, count=4)
+    for img in images:
+        db.add(CampaignImage(
+            campaign_id=campaign.id,
+            prompt=img.prompt,
+            image_url=img.image_url,
+            aspect_ratio=img.aspect_ratio,
+        ))
+    if campaign.status == "draft":
+        campaign.status = "ready"
     db.commit()
     return RedirectResponse(url=f"/admin/campaigns/{campaign.id}", status_code=303)

@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: Optional[str] = None
     OPENROUTER_API_KEY: Optional[str] = None
     AI_CLUSTERER_PROVIDER: str = "auto"
+    REPLICATE_API_TOKEN: Optional[str] = None
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
