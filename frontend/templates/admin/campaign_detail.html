@@ -1,20 +1,24 @@
 {% extends "admin/base.html" %}
 
 {% block admin_content %}
-<div class="flex items-center justify-between">
+<div class="flex items-center justify-between flex-wrap gap-4">
   <div>
-    <h1 class="text-2xl font-display font-semibold text-ink">{{ campaign.name }}</h1>
+    <div class="flex items-center gap-3">
+      <a href="/admin/campaigns" class="text-ink-dim hover:text-ink transition text-sm">← campaigns</a>
+    </div>
+    <h1 class="text-2xl font-display font-semibold text-ink mt-2">{{ campaign.name }}</h1>
     <p class="text-sm text-ink-dim mt-1">
-      {{ campaign.target_audience | truncate(80) }} · {{ campaign.tone }} ·
+      {{ campaign.target_audience | truncate(60) }} · <span class="capitalize">{{ campaign.tone }}</span> ·
       <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
             {% if campaign.status == 'ready' %}bg-success/10 text-success
             {% elif campaign.status == 'generating' %}bg-cyan/10 text-cyan
+            {% elif campaign.status == 'exported' %}bg-magenta/10 text-magenta
             {% else %}bg-ink-mute/10 text-ink-dim{% endif %}">
         {{ campaign.status }}
       </span>
     </p>
   </div>
-  <div class="flex items-center gap-3">
+  <div class="flex items-center gap-2 flex-wrap">
     <form method="post" action="/admin/campaigns/{{ campaign.id }}/generate-copy">
       <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-cyan/10 border border-cyan text-cyan text-xs font-medium hover:bg-cyan hover:text-stage transition">
         <span class="material-symbols-outlined text-[14px]">auto_awesome</span>
@@ -27,12 +31,20 @@
         generate images
       </button>
     </form>
+    {% if campaign.variants or campaign.images %}
+    <a href="/admin/campaigns/{{ campaign.id }}/export"
+       class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-success/10 border border-success text-success text-xs font-medium hover:bg-success hover:text-stage transition">
+      <span class="material-symbols-outlined text-[14px]">download</span>
+      export CSV
+    </a>
+    {% endif %}
   </div>
 </div>
 
-<section class="bg-stage-raised border border-hairline rounded-xl p-6">
-  <h2 class="text-sm uppercase tracking-wider text-ink-dim mb-3">Brief</h2>
-  <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+<!-- Brief summary -->
+<section class="bg-stage-raised border border-hairline rounded-xl p-5">
+  <h2 class="text-xs uppercase tracking-wider text-ink-dim mb-3">Brief</h2>
+  <dl class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
     <div>
       <dt class="text-ink-dim text-xs uppercase tracking-widest">Product</dt>
       <dd class="text-ink mt-1">{{ campaign.product_description }}</dd>
@@ -48,28 +60,66 @@
     </div>
     {% endif %}
     <div>
-      <dt class="text-ink-dim text-xs uppercase tracking-widest">Tone · Placements</dt>
-      <dd class="text-ink mt-1 capitalize">{{ campaign.tone }} · {{ campaign.placements }}</dd>
+      <dt class="text-ink-dim text-xs uppercase tracking-widest">Placements</dt>
+      <dd class="text-ink mt-1 capitalize">{{ campaign.placements }}</dd>
     </div>
   </dl>
 </section>
 
-{% if campaign.variants %}
-<section class="bg-stage-raised border border-hairline rounded-xl p-6">
-  <h2 class="text-sm uppercase tracking-wider text-ink-dim mb-3">Copy Variants ({{ campaign.variants | length }})</h2>
-  <div class="grid gap-4">
-    {% for v in campaign.variants %}
-    <article class="border border-hairline rounded-lg p-4 bg-stage-sunken">
-      <div class="flex justify-between items-start mb-2">
-        <h3 class="font-display font-semibold text-ink">{{ v.headline }}</h3>
-        <span class="text-[10px] font-mono text-ink-mute">#{{ loop.index }}</span>
+<!-- Meta Feed Mockups — combine copy + image -->
+{% if campaign.variants and campaign.images %}
+<section class="space-y-4">
+  <h2 class="text-sm uppercase tracking-wider text-ink-dim">Ad Preview — Meta Feed</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {% for v in campaign.variants[:6] %}
+    {% set img = campaign.images[loop.index0 % (campaign.images | length)] %}
+    <article class="bg-stage-raised border border-hairline rounded-xl overflow-hidden {% if v.is_favorite %}ring-2 ring-cyan{% endif %}">
+      <!-- Meta-style header -->
+      <div class="flex items-center gap-3 p-3 border-b border-hairline">
+        <div class="w-10 h-10 rounded-full bg-cyan/20 flex items-center justify-center">
+          <span class="text-cyan text-xs font-bold">Px</span>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-ink">PxNN</p>
+          <p class="text-[10px] text-ink-mute">Sponsored</p>
+        </div>
       </div>
-      <p class="text-sm text-ink-dim whitespace-pre-wrap">{{ v.primary_text }}</p>
-      {% if v.description %}
-      <p class="text-xs text-ink-mute mt-2 italic">{{ v.description }}</p>
+
+      <!-- Primary text -->
+      <div class="px-3 py-2">
+        <p class="text-sm text-ink leading-relaxed">{{ v.primary_text }}</p>
+      </div>
+
+      <!-- Image -->
+      {% if img.image_url %}
+      <img src="{{ img.image_url }}" alt="{{ v.headline }}"
+           class="w-full aspect-square object-cover" loading="lazy" />
+      {% else %}
+      <div class="w-full aspect-square bg-stage-sunken flex items-center justify-center text-ink-mute text-sm">
+        Image placeholder
+      </div>
       {% endif %}
-      <div class="flex items-center justify-between mt-3">
-        <span class="text-xs text-cyan font-medium">{{ v.cta }}</span>
+
+      <!-- Headline + CTA bar -->
+      <div class="flex items-center justify-between p-3 border-t border-hairline bg-stage-sunken/50">
+        <div class="min-w-0">
+          <p class="text-xs text-ink-mute uppercase tracking-widest">pxnn.app</p>
+          <p class="text-sm font-semibold text-ink truncate">{{ v.headline }}</p>
+          {% if v.description %}
+          <p class="text-xs text-ink-dim truncate">{{ v.description }}</p>
+          {% endif %}
+        </div>
+        <span class="shrink-0 px-3 py-1.5 rounded bg-stage-raised border border-hairline text-xs font-medium text-ink">{{ v.cta }}</span>
+      </div>
+
+      <!-- Favorite + variant number -->
+      <div class="flex items-center justify-between px-3 py-2 border-t border-hairline">
+        <span class="text-[10px] font-mono text-ink-mute">variant #{{ loop.index }}</span>
+        <form method="post" action="/admin/campaigns/{{ campaign.id }}/variants/{{ v.id }}/favorite">
+          <button type="submit" class="text-xs {% if v.is_favorite %}text-cyan{% else %}text-ink-mute hover:text-cyan{% endif %} transition">
+            {% if v.is_favorite %}★ favorited{% else %}☆ favorite{% endif %}
+          </button>
+        </form>
       </div>
     </article>
     {% endfor %}
@@ -77,20 +127,57 @@
 </section>
 {% endif %}
 
+<!-- Copy variants (standalone list) -->
+{% if campaign.variants %}
+<section class="bg-stage-raised border border-hairline rounded-xl p-5">
+  <h2 class="text-sm uppercase tracking-wider text-ink-dim mb-3">All Copy Variants ({{ campaign.variants | length }})</h2>
+  <div class="space-y-3">
+    {% for v in campaign.variants %}
+    <article class="border border-hairline rounded-lg p-4 bg-stage-sunken {% if v.is_favorite %}ring-1 ring-cyan{% endif %}">
+      <div class="flex justify-between items-start gap-3">
+        <div class="min-w-0">
+          <h3 class="font-display font-semibold text-ink">{{ v.headline }}</h3>
+          <p class="text-sm text-ink-dim mt-1 whitespace-pre-wrap">{{ v.primary_text }}</p>
+          {% if v.description %}
+          <p class="text-xs text-ink-mute mt-2 italic">{{ v.description }}</p>
+          {% endif %}
+          <span class="text-xs text-cyan font-medium mt-2 inline-block">{{ v.cta }}</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="text-[10px] font-mono text-ink-mute">#{{ loop.index }}</span>
+          <form method="post" action="/admin/campaigns/{{ campaign.id }}/variants/{{ v.id }}/favorite">
+            <button type="submit" class="text-xs {% if v.is_favorite %}text-cyan{% else %}text-ink-mute hover:text-cyan{% endif %}">
+              {% if v.is_favorite %}★{% else %}☆{% endif %}
+            </button>
+          </form>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- Images gallery -->
 {% if campaign.images %}
-<section class="bg-stage-raised border border-hairline rounded-xl p-6">
+<section class="bg-stage-raised border border-hairline rounded-xl p-5">
   <h2 class="text-sm uppercase tracking-wider text-ink-dim mb-3">Images ({{ campaign.images | length }})</h2>
-  <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
     {% for img in campaign.images %}
-    <div class="rounded-lg overflow-hidden border border-hairline bg-stage-sunken">
+    <div class="rounded-lg overflow-hidden border border-hairline bg-stage-sunken {% if img.is_favorite %}ring-2 ring-magenta{% endif %}">
       {% if img.image_url %}
-      <img src="{{ img.image_url }}" alt="{{ img.prompt | truncate(60) }}" class="w-full aspect-square object-cover" />
+      <img src="{{ img.image_url }}" alt="{{ img.prompt | truncate(60) }}"
+           class="w-full aspect-square object-cover" loading="lazy" />
       {% else %}
       <div class="w-full aspect-square flex items-center justify-center text-ink-mute text-xs">generating...</div>
       {% endif %}
-      <div class="p-2">
-        <p class="text-[10px] text-ink-mute truncate">{{ img.prompt | truncate(50) }}</p>
+      <div class="p-2 flex items-center justify-between">
         <span class="text-[10px] text-ink-dim">{{ img.aspect_ratio }}</span>
+        <form method="post" action="/admin/campaigns/{{ campaign.id }}/images/{{ img.id }}/favorite">
+          <button type="submit" class="text-xs {% if img.is_favorite %}text-magenta{% else %}text-ink-mute hover:text-magenta{% endif %}">
+            {% if img.is_favorite %}★{% else %}☆{% endif %}
+          </button>
+        </form>
       </div>
     </div>
     {% endfor %}
@@ -98,6 +185,7 @@
 </section>
 {% endif %}
 
+<!-- Empty state -->
 {% if not campaign.variants and not campaign.images %}
 <section class="bg-stage-raised border border-hairline rounded-xl p-12 text-center">
   <p class="text-ink-dim">Campaign created. Hit "generate copy" or "generate images" above to create ad variants.</p>

@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response as FastAPIResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -588,3 +588,86 @@ async def admin_campaigns_generate_images(
         campaign.status = "ready"
     db.commit()
     return RedirectResponse(url=f"/admin/campaigns/{campaign.id}", status_code=303)
+
+
+@router.post("/campaigns/{campaign_id}/variants/{variant_id}/favorite")
+async def admin_campaigns_toggle_variant_favorite(
+    campaign_id: int,
+    variant_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    v = (
+        db.query(CampaignVariant)
+        .filter(CampaignVariant.id == variant_id, CampaignVariant.campaign_id == campaign_id)
+        .first()
+    )
+    if not v:
+        raise HTTPException(status_code=404, detail="Variant not found.")
+    v.is_favorite = not v.is_favorite
+    db.commit()
+    return RedirectResponse(url=f"/admin/campaigns/{campaign_id}", status_code=303)
+
+
+@router.post("/campaigns/{campaign_id}/images/{image_id}/favorite")
+async def admin_campaigns_toggle_image_favorite(
+    campaign_id: int,
+    image_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    img = (
+        db.query(CampaignImage)
+        .filter(CampaignImage.id == image_id, CampaignImage.campaign_id == campaign_id)
+        .first()
+    )
+    if not img:
+        raise HTTPException(status_code=404, detail="Image not found.")
+    img.is_favorite = not img.is_favorite
+    db.commit()
+    return RedirectResponse(url=f"/admin/campaigns/{campaign_id}", status_code=303)
+
+
+@router.get("/campaigns/{campaign_id}/export")
+async def admin_campaigns_export(
+    campaign_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found.")
+
+    # Collect favorited variants (or all if none favorited)
+    variants = [v for v in campaign.variants if v.is_favorite]
+    if not variants:
+        variants = campaign.variants
+
+    images = [i for i in campaign.images if i.is_favorite]
+    if not images:
+        images = campaign.images
+
+    import csv
+    import io
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["type", "headline", "primary_text", "description", "cta", "image_url", "aspect_ratio"])
+
+    for v in variants:
+        writer.writerow(["copy", v.headline, v.primary_text, v.description or "", v.cta, "", ""])
+
+    for img in images:
+        writer.writerow(["image", "", "", "", "", img.image_url or "", img.aspect_ratio])
+
+    csv_content = output.getvalue()
+    campaign.status = "exported"
+    db.commit()
+
+    return FastAPIResponse(
+        content=csv_content,
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f'attachment; filename="{campaign.name.replace(" ", "_")}_export.csv"',
+        },
+    )
