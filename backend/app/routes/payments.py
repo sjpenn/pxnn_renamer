@@ -8,6 +8,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from ..core.config import settings
+from ..services.promotions import get_active_promotion
 from ..core.pricing import get_payment_options, get_payment_plan, PAYMENT_PLANS
 from ..core.security import get_current_user
 from ..database.models import ActivityLog, PaymentRecord, User
@@ -143,6 +144,24 @@ def _mark_checkout_session_paid(
             },
         )
 
+    # Check for active promotion and grant bonus credits
+    active_promo = get_active_promotion(db, plan_key=payment_record.plan_key)
+    if active_promo:
+        user.credit_balance += active_promo.bonus_credits
+        _activity(
+            db,
+            user.id,
+            "promo_credits_granted",
+            f"{active_promo.bonus_credits} bonus credits from promotion",
+            {
+                "promotion_id": active_promo.id,
+                "promotion_headline": active_promo.headline,
+                "plan_key": payment_record.plan_key,
+                "bonus_credits": active_promo.bonus_credits,
+                "credit_balance": user.credit_balance,
+            },
+        )
+
     db.commit()
     return payment_record
 
@@ -178,6 +197,24 @@ def _handle_invoice_paid(db: Session, invoice: dict) -> None:
     plan = PAYMENT_PLANS[plan_key]
     credits_to_add = plan["credits"]
     user.credit_balance += credits_to_add
+
+    # Check for active promotion and grant bonus credits
+    active_promo = get_active_promotion(db, plan_key=plan_key)
+    if active_promo:
+        user.credit_balance += active_promo.bonus_credits
+        _activity(
+            db,
+            user.id,
+            "promo_credits_granted",
+            f"{active_promo.bonus_credits} bonus credits from promotion",
+            {
+                "promotion_id": active_promo.id,
+                "promotion_headline": active_promo.headline,
+                "plan_key": plan_key,
+                "bonus_credits": active_promo.bonus_credits,
+                "credit_balance": user.credit_balance,
+            },
+        )
 
     db.add(
         PaymentRecord(
