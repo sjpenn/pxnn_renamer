@@ -561,6 +561,112 @@ async def admin_pricing_reset(
 
 
 # --------------------------------------------------------------------------- #
+# Promotions — bonus credit offers tied to plans
+# --------------------------------------------------------------------------- #
+
+
+@router.get("/promotions", response_class=HTMLResponse)
+async def admin_promotions_page(
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    rows = db.query(Promotion).order_by(Promotion.created_at.desc()).all()
+    now = datetime.utcnow()
+    promos = []
+    for row in rows:
+        if not row.is_active:
+            status = "draft"
+        elif row.starts_at and row.starts_at > now:
+            status = "scheduled"
+        elif row.ends_at and row.ends_at < now:
+            status = "expired"
+        else:
+            status = "active"
+        promos.append({"row": row, "status": status})
+
+    plan_choices = [{"key": k, "label": v["label"]} for k, v in PAYMENT_PLANS.items()]
+    return templates.TemplateResponse(
+        request,
+        "admin/promotions.html",
+        {
+            "current_user": admin,
+            "promos": promos,
+            "plan_choices": plan_choices,
+            "title": "Promotions · PxNN Admin",
+        },
+    )
+
+
+@router.post("/promotions")
+async def admin_promotions_create(
+    plan_key: str = Form(...),
+    bonus_credits: int = Form(...),
+    headline: str = Form(...),
+    description: str = Form(""),
+    starts_at: str = Form(""),
+    ends_at: str = Form(""),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    if plan_key not in PAYMENT_PLANS:
+        raise HTTPException(status_code=400, detail="Unknown plan key.")
+    if bonus_credits <= 0:
+        raise HTTPException(status_code=400, detail="Bonus credits must be positive.")
+
+    promo = Promotion(
+        plan_key=plan_key,
+        bonus_credits=bonus_credits,
+        headline=headline.strip(),
+        description=description.strip() or None,
+        is_active=False,
+        starts_at=datetime.fromisoformat(starts_at) if starts_at.strip() else None,
+        ends_at=datetime.fromisoformat(ends_at) if ends_at.strip() else None,
+        created_by_id=admin.id,
+    )
+    db.add(promo)
+    db.commit()
+    return RedirectResponse(url="/admin/promotions", status_code=303)
+
+
+@router.post("/promotions/{promo_id}/toggle")
+async def admin_promotions_toggle(
+    promo_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    promo = db.query(Promotion).filter(Promotion.id == promo_id).first()
+    if not promo:
+        raise HTTPException(status_code=404, detail="Promotion not found.")
+
+    if not promo.is_active:
+        # Deactivate any other active promo for the same plan_key
+        db.query(Promotion).filter(
+            Promotion.plan_key == promo.plan_key,
+            Promotion.is_active.is_(True),
+            Promotion.id != promo.id,
+        ).update({"is_active": False})
+        promo.is_active = True
+    else:
+        promo.is_active = False
+    db.commit()
+    return RedirectResponse(url="/admin/promotions", status_code=303)
+
+
+@router.post("/promotions/{promo_id}/delete")
+async def admin_promotions_delete(
+    promo_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    promo = db.query(Promotion).filter(Promotion.id == promo_id).first()
+    if promo:
+        db.delete(promo)
+        db.commit()
+    return RedirectResponse(url="/admin/promotions", status_code=303)
+
+
+# --------------------------------------------------------------------------- #
 # Campaigns — AI-generated ad creative for Meta
 # --------------------------------------------------------------------------- #
 
