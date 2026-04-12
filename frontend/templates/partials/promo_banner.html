@@ -1,0 +1,32 @@
+{% if active_promo %}
+<div id="promo-banner-{{ active_promo.id }}"
+     data-promo-id="{{ active_promo.id }}"
+     class="promo-banner relative overflow-hidden rounded-2xl border border-cyan/30 bg-gradient-to-r from-cyan/15 via-purple-500/10 to-cyan/15 px-6 py-5 mb-8">
+  <div class="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+    <div>
+      <p class="text-[10px] font-bold uppercase tracking-widest text-cyan mb-1">Limited Offer</p>
+      <h3 class="text-lg sm:text-xl font-display font-extrabold text-ink">{{ active_promo.headline }}</h3>
+      {% if active_promo.description %}
+      <p class="mt-1 text-sm text-ink-dim">{{ active_promo.description }}</p>
+      {% endif %}
+    </div>
+    <div class="flex items-center gap-3 shrink-0">
+      <a href="#pricing" class="px-5 py-2.5 rounded-xl bg-cyan text-stage text-xs font-bold uppercase tracking-widest hover:bg-cyan/80 transition">
+        Claim Offer
+      </a>
+      <button type="button"
+              onclick="localStorage.setItem('dismissed_promo_id','{{ active_promo.id }}'); this.closest('.promo-banner').remove();"
+              class="text-xs text-ink-mute opacity-60 hover:opacity-100 transition">dismiss</button>
+    </div>
+  </div>
+</div>
+<script>
+(function() {
+  var id = '{{ active_promo.id }}';
+  if (localStorage.getItem('dismissed_promo_id') === id) {
+    var el = document.getElementById('promo-banner-' + id);
+    if (el) el.remove();
+  }
+})();
+</script>
+{% endif %}

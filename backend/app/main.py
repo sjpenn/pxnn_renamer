@@ -32,6 +32,7 @@ from .routes.admin import router as admin_router
 from .routes.ui_comments import router as ui_comments_router
 from .services.announcements import get_active_announcement
 from .services.funnel import log_funnel_event
+from .services.promotions import get_active_promotion
 
 app = FastAPI(title="PxNN it")
 
@@ -109,6 +110,7 @@ async def home(
             "payment_options": get_payment_options(db),
             "stripe_enabled": bool(settings.STRIPE_SECRET_KEY),
             "google_oauth_enabled": bool(settings.GOOGLE_CLIENT_ID),
+            "active_promo": get_active_promotion(db),
         },
     )
 

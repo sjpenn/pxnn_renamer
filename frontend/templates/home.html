@@ -241,6 +241,12 @@
             <p class="mt-3 text-base sm:text-lg text-ink-dim">No lock-in. Cancel anytime. Credits never expire.</p>
         </div>
 
+        {% include "partials/promo_banner.html" %}
+
+        <p class="text-center text-sm text-ink-dim mt-2 mb-6">
+            Preview unlimited batches for free. 1 credit to export your renamed ZIP. Re-downloads are always free.
+        </p>
+
         <div class="mt-10 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for option in payment_options %}
             <article class="reveal-on-scroll card card-hover feature-card {% if option.plan_type == 'subscription' and option.recommended %}card-active{% endif %}">
