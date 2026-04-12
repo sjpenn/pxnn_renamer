@@ -198,23 +198,8 @@ def _handle_invoice_paid(db: Session, invoice: dict) -> None:
     credits_to_add = plan["credits"]
     user.credit_balance += credits_to_add
 
-    # Check for active promotion and grant bonus credits
-    active_promo = get_active_promotion(db, plan_key=plan_key)
-    if active_promo:
-        user.credit_balance += active_promo.bonus_credits
-        _activity(
-            db,
-            user.id,
-            "promo_credits_granted",
-            f"{active_promo.bonus_credits} bonus credits from promotion",
-            {
-                "promotion_id": active_promo.id,
-                "promotion_headline": active_promo.headline,
-                "plan_key": plan_key,
-                "bonus_credits": active_promo.bonus_credits,
-                "credit_balance": user.credit_balance,
-            },
-        )
+    # Note: promo bonuses are NOT granted on recurring invoices — only on initial checkout
+    # via _mark_checkout_session_paid. This prevents unlimited bonus credits each month.
 
     db.add(
         PaymentRecord(

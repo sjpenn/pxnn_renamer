@@ -537,8 +537,14 @@ async def admin_pricing_update(
 
     override.label = label.strip() or None
     override.description = description.strip() or None
-    override.amount_cents = int(amount_cents) if amount_cents.strip() else None
-    override.credits = int(credits) if credits.strip() else None
+    try:
+        override.amount_cents = int(amount_cents) if amount_cents.strip() else None
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Price must be a number (in cents).")
+    try:
+        override.credits = int(credits) if credits.strip() else None
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Credits must be a number.")
     override.accent = accent.strip() or None
     override.is_visible = is_visible == "on"
     override.sort_order = sort_order
