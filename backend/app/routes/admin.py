@@ -9,8 +9,9 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..core.security import require_admin
-from ..database.models import ActivityLog, Announcement, Campaign, CampaignImage, CampaignVariant, CommentCluster, UIComment, User
+from ..database.models import ActivityLog, Announcement, Campaign, CampaignImage, CampaignVariant, CommentCluster, PricingOverride, Promotion, UIComment, User
 from ..database.session import get_db
+from ..core.pricing import PAYMENT_PLANS
 from ..services import admin_stats, ai_clusterer, campaign_generator, image_generator
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
@@ -469,6 +470,94 @@ async def admin_todos_analyze(
                 note.cluster_id = cluster_row.id
     db.commit()
     return RedirectResponse(url="/admin/todos", status_code=303)
+
+
+# --------------------------------------------------------------------------- #
+# Pricing — admin overrides for plan display
+# --------------------------------------------------------------------------- #
+
+
+@router.get("/pricing", response_class=HTMLResponse)
+async def admin_pricing_page(
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    overrides = {row.plan_key: row for row in db.query(PricingOverride).all()}
+    plans = []
+    for key, plan in PAYMENT_PLANS.items():
+        override = overrides.get(key)
+        plans.append({
+            "key": key,
+            "default_label": plan["label"],
+            "default_description": plan["description"],
+            "default_amount_cents": plan["amount_cents"],
+            "default_credits": plan["credits"],
+            "default_accent": plan["accent"],
+            "plan_type": plan["plan_type"],
+            "label": override.label if override and override.label else "",
+            "description": override.description if override and override.description else "",
+            "amount_cents": override.amount_cents if override and override.amount_cents is not None else "",
+            "credits": override.credits if override and override.credits is not None else "",
+            "accent": override.accent if override and override.accent else "",
+            "is_visible": override.is_visible if override else True,
+            "sort_order": override.sort_order if override else 0,
+        })
+    return templates.TemplateResponse(
+        request,
+        "admin/pricing.html",
+        {
+            "current_user": admin,
+            "plans": plans,
+            "title": "Pricing · PxNN Admin",
+        },
+    )
+
+
+@router.post("/pricing/{plan_key}")
+async def admin_pricing_update(
+    plan_key: str,
+    label: str = Form(""),
+    description: str = Form(""),
+    amount_cents: str = Form(""),
+    credits: str = Form(""),
+    accent: str = Form(""),
+    is_visible: str = Form(""),
+    sort_order: int = Form(0),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    if plan_key not in PAYMENT_PLANS:
+        raise HTTPException(status_code=404, detail="Unknown plan key.")
+
+    override = db.query(PricingOverride).filter(PricingOverride.plan_key == plan_key).first()
+    if not override:
+        override = PricingOverride(plan_key=plan_key)
+        db.add(override)
+
+    override.label = label.strip() or None
+    override.description = description.strip() or None
+    override.amount_cents = int(amount_cents) if amount_cents.strip() else None
+    override.credits = int(credits) if credits.strip() else None
+    override.accent = accent.strip() or None
+    override.is_visible = is_visible == "on"
+    override.sort_order = sort_order
+    override.updated_by_id = admin.id
+    db.commit()
+    return RedirectResponse(url="/admin/pricing", status_code=303)
+
+
+@router.post("/pricing/{plan_key}/reset")
+async def admin_pricing_reset(
+    plan_key: str,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    override = db.query(PricingOverride).filter(PricingOverride.plan_key == plan_key).first()
+    if override:
+        db.delete(override)
+        db.commit()
+    return RedirectResponse(url="/admin/pricing", status_code=303)
 
 
 # --------------------------------------------------------------------------- #
