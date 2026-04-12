@@ -11,6 +11,7 @@ from ..core.config import settings
 from ..core.security import create_access_token, set_auth_cookie
 from ..database.models import ActivityLog, User
 from ..database.session import get_db
+from ..services.site_settings import get_setting
 
 router = APIRouter(tags=["oauth"])
 
@@ -62,6 +63,20 @@ def _resolve_or_create_google_user(db: Session, google_sub: str, email: str) -> 
             details_json=json.dumps({"method": "google", "email": email}),
         )
     )
+
+    # Grant trial credits
+    trial_credits = int(get_setting(db, "trial_credits", "5"))
+    if trial_credits > 0:
+        user.credit_balance = trial_credits
+        db.add(
+            ActivityLog(
+                user_id=user.id,
+                event_type="trial_credits_granted",
+                summary=f"{trial_credits} trial credits granted",
+                details_json=json.dumps({"trial_credits": trial_credits}),
+            )
+        )
+
     db.commit()
     return user
 

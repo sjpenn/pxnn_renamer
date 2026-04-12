@@ -13,6 +13,7 @@ from ..core.security import (
 )
 from ..database.models import ActivityLog, User
 from ..database.session import get_db
+from ..services.site_settings import get_setting
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -52,6 +53,13 @@ async def register(
     db.add(user)
     db.flush()
     _log_auth_activity(db, user, "account_created", "Account created")
+
+    # Grant trial credits
+    trial_credits = int(get_setting(db, "trial_credits", "5"))
+    if trial_credits > 0:
+        user.credit_balance = trial_credits
+        _log_auth_activity(db, user, "trial_credits_granted", f"{trial_credits} trial credits granted")
+
     db.commit()
 
     token = create_access_token(str(user.id))
