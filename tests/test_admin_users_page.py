@@ -112,3 +112,36 @@ def test_toggle_testing_flips_flag(client, db):
         ActivityLog.event_type == "admin_testing_toggled",
     ).all()
     assert len(logs) == 2
+
+
+def test_toggle_admin_promotes_and_demotes(client, db):
+    _login_as(client, db, is_admin=True)
+    target = _make_user(db, "newadmin", "newadmin@x.com", is_admin=False)
+
+    r = client.post(f"/admin/users/{target.id}/admin", follow_redirects=False)
+    assert r.status_code == 303
+    db.refresh(target)
+    assert target.is_admin is True
+
+    r = client.post(f"/admin/users/{target.id}/admin", follow_redirects=False)
+    db.refresh(target)
+    assert target.is_admin is False
+
+    logs = db.query(ActivityLog).filter(
+        ActivityLog.user_id == target.id,
+        ActivityLog.event_type == "admin_role_toggled",
+    ).all()
+    assert len(logs) == 2
+
+
+def test_cannot_toggle_own_admin(client, db):
+    admin = _login_as(client, db, is_admin=True)
+    r = client.post(f"/admin/users/{admin.id}/admin", follow_redirects=False)
+    assert r.status_code == 400
+
+
+def test_toggle_admin_requires_admin(client, db):
+    _login_as(client, db, is_admin=False)
+    target = _make_user(db, "t", "t@x.com")
+    r = client.post(f"/admin/users/{target.id}/admin")
+    assert r.status_code == 403

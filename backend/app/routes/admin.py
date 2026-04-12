@@ -128,6 +128,38 @@ async def admin_toggle_testing(
     return RedirectResponse(url="/admin/users", status_code=303)
 
 
+@router.post("/users/{user_id}/admin")
+async def admin_toggle_admin(
+    user_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    if target.id == admin.id:
+        raise HTTPException(status_code=400, detail="Cannot change your own admin status.")
+
+    target.is_admin = not bool(target.is_admin)
+    db.add(
+        ActivityLog(
+            user_id=target.id,
+            event_type="admin_role_toggled",
+            summary=f"Admin role {'granted' if target.is_admin else 'revoked'}",
+            details_json=json.dumps(
+                {
+                    "toggled_by_admin_id": admin.id,
+                    "toggled_by_email": admin.email,
+                    "new_value": bool(target.is_admin),
+                }
+            ),
+        )
+    )
+    db.commit()
+    return RedirectResponse(url="/admin/users", status_code=303)
+
+
 @router.get("/partials/kpis", response_class=HTMLResponse)
 async def partial_kpis(
     request: Request,
