@@ -20,20 +20,20 @@
   </div>
   <div class="flex items-center gap-2 flex-wrap">
     <form method="post" action="/admin/campaigns/{{ campaign.id }}/generate-copy">
-      <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-cyan/10 border border-cyan text-cyan text-xs font-medium hover:bg-cyan hover:text-stage transition">
+      <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-cyan/10 border border-cyan text-cyan text-xs font-medium hover:bg-cyan hover:text-black transition">
         <span class="material-symbols-outlined text-[14px]">auto_awesome</span>
         generate copy
       </button>
     </form>
     <form method="post" action="/admin/campaigns/{{ campaign.id }}/generate-images">
-      <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-magenta/10 border border-magenta text-magenta text-xs font-medium hover:bg-magenta hover:text-stage transition">
+      <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-magenta/10 border border-magenta text-magenta text-xs font-medium hover:bg-magenta hover:text-black transition">
         <span class="material-symbols-outlined text-[14px]">image</span>
         generate images
       </button>
     </form>
     {% if campaign.variants or campaign.images %}
     <a href="/admin/campaigns/{{ campaign.id }}/export"
-       class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-success/10 border border-success text-success text-xs font-medium hover:bg-success hover:text-stage transition">
+       class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-success/10 border border-success text-success text-xs font-medium hover:bg-success hover:text-black transition">
       <span class="material-symbols-outlined text-[14px]">download</span>
       export CSV
     </a>

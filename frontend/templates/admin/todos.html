@@ -18,7 +18,7 @@
     <form method="post" action="/admin/todos/analyze">
       <button type="submit"
               {% if open_unclustered_count == 0 %}disabled{% endif %}
-              class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-magenta/10 border border-magenta text-magenta text-xs font-medium hover:bg-magenta hover:text-stage transition disabled:opacity-40 disabled:cursor-not-allowed">
+              class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-magenta/10 border border-magenta text-magenta text-xs font-medium hover:bg-magenta hover:text-black transition disabled:opacity-40 disabled:cursor-not-allowed">
         <span class="material-symbols-outlined text-[14px] leading-none">auto_awesome</span>
         analyze with AI
         {% if open_unclustered_count > 0 %}<span class="opacity-70">({{ open_unclustered_count }})</span>{% endif %}
@@ -79,7 +79,7 @@
         <p class="text-xs text-ink-mute mt-1">{{ group.rows | length }} note{{ 's' if group.rows|length != 1 else '' }}</p>
       </div>
       <button type="button"
-              class="copy-markdown-btn text-[11px] px-3 py-1.5 rounded border border-cyan text-cyan hover:bg-cyan hover:text-stage transition"
+              class="copy-markdown-btn text-[11px] px-3 py-1.5 rounded border border-cyan text-cyan hover:bg-cyan hover:text-black transition"
               data-cluster-id="{{ group.cluster.id }}">
         copy as markdown
       </button>

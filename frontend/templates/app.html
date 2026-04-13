@@ -394,7 +394,7 @@
                                         {% if active_promo.description %}
                                         <p class="mt-1 text-xs text-ink-dim">{{ active_promo.description }}</p>
                                         {% endif %}
-                                        <button onclick="openBilling()" class="mt-3 px-4 py-2 rounded-lg bg-cyan text-stage text-[10px] font-bold uppercase tracking-widest hover:bg-cyan/80 transition">
+                                        <button onclick="openBilling()" class="mt-3 px-4 py-2 rounded-lg bg-cyan text-black text-[10px] font-bold uppercase tracking-widest hover:bg-cyan/80 transition">
                                             Get It Now
                                         </button>
                                     </div>
@@ -1074,7 +1074,7 @@
                             <p class="text-2xl font-display font-bold text-white">${priceLabel}</p>
                             <button
                                 type="button"
-                                class="mt-4 w-full rounded-xl bg-cyan py-2.5 text-[11px] font-bold uppercase tracking-widest text-stage transition hover:bg-cyan/80 disabled:opacity-40 disabled:cursor-not-allowed"
+                                class="mt-4 w-full rounded-xl bg-cyan py-2.5 text-[11px] font-bold uppercase tracking-widest text-black transition hover:bg-cyan/80 disabled:opacity-40 disabled:cursor-not-allowed"
                                 onclick="startCheckout('${escapeHtml(option.key)}')"
                                 ${disabled ? "disabled" : ""}
                             >

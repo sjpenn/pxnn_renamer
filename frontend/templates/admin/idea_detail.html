@@ -10,7 +10,7 @@
     <div class="flex items-center gap-2">
       {% if idea.status != 'analyzed' %}
       <form action="/admin/ideas/{{ idea.id }}/analyze" method="POST">
-        <button type="submit" class="px-4 py-2 rounded-lg bg-cyan text-stage text-xs font-bold uppercase tracking-widest hover:bg-cyan/80 transition">
+        <button type="submit" class="px-4 py-2 rounded-lg bg-cyan text-black text-xs font-bold uppercase tracking-widest hover:bg-cyan/80 transition">
           Analyze with AI
         </button>
       </form>
