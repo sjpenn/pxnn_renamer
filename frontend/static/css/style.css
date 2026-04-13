@@ -535,3 +535,134 @@ html {
   border-color: rgba(0, 240, 255, 0.4); /* cyan @ 40% */
   box-shadow: 0 0 24px rgba(0, 240, 255, 0.12); /* cyan glow */
 }
+
+/* ================================================================
+   WARP EDITORIAL — Marketing page overrides
+   Activated by body.warp-mktg class on home, login, register
+   ================================================================ */
+body.warp-mktg {
+  --color-stage:          #1a1918;
+  --color-stage-raised:   #242322;
+  --color-stage-sunken:   #131211;
+  --color-rail:           #2e2d2b;
+  --color-hairline:       rgba(175, 174, 172, 0.12);
+  --color-hairline-raised:#4a4948;
+  --color-ink:            #faf9f6;
+  --color-ink-dim:        #afaeac;
+  --color-ink-mute:       #868584;
+  --color-ink-soft:       #c8c7c5;
+  --color-cyan:           #faf9f6;
+  --color-cyan-soft:      #868584;
+  --color-success:        #faf9f6;
+  --color-danger:         #868584;
+  --color-magenta:        #868584;
+  --color-amber:          #afaeac;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Kill noise grain on marketing pages */
+body.warp-mktg::before {
+  display: none;
+}
+
+/* Typography: editorial weight, not bold */
+body.warp-mktg h1,
+body.warp-mktg h2,
+body.warp-mktg h3,
+body.warp-mktg .font-display {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+body.warp-mktg h1 { letter-spacing: -0.03em; }
+
+/* Warm pill buttons */
+body.warp-mktg .btn {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  border-radius: 50px;
+}
+body.warp-mktg .btn-primary {
+  background-color: #353534;
+  color: #afaeac;
+  font-weight: 500;
+  border: 1px solid rgba(175, 174, 172, 0.1);
+  box-shadow: none;
+  text-shadow: none;
+}
+body.warp-mktg .btn-primary:hover {
+  background-color: #4a4948;
+  color: #faf9f6;
+  box-shadow: none;
+}
+body.warp-mktg .btn-ghost {
+  background-color: transparent;
+  color: #afaeac;
+  border: 1px solid rgba(175, 174, 172, 0.2);
+  border-radius: 50px;
+}
+body.warp-mktg .btn-ghost:hover {
+  border-color: rgba(175, 174, 172, 0.4);
+  color: #faf9f6;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Cards: warm borders, no glow */
+body.warp-mktg .card {
+  background-color: var(--color-stage-raised);
+  border: 1px solid rgba(175, 174, 172, 0.1);
+  border-radius: 1rem;
+}
+body.warp-mktg .card-hover:hover {
+  border-color: rgba(175, 174, 172, 0.25);
+  box-shadow: none;
+  transform: none;
+}
+body.warp-mktg .card-inset {
+  background-color: var(--color-stage-sunken);
+  border: 1px solid rgba(175, 174, 172, 0.08);
+}
+
+/* Nav: warm treatment */
+body.warp-mktg nav {
+  background-color: var(--color-stage);
+  border-bottom-color: rgba(175, 174, 172, 0.08);
+}
+
+/* Filename hero animation: warm colors */
+body.warp-mktg .filename-before {
+  color: #868584;
+  text-decoration-color: rgba(134, 133, 132, 0.5);
+}
+body.warp-mktg .filename-arrow {
+  color: #666469;
+  filter: none;
+}
+body.warp-mktg .filename-after {
+  color: #faf9f6;
+  font-weight: 500;
+}
+
+/* Hero photo: warm overlay instead of neon */
+body.warp-mktg .hero-photo__img {
+  filter: saturate(0.3) brightness(0.4);
+}
+
+/* Category labels: editorial uppercase */
+body.warp-mktg .tracking-widest {
+  letter-spacing: 0.2em;
+}
+
+/* Remove all glow shadows */
+body.warp-mktg .shadow-glow-cyan,
+body.warp-mktg .shadow-glow-magenta {
+  box-shadow: none;
+}
+body.warp-mktg .ring-cyan\/60 {
+  --tw-ring-color: rgba(175, 174, 172, 0.2);
+}
+
+/* Footer: warm */
+body.warp-mktg footer {
+  border-top-color: rgba(175, 174, 172, 0.08);
+}
