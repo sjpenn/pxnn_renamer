@@ -5,10 +5,10 @@
 {% block body %}
 {% include "partials/nav.html" %}
 
-<section class="min-h-[calc(100vh-4rem)] grid grid-cols-1 lg:grid-cols-2 bg-stage">
+<main id="main-content" class="min-h-[calc(100vh-4rem)] grid grid-cols-1 lg:grid-cols-2 bg-stage">
     {# Left: hero photo panel (desktop only, becomes top strip on mobile) #}
     <div class="relative hidden lg:block hero-photo rounded-none">
-        <img src="/static/img/hero/console-panel.jpg" alt="" class="hero-photo__img" loading="eager">
+        <img src="/static/img/hero/console-panel.jpg" alt="" class="hero-photo__img" loading="eager" width="1920" height="1080">
         <div class="absolute inset-0 flex flex-col justify-end p-10">
             <div class="text-cyan h-8">{% include "partials/svg/eq_bars.html" %}</div>
             <p class="mt-4 font-display font-extrabold text-3xl text-ink">Back in the booth.</p>
@@ -18,7 +18,7 @@
 
     {# Mobile hero strip #}
     <div class="relative lg:hidden hero-photo rounded-none h-40">
-        <img src="/static/img/hero/console-panel.jpg" alt="" class="hero-photo__img" loading="eager">
+        <img src="/static/img/hero/console-panel.jpg" alt="" class="hero-photo__img" loading="eager" width="1920" height="1080">
     </div>
 
     {# Right: form #}
@@ -69,7 +69,7 @@
             </div>
         </div>
     </div>
-</section>
+</main>
 
 <script>
 (function() {

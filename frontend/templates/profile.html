@@ -5,7 +5,7 @@
 {% block body %}
 {% include "partials/nav.html" %}
 
-<section class="min-h-[calc(100vh-4rem)] bg-stage py-12 px-4">
+<main id="main-content" class="min-h-[calc(100vh-4rem)] bg-stage py-12 px-4">
     <div class="mx-auto max-w-2xl space-y-6">
         <div>
             <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; ACCOUNT</p>
@@ -111,7 +111,7 @@
         </article>
 
         {# Card 5: Danger zone #}
-        <article class="card" style="border-color: rgba(255,78,91,0.40);">
+        <article class="card border-danger/40">
             <p class="text-[11px] font-mono uppercase tracking-widest text-danger">Danger zone</p>
             <p class="mt-2 text-sm text-ink-dim">Permanently delete your account and all associated data. This cannot be undone.</p>
             <button type="button" onclick="document.getElementById('delete-dialog').showModal()" class="mt-4 btn btn-danger">
@@ -125,12 +125,12 @@
                     <p class="mt-2 text-sm text-ink-dim">Type your username <strong class="font-mono text-ink">{{ current_user.username }}</strong> to confirm.</p>
                     <div id="del-error" class="hidden mt-3 rounded-xl bg-danger/10 border border-danger/30 p-3 text-sm text-danger"></div>
                     <form id="delete-form" class="mt-4 space-y-3">
-                        <input type="text" name="username_confirmation" required class="input input--error" placeholder="Type your username">
+                        <input type="text" name="username_confirmation" required class="input" placeholder="Type your username">
                         <div class="flex gap-3">
                             <button type="button" onclick="document.getElementById('delete-dialog').close()" class="btn btn-ghost flex-1">
                                 Cancel
                             </button>
-                            <button type="submit" class="btn btn-danger flex-1" style="background-color: #ff4e5b; color: #0a0b0f; border-color: #ff4e5b;">
+                            <button type="submit" class="btn btn-danger flex-1 bg-danger text-stage border-danger">
                                 Permanently delete
                             </button>
                         </div>
@@ -139,7 +139,7 @@
             </dialog>
         </article>
     </div>
-</section>
+</main>
 
 <script>
 (function() {

@@ -7,36 +7,36 @@
 
   <form method="post" action="/admin/campaigns" class="mt-6 space-y-5">
     <div>
-      <label class="block text-xs font-bold uppercase tracking-widest text-ink-dim mb-2">Campaign name</label>
-      <input name="name" required placeholder="e.g. Summer Beat Sale 2026"
+      <label for="campaign_name" class="block text-xs font-bold uppercase tracking-widest text-ink-dim mb-2">Campaign name</label>
+      <input name="name" id="campaign_name" required placeholder="e.g. Summer Beat Sale 2026"
              class="w-full bg-stage-sunken border border-hairline rounded-lg px-4 py-3 text-ink" />
     </div>
 
     <div>
-      <label class="block text-xs font-bold uppercase tracking-widest text-ink-dim mb-2">Product description</label>
-      <textarea name="product_description" required rows="3"
+      <label for="product_description" class="block text-xs font-bold uppercase tracking-widest text-ink-dim mb-2">Product description</label>
+      <textarea name="product_description" id="product_description" required rows="3"
                 placeholder="PxNN is a filename studio for hip hop and soul beatmakers. Bulk-rename tracks with precision metadata..."
                 class="w-full bg-stage-sunken border border-hairline rounded-lg px-4 py-3 text-ink"></textarea>
       <p class="text-xs text-ink-mute mt-1">What are you promoting? Include key features and value props.</p>
     </div>
 
     <div>
-      <label class="block text-xs font-bold uppercase tracking-widest text-ink-dim mb-2">Target audience</label>
-      <textarea name="target_audience" required rows="2"
+      <label for="target_audience" class="block text-xs font-bold uppercase tracking-widest text-ink-dim mb-2">Target audience</label>
+      <textarea name="target_audience" id="target_audience" required rows="2"
                 placeholder="Hip hop producers, beatmakers, soul sample diggers, Ableton/FL Studio users aged 18-35"
                 class="w-full bg-stage-sunken border border-hairline rounded-lg px-4 py-3 text-ink"></textarea>
     </div>
 
     <div>
-      <label class="block text-xs font-bold uppercase tracking-widest text-ink-dim mb-2">Offer (optional)</label>
-      <input name="offer" placeholder="e.g. Free trial, 50% off first month, 10 free credits"
+      <label for="campaign_offer" class="block text-xs font-bold uppercase tracking-widest text-ink-dim mb-2">Offer (optional)</label>
+      <input name="offer" id="campaign_offer" placeholder="e.g. Free trial, 50% off first month, 10 free credits"
              class="w-full bg-stage-sunken border border-hairline rounded-lg px-4 py-3 text-ink" />
     </div>
 
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <label class="block text-xs font-bold uppercase tracking-widest text-ink-dim mb-2">Tone</label>
-        <select name="tone" class="w-full bg-stage-sunken border border-hairline rounded-lg px-4 py-3 text-ink">
+        <label for="campaign_tone" class="block text-xs font-bold uppercase tracking-widest text-ink-dim mb-2">Tone</label>
+        <select name="tone" id="campaign_tone" class="w-full bg-stage-sunken border border-hairline rounded-lg px-4 py-3 text-ink">
           <option value="authentic">Authentic — real talk, studio culture</option>
           <option value="hype">Hype — high energy, urgency</option>
           <option value="chill">Chill — laid back, understated</option>
@@ -44,8 +44,8 @@
         </select>
       </div>
       <div>
-        <label class="block text-xs font-bold uppercase tracking-widest text-ink-dim mb-2">Placements</label>
-        <select name="placements" class="w-full bg-stage-sunken border border-hairline rounded-lg px-4 py-3 text-ink">
+        <label for="campaign_placements" class="block text-xs font-bold uppercase tracking-widest text-ink-dim mb-2">Placements</label>
+        <select name="placements" id="campaign_placements" class="w-full bg-stage-sunken border border-hairline rounded-lg px-4 py-3 text-ink">
           <option value="feed,story">Feed + Story</option>
           <option value="feed">Feed only</option>
           <option value="story">Story only</option>

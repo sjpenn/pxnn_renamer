@@ -4,7 +4,8 @@
 <div class="flex items-center justify-between">
   <h1 class="text-2xl font-display font-semibold text-ink">Users</h1>
   <form method="get" action="/admin/users" class="flex items-center gap-2">
-    <input name="q" value="{{ q }}" placeholder="Search by username or email"
+    <input name="q" id="user-search" value="{{ q }}" placeholder="Search by username or email"
+           aria-label="Search users"
            class="bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink w-72" />
     <button type="submit"
             class="px-3 py-2 bg-cyan text-black rounded font-medium text-sm">Search</button>
@@ -12,14 +13,15 @@
 </div>
 
 <section class="bg-stage-raised border border-hairline rounded-xl overflow-hidden">
-  <table class="w-full text-sm">
+  <div class="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+  <table class="w-full text-sm min-w-[640px]">
     <thead class="text-ink-dim text-xs uppercase tracking-wider">
       <tr class="border-b border-hairline">
         <th class="text-left px-4 py-3">User</th>
-        <th class="text-left px-4 py-3">Plan</th>
+        <th class="text-left px-4 py-3 hidden sm:table-cell">Plan</th>
         <th class="text-right px-4 py-3">Credits</th>
         <th class="text-center px-4 py-3">Admin</th>
-        <th class="text-center px-4 py-3">Testing</th>
+        <th class="text-center px-4 py-3 hidden sm:table-cell">Testing</th>
         <th class="text-left px-4 py-3">Grant credits</th>
       </tr>
     </thead>
@@ -30,7 +32,7 @@
           <div class="text-ink">{{ u.username }}</div>
           <div class="text-ink-dim text-xs">{{ u.email or '—' }}</div>
         </td>
-        <td class="px-4 py-3">
+        <td class="px-4 py-3 hidden sm:table-cell">
           <span class="text-ink-dim">{{ u.active_plan or 'free' }}</span>
           <span class="text-ink-dim text-xs ml-1 opacity-80">({{ u.plan_status or 'inactive' }})</span>
         </td>
@@ -41,15 +43,19 @@
           {% else %}
           <form method="post" action="/admin/users/{{ u.id }}/admin" class="inline">
             <button type="submit"
+                    aria-pressed="{% if u.is_admin %}true{% else %}false{% endif %}"
+                    aria-label="Toggle admin status for {{ u.username }}"
                     class="text-xs px-2 py-1 rounded border {% if u.is_admin %}border-magenta text-magenta{% else %}border-hairline text-ink-mute hover:text-ink{% endif %}">
               {% if u.is_admin %}ADMIN{% else %}off{% endif %}
             </button>
           </form>
           {% endif %}
         </td>
-        <td class="px-4 py-3 text-center">
+        <td class="px-4 py-3 text-center hidden sm:table-cell">
           <form method="post" action="/admin/users/{{ u.id }}/testing" class="inline">
             <button type="submit"
+                    aria-pressed="{% if u.is_testing %}true{% else %}false{% endif %}"
+                    aria-label="Toggle testing status for {{ u.username }}"
                     class="text-xs px-2 py-1 rounded border {% if u.is_testing %}border-success text-success{% else %}border-hairline text-ink-mute hover:text-ink{% endif %}">
               {% if u.is_testing %}ON{% else %}off{% endif %}
             </button>
@@ -59,6 +65,7 @@
           <form method="post" action="/admin/users/{{ u.id }}/credits"
                 class="flex items-center gap-2">
             <input type="number" name="amount" min="1" value="10"
+                   aria-label="Credits to grant to {{ u.username }}"
                    class="bg-stage-sunken border border-hairline rounded px-2 py-1 text-sm text-ink w-20" />
             <button type="submit"
                     class="text-xs px-3 py-1 bg-cyan text-black rounded font-medium">
@@ -72,5 +79,6 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
 </section>
 {% endblock %}

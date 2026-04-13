@@ -12,6 +12,7 @@
   </div>
   <button type="button"
           onclick="localStorage.setItem('dismissed_announcement_id','{{ announcement.id }}'); this.closest('.announcement-banner').remove();"
+          aria-label="Dismiss announcement"
           class="text-xs opacity-70 hover:opacity-100">dismiss</button>
 </div>
 <script>

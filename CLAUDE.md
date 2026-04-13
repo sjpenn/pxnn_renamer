@@ -9,6 +9,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Run backend locally** (requires dependencies installed): `uvicorn backend.app.main:app --reload`
 - **API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
+### Frontend Build
+- **Build Tailwind CSS**: `npx tailwindcss -i frontend/static/css/tailwind-input.css -o frontend/static/css/tailwind.min.css --minify`
+- **Watch mode** (during development): `npx tailwindcss -i frontend/static/css/tailwind-input.css -o frontend/static/css/tailwind.min.css --watch`
+- **Config**: `tailwind.config.js` (tokens mirror CSS custom properties in `base.html`)
+- **Rebuild required** when adding new Tailwind utility classes not already in use
+
 ### Backend Development
 - **Dependencies**: Install via `pip install -r requirements.txt`
 - **Tests**: (No tests currently identified, but typically `pytest` would be used)

@@ -93,7 +93,7 @@
       <!-- Image -->
       {% if img.image_url %}
       <img src="{{ img.image_url }}" alt="{{ v.headline }}"
-           class="w-full aspect-square object-cover" loading="lazy" />
+           class="w-full aspect-square object-cover" loading="lazy" width="400" height="400" />
       {% else %}
       <div class="w-full aspect-square bg-stage-sunken flex items-center justify-center text-ink-mute text-sm">
         Image placeholder
@@ -167,7 +167,7 @@
     <div class="rounded-lg overflow-hidden border border-hairline bg-stage-sunken {% if img.is_favorite %}ring-2 ring-magenta{% endif %}">
       {% if img.image_url %}
       <img src="{{ img.image_url }}" alt="{{ img.prompt | truncate(60) }}"
-           class="w-full aspect-square object-cover" loading="lazy" />
+           class="w-full aspect-square object-cover" loading="lazy" width="400" height="400" />
       {% else %}
       <div class="w-full aspect-square flex items-center justify-center text-ink-mute text-xs">generating...</div>
       {% endif %}

@@ -1,5 +1,5 @@
 {# Nav partial. Expects: current_user (User|None), page (string), google_oauth_enabled (bool) #}
-<nav class="sticky top-0 z-50 w-full bg-stage-raised/90 backdrop-blur-md border-b border-hairline">
+<nav class="sticky top-0 z-50 w-full bg-stage-raised border-b border-hairline">
     <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {# Left: logo + marketing links (desktop) #}
         <div class="flex items-center gap-8">
@@ -32,6 +32,9 @@
                     <button id="nav-user-dropdown-btn"
                             type="button"
                             aria-label="User menu"
+                            aria-expanded="false"
+                            aria-controls="nav-user-dropdown-menu"
+                            aria-haspopup="true"
                             class="flex items-center gap-2 rounded-full border border-hairline bg-stage-raised px-3 py-1.5 text-sm font-medium text-ink hover:border-cyan transition focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan min-h-[44px]">
                         <span class="material-symbols-outlined text-base text-cyan">account_circle</span>
                         <span class="hidden sm:inline max-w-[120px] truncate">{{ current_user.username }}</span>
@@ -62,6 +65,9 @@
                 <button id="nav-mobile-btn"
                         type="button"
                         aria-label="Menu"
+                        aria-expanded="false"
+                        aria-controls="nav-mobile-menu"
+                        aria-haspopup="true"
                         class="md:hidden flex items-center justify-center w-11 h-11 rounded-lg text-ink hover:text-cyan transition focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
@@ -100,9 +106,12 @@
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             menu.classList.toggle('hidden');
+            var expanded = !menu.classList.contains('hidden');
+            btn.setAttribute('aria-expanded', String(expanded));
         });
         document.addEventListener('click', function() {
             menu.classList.add('hidden');
+            btn.setAttribute('aria-expanded', 'false');
         });
     }
 
@@ -113,8 +122,10 @@
         mobileBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             mobileMenu.classList.toggle('hidden');
+            var expanded = !mobileMenu.classList.contains('hidden');
+            mobileBtn.setAttribute('aria-expanded', String(expanded));
             const icon = mobileBtn.querySelector('.material-symbols-outlined');
-            if (icon) icon.textContent = mobileMenu.classList.contains('hidden') ? 'menu' : 'close';
+            if (icon) icon.textContent = expanded ? 'close' : 'menu';
         });
     }
 })();

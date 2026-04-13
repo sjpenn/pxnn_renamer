@@ -5,7 +5,7 @@
 {% block body %}
 {% include "partials/nav.html" %}
 
-<section class="min-h-[calc(100vh-4rem)] grid grid-cols-1 lg:grid-cols-2 bg-stage">
+<main id="main-content" class="min-h-[calc(100vh-4rem)] grid grid-cols-1 lg:grid-cols-2 bg-stage">
     {# Left: form (mirrored from login) #}
     <div class="flex items-center justify-center px-4 py-12 order-2 lg:order-1">
         <div class="w-full max-w-md">
@@ -58,7 +58,7 @@
 
     {# Right: hero photo (mirrored from login) #}
     <div class="relative hidden lg:block hero-photo rounded-none order-1 lg:order-2">
-        <img src="/static/img/hero/console-panel.jpg" alt="" class="hero-photo__img" loading="eager">
+        <img src="/static/img/hero/console-panel.jpg" alt="" class="hero-photo__img" loading="eager" width="1920" height="1080">
         <div class="absolute inset-0 flex flex-col justify-end p-10">
             <div class="text-magenta h-8">{% include "partials/svg/eq_bars.html" %}</div>
             <p class="mt-4 font-display font-extrabold text-3xl text-ink">Name beats<br>like a label.</p>
@@ -68,9 +68,9 @@
 
     {# Mobile hero strip #}
     <div class="relative lg:hidden hero-photo rounded-none h-40 order-1">
-        <img src="/static/img/hero/console-panel.jpg" alt="" class="hero-photo__img" loading="eager">
+        <img src="/static/img/hero/console-panel.jpg" alt="" class="hero-photo__img" loading="eager" width="1920" height="1080">
     </div>
-</section>
+</main>
 
 <script>
 (function() {

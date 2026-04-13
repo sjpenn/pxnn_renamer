@@ -14,46 +14,36 @@
         href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined"
         rel="stylesheet">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        display: ['Manrope', 'sans-serif'],
-                        mono: ['Geist Mono', 'monospace'],
-                    },
-                    colors: {
-                        stage:           '#0a0b0f',
-                        'stage-raised':  '#13151c',
-                        'stage-sunken':  '#07080b',
-                        rail:            '#1c1f2a',
-                        hairline:        '#232836',
-                        ink:             '#eef2ff',
-                        'ink-dim':       '#8b92a8',
-                        'ink-mute':      '#545a6e',
-                        cyan:            '#00f0ff',
-                        'cyan-soft':     '#0088a3',
-                        magenta:         '#ff2d95',
-                        amber:           '#ffb300',
-                        success:         '#2de89a',
-                        danger:          '#ff4e5b',
-                    },
-                    boxShadow: {
-                        'glow-cyan':    '0 0 24px rgba(0, 240, 255, 0.18)',
-                        'glow-magenta': '0 0 24px rgba(255, 45, 149, 0.18)',
-                    },
-                },
-            },
-        };
-    </script>
+    <link rel="stylesheet" href="/static/css/tailwind.min.css?v=studio-dark-4">
+    <link rel="stylesheet" href="/static/css/style.css?v=studio-dark-4">
 
-    <link rel="stylesheet" href="/static/css/style.css?v=studio-dark-2">
+    <style>
+      :root {
+        --color-stage: #0a0b0f;
+        --color-stage-raised: #13151c;
+        --color-stage-sunken: #07080b;
+        --color-rail: #1c1f2a;
+        --color-hairline: #232836;
+        --color-ink: #eef2ff;
+        --color-ink-dim: #8b92a8;
+        --color-ink-mute: #7a8299;
+        --color-cyan: #00f0ff;
+        --color-cyan-soft: #0088a3;
+        --color-magenta: #ff2d95;
+        --color-amber: #ffb300;
+        --color-success: #2de89a;
+        --color-danger: #ff4e5b;
+        --color-ink-soft: #b0b8d0;
+        --color-hairline-raised: #3a3f52;
+        --color-danger-hover: #ff6b75;
+        --color-danger-light: #ff8a91;
+      }
+    </style>
 
     {% block extra_head %}{% endblock %}
 </head>
 <body class="min-h-full font-sans text-ink antialiased relative {% block body_class %}bg-stage{% endblock %}">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-cyan focus:px-4 focus:py-2 focus:text-stage focus:font-semibold">Skip to main content</a>
     {% block body %}{% endblock %}
 </body>
 </html>

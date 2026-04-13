@@ -6,17 +6,26 @@
 <section class="bg-stage-raised border border-hairline rounded-xl p-4">
   <h2 class="text-sm uppercase tracking-wider text-ink-dim mb-3">Publish new</h2>
   <form method="post" action="/admin/announcements" class="space-y-3">
-    <input name="title" placeholder="Title" required
-           class="w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-ink" />
-    <textarea name="body" placeholder="Body" rows="3" required
-              class="w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-ink"></textarea>
-    <select name="severity"
-            class="bg-stage-sunken border border-hairline rounded px-3 py-2 text-ink">
+    <div>
+      <label for="announcement_title" class="block text-[10px] font-bold uppercase tracking-widest text-ink-mute mb-1">Title</label>
+      <input name="title" id="announcement_title" placeholder="Title" required
+             class="w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-ink" />
+    </div>
+    <div>
+      <label for="announcement_body" class="block text-[10px] font-bold uppercase tracking-widest text-ink-mute mb-1">Body</label>
+      <textarea name="body" id="announcement_body" placeholder="Body" rows="3" required
+                class="w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-ink"></textarea>
+    </div>
+    <div>
+      <label for="announcement_severity" class="block text-[10px] font-bold uppercase tracking-widest text-ink-mute mb-1">Severity</label>
+      <select name="severity" id="announcement_severity"
+              class="bg-stage-sunken border border-hairline rounded px-3 py-2 text-ink">
       <option value="info">Info</option>
       <option value="success">Success</option>
       <option value="warn">Warning</option>
       <option value="danger">Danger</option>
     </select>
+    </div>
     <button type="submit"
             class="px-4 py-2 bg-cyan text-black rounded font-medium">
       Save draft
