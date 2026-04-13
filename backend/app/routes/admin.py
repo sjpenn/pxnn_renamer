@@ -9,12 +9,13 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..core.security import require_admin
-from ..database.models import ActivityLog, Announcement, Campaign, CampaignImage, CampaignVariant, CommentCluster, PricingOverride, Promotion, SiteSettings, UIComment, User
+from ..database.models import ActivityLog, Announcement, Campaign, CampaignImage, CampaignVariant, CommentCluster, Idea, PricingOverride, Promotion, SiteSettings, UIComment, User
 from ..database.session import get_db
 from ..core.pricing import PAYMENT_PLANS
 from ..services import admin_stats, ai_clusterer, campaign_generator, image_generator
 from ..services.site_settings import get_setting, set_setting
 from ..services.promo_generator import generate_promo
+from ..services.idea_analyzer import analyze_idea
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "frontend" / "templates"))
@@ -948,3 +949,119 @@ async def admin_campaigns_export(
             "Content-Disposition": f'attachment; filename="{campaign.name.replace(" ", "_")}_export.csv"',
         },
     )
+
+
+# --------------------------------------------------------------------------- #
+# Ideas — AI-powered idea lab
+# --------------------------------------------------------------------------- #
+
+
+@router.get("/ideas", response_class=HTMLResponse)
+async def admin_ideas_page(
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    ideas = db.query(Idea).order_by(Idea.created_at.desc()).all()
+    return templates.TemplateResponse(
+        request,
+        "admin/ideas.html",
+        {
+            "current_user": admin,
+            "ideas": ideas,
+            "title": "Ideas · PxNN Admin",
+        },
+    )
+
+
+@router.post("/ideas")
+async def admin_ideas_create(
+    title: str = Form(...),
+    description: str = Form(...),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    idea = Idea(
+        title=title.strip(),
+        description=description.strip(),
+        status="draft",
+        created_by_id=admin.id,
+    )
+    db.add(idea)
+    db.commit()
+    db.refresh(idea)
+    return RedirectResponse(url=f"/admin/ideas/{idea.id}", status_code=303)
+
+
+@router.get("/ideas/{idea_id}", response_class=HTMLResponse)
+async def admin_ideas_detail(
+    idea_id: int,
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    idea = db.query(Idea).filter(Idea.id == idea_id).first()
+    if not idea:
+        raise HTTPException(status_code=404, detail="Idea not found.")
+
+    analysis = None
+    if idea.analysis_json:
+        try:
+            analysis = json.loads(idea.analysis_json)
+        except json.JSONDecodeError:
+            analysis = None
+
+    return templates.TemplateResponse(
+        request,
+        "admin/idea_detail.html",
+        {
+            "current_user": admin,
+            "idea": idea,
+            "analysis": analysis,
+            "title": f"{idea.title} · PxNN Admin",
+        },
+    )
+
+
+@router.post("/ideas/{idea_id}/analyze")
+async def admin_ideas_analyze(
+    idea_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    idea = db.query(Idea).filter(Idea.id == idea_id).first()
+    if not idea:
+        raise HTTPException(status_code=404, detail="Idea not found.")
+
+    result = analyze_idea(idea.title, idea.description)
+    idea.analysis_json = json.dumps(result)
+    idea.status = "analyzed"
+    db.commit()
+    return RedirectResponse(url=f"/admin/ideas/{idea.id}", status_code=303)
+
+
+@router.post("/ideas/{idea_id}/archive")
+async def admin_ideas_archive(
+    idea_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    idea = db.query(Idea).filter(Idea.id == idea_id).first()
+    if not idea:
+        raise HTTPException(status_code=404, detail="Idea not found.")
+    idea.status = "archived" if idea.status != "archived" else "draft"
+    db.commit()
+    return RedirectResponse(url=f"/admin/ideas/{idea.id}", status_code=303)
+
+
+@router.post("/ideas/{idea_id}/delete")
+async def admin_ideas_delete(
+    idea_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    idea = db.query(Idea).filter(Idea.id == idea_id).first()
+    if idea:
+        db.delete(idea)
+        db.commit()
+    return RedirectResponse(url="/admin/ideas", status_code=303)
