@@ -4,8 +4,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        display: ['Manrope', 'sans-serif'],
+        sans: ['"DM Sans"', 'sans-serif'],
+        display: ['"DM Sans"', 'sans-serif'],
         mono: ['Geist Mono', 'monospace'],
         editorial: ['"DM Sans"', 'sans-serif'],
       },
@@ -26,8 +26,8 @@ module.exports = {
         danger:         'var(--color-danger)',
       },
       boxShadow: {
-        'glow-cyan':    '0 0 24px rgba(0, 240, 255, 0.18)',
-        'glow-magenta': '0 0 24px rgba(255, 45, 149, 0.18)',
+        'glow-cyan':    '0 0 24px rgba(201, 166, 107, 0.10)',
+        'glow-magenta': 'none',
       },
     },
   },
