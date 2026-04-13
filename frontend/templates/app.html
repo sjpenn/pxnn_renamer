@@ -223,18 +223,40 @@
                                 </label>
                             </form>
 
-                            <div class="grid gap-6 lg:grid-cols-[1.5fr,1fr]">
+                            <div class="space-y-4">
                                 <div class="rounded-2xl border border-hairline bg-stage-raised p-6">
-                                    <p class="text-[10px] font-bold uppercase tracking-widest text-ink-mute mb-4">Variable Token Reference</p>
-                                    <div class="flex flex-wrap gap-2">
-                                        <span class="token-chip">ARTIST</span>
-                                        <span class="token-chip">TITLE</span>
-                                        <span class="token-chip">PRODUCERS</span>
-                                        <span class="token-chip">MIX</span>
-                                        <span class="token-chip">VERSION</span>
-                                        <span class="token-chip">BPM</span>
-                                        <span class="token-chip">DATE</span>
-                                        <span class="token-chip">KEY</span>
+                                    <div class="flex items-center justify-between mb-4">
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-ink-mute">Drag to reorder tokens</p>
+                                        <span class="text-[10px] font-medium text-ink-dim opacity-60">Drag tokens to build your naming format</span>
+                                    </div>
+                                    <div id="token-builder" class="flex flex-wrap gap-2 min-h-[48px] rounded-xl border-2 border-dashed border-hairline p-3 transition-colors">
+                                        <span class="token-chip-drag" draggable="true" data-token="ARTIST">
+                                            <span class="material-symbols-outlined text-[14px] opacity-50">drag_indicator</span>
+                                            ARTIST
+                                        </span>
+                                        <span class="token-chip-drag" draggable="true" data-token="TITLE">
+                                            <span class="material-symbols-outlined text-[14px] opacity-50">drag_indicator</span>
+                                            TITLE
+                                        </span>
+                                        <span class="token-chip-drag" draggable="true" data-token="PRODUCERS">
+                                            <span class="material-symbols-outlined text-[14px] opacity-50">drag_indicator</span>
+                                            PRODUCERS
+                                        </span>
+                                        <span class="token-chip-drag" draggable="true" data-token="MIX">
+                                            <span class="material-symbols-outlined text-[14px] opacity-50">drag_indicator</span>
+                                            MIX
+                                        </span>
+                                        <span class="token-chip-drag" draggable="true" data-token="VERSION">
+                                            <span class="material-symbols-outlined text-[14px] opacity-50">drag_indicator</span>
+                                            VERSION
+                                        </span>
+                                    </div>
+                                    <div class="mt-3 flex flex-wrap gap-2">
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-ink-mute mr-2 self-center">Extra tokens:</p>
+                                        <span class="token-chip-extra cursor-pointer" data-token="BPM" title="Click to add BPM">+ BPM</span>
+                                        <span class="token-chip-extra cursor-pointer" data-token="DATE" title="Click to add DATE">+ DATE</span>
+                                        <span class="token-chip-extra cursor-pointer" data-token="KEY" title="Click to add KEY">+ KEY</span>
+                                        <span class="token-chip-extra cursor-pointer" data-token="INDEX" title="Click to add INDEX">+ INDEX</span>
                                     </div>
                                 </div>
 
@@ -908,18 +930,21 @@
             previewBadge.textContent = "READY";
             previewBadge.className = "px-3 py-1 bg-success/15 rounded-full text-[10px] font-bold text-success";
 
-            previewList.innerHTML = state.preview.map((item) => `
+            previewList.innerHTML = state.preview.map((item) => {
+                const tags = item.resolved_fields || item.detected_tags || {};
+                return `
                 <li class="group rounded-xl border border-hairline bg-rail p-4 transition-all hover:bg-rail">
                     <p class="break-all font-mono text-[10px] font-bold leading-relaxed text-cyan">
-                        ${escapeHtml(item.transformed_name)}${escapeHtml(item.extension)}
+                        ${escapeHtml(item.preview_name || item.transformed_name || '')}
                     </p>
                     <div class="mt-3 flex flex-wrap gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
-                        ${item.detected_tags.title ? `<span class="field-chip-dark">T: ${escapeHtml(item.detected_tags.title)}</span>` : ''}
-                        ${item.detected_tags.bpm ? `<span class="field-chip-dark">B: ${item.detected_tags.bpm}</span>` : ''}
-                        ${item.detected_tags.mix ? `<span class="field-chip-dark">M: ${escapeHtml(item.detected_tags.mix)}</span>` : ''}
+                        ${tags.title ? `<span class="field-chip-dark">T: ${escapeHtml(tags.title)}</span>` : ''}
+                        ${tags.bpm ? `<span class="field-chip-dark">B: ${tags.bpm}</span>` : ''}
+                        ${tags.mix ? `<span class="field-chip-dark">M: ${escapeHtml(tags.mix)}</span>` : ''}
                     </div>
                 </li>
-            `).join("");
+                `;
+            }).join("");
         }
 
         function renderEmptyList(message, tone = "light") {
@@ -1021,12 +1046,12 @@
                 `).join("");
             }
 
-            paymentHistoryCount.textContent = `${payments.length} items`;
+            if (paymentHistoryCount) paymentHistoryCount.textContent = `${payments.length} items`;
             if (!payments.length) {
-                paymentHistoryList.innerHTML = renderEmptyList(
+                if (paymentHistoryList) paymentHistoryList.innerHTML = renderEmptyList(
                     state.user ? "No transactions found." : "Sign in to view payments."
                 );
-            } else {
+            } else if (paymentHistoryList) {
                 paymentHistoryList.innerHTML = payments.map((item) => `
                     <div class="flex items-center justify-between p-4 rounded-xl border border-hairline bg-stage-raised/50 ">
                         <div class="flex items-center gap-3">
@@ -1046,6 +1071,7 @@
                 `).join("");
             }
 
+            if (!paymentOptionsList) return;
             if (!state.paymentOptions.length) {
                 paymentOptionsList.innerHTML = renderEmptyList("Contact support for top-up options.");
                 return;
@@ -1471,6 +1497,101 @@
                 fileInput.click();
             }
         });
+
+        // ── Token Builder: Drag-and-Drop Reordering ──────────────
+        (function initTokenBuilder() {
+            const builder = document.getElementById("token-builder");
+            const formatInput = document.getElementById("format_template");
+            if (!builder || !formatInput) return;
+
+            let draggedEl = null;
+
+            function syncFormatFromTokens() {
+                const chips = builder.querySelectorAll(".token-chip-drag");
+                const delimiter = document.getElementById("delimiter");
+                const sep = {underscore: "_", dash: "-", space: " ", dot: "."}[delimiter?.value] || "_";
+                const tokens = Array.from(chips).map(c => c.dataset.token);
+                formatInput.value = tokens.join(sep);
+                formatInput.dispatchEvent(new Event("input", {bubbles: true}));
+            }
+
+            builder.addEventListener("dragstart", (e) => {
+                const chip = e.target.closest(".token-chip-drag");
+                if (!chip) return;
+                draggedEl = chip;
+                chip.classList.add("dragging");
+                builder.classList.add("drag-active");
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.setData("text/plain", chip.dataset.token);
+            });
+
+            builder.addEventListener("dragend", (e) => {
+                if (draggedEl) draggedEl.classList.remove("dragging");
+                builder.classList.remove("drag-active");
+                builder.querySelectorAll(".drag-over-left, .drag-over-right").forEach(
+                    el => el.classList.remove("drag-over-left", "drag-over-right")
+                );
+                draggedEl = null;
+            });
+
+            builder.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                const target = e.target.closest(".token-chip-drag");
+                if (!target || target === draggedEl) return;
+                builder.querySelectorAll(".drag-over-left, .drag-over-right").forEach(
+                    el => el.classList.remove("drag-over-left", "drag-over-right")
+                );
+                const rect = target.getBoundingClientRect();
+                const midX = rect.left + rect.width / 2;
+                if (e.clientX < midX) {
+                    target.classList.add("drag-over-left");
+                } else {
+                    target.classList.add("drag-over-right");
+                }
+            });
+
+            builder.addEventListener("drop", (e) => {
+                e.preventDefault();
+                if (!draggedEl) return;
+                const target = e.target.closest(".token-chip-drag");
+                if (!target || target === draggedEl) return;
+                const rect = target.getBoundingClientRect();
+                const midX = rect.left + rect.width / 2;
+                if (e.clientX < midX) {
+                    builder.insertBefore(draggedEl, target);
+                } else {
+                    builder.insertBefore(draggedEl, target.nextSibling);
+                }
+                syncFormatFromTokens();
+            });
+
+            // Extra token click-to-add
+            document.querySelectorAll(".token-chip-extra").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const token = btn.dataset.token;
+                    // Check if already in builder
+                    const existing = builder.querySelector(`[data-token="${token}"]`);
+                    if (existing) {
+                        existing.remove();
+                        btn.textContent = `+ ${token}`;
+                        btn.classList.remove("active");
+                    } else {
+                        const chip = document.createElement("span");
+                        chip.className = "token-chip-drag";
+                        chip.draggable = true;
+                        chip.dataset.token = token;
+                        chip.innerHTML = `<span class="material-symbols-outlined text-[14px] opacity-50">drag_indicator</span> ${token}`;
+                        builder.appendChild(chip);
+                        btn.textContent = `\u2212 ${token}`;
+                    }
+                    syncFormatFromTokens();
+                });
+            });
+
+            // Update delimiter separator -> rebuild format string
+            document.getElementById("delimiter")?.addEventListener("change", syncFormatFromTokens);
+        })();
 
         renameForm.addEventListener("input", schedulePreviewRefresh);
         metadataEditorList.addEventListener("input", (event) => {

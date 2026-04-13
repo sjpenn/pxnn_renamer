@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     OPENROUTER_API_KEY: Optional[str] = None
     AI_CLUSTERER_PROVIDER: str = "auto"
     REPLICATE_API_TOKEN: Optional[str] = None
+    RESEND_API_KEY: Optional[str] = None
+    EMAIL_FROM_ADDRESS: str = "notifications@gedsio.com"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

@@ -13,6 +13,7 @@ from ..core.security import (
 )
 from ..database.models import ActivityLog, User
 from ..database.session import get_db
+from ..services.email_service import notify_new_signup
 from ..services.site_settings import get_setting
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -61,6 +62,8 @@ async def register(
         _log_auth_activity(db, user, "trial_credits_granted", f"{trial_credits} trial credits granted")
 
     db.commit()
+
+    notify_new_signup(db, user, method="form")
 
     token = create_access_token(str(user.id))
     set_auth_cookie(response, token)

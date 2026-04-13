@@ -357,6 +357,69 @@ body > * { position: relative; z-index: 1; }
   border: 1px solid var(--color-hairline);
 }
 
+/* --- Drag-and-drop token builder ---------------------------------- */
+.token-chip-drag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background-color: rgba(0, 240, 255, 0.10);
+  color: var(--color-cyan);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  cursor: grab;
+  user-select: none;
+  transition: all 180ms ease;
+}
+.token-chip-drag:hover {
+  background-color: rgba(0, 240, 255, 0.20);
+  border-color: rgba(0, 240, 255, 0.5);
+  transform: translateY(-1px);
+}
+.token-chip-drag:active,
+.token-chip-drag.dragging {
+  cursor: grabbing;
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+.token-chip-drag.drag-over-left {
+  margin-left: 2rem;
+  transition: margin 180ms ease;
+}
+.token-chip-drag.drag-over-right {
+  margin-right: 2rem;
+  transition: margin 180ms ease;
+}
+.token-chip-extra {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background-color: var(--color-rail);
+  color: var(--color-ink-dim);
+  border: 1px dashed var(--color-hairline);
+  cursor: pointer;
+  user-select: none;
+  transition: all 180ms ease;
+}
+.token-chip-extra:hover {
+  background-color: rgba(0, 240, 255, 0.08);
+  color: var(--color-cyan);
+  border-color: rgba(0, 240, 255, 0.3);
+}
+#token-builder.drag-active {
+  border-color: rgba(0, 240, 255, 0.5);
+  background-color: rgba(0, 240, 255, 0.03);
+}
+
 /* --- Wizard panel fade -------------------------------------------- */
 .wizard-panel {
   animation: fade-slide 280ms cubic-bezier(0, 0, 0.2, 1);

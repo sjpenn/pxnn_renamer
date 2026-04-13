@@ -735,6 +735,7 @@ async def upload_files(
                 "name": file_item["original_name"],
                 "size_label": _format_size(file_item["size_bytes"]),
                 "extracted_fields": file_item["extracted_fields"],
+                "extension": file_item["suffix"].lstrip(".").upper(),
             }
             for file_item in file_entries
         ],

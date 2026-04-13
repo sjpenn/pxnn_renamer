@@ -13,6 +13,7 @@ from ..core.pricing import get_payment_options, get_payment_plan, PAYMENT_PLANS
 from ..core.security import get_current_user
 from ..database.models import ActivityLog, PaymentRecord, User
 from ..database.session import get_db
+from ..services.email_service import notify_purchase, notify_account_paused, notify_service_canceled
 
 router = APIRouter(tags=["payments"])
 
@@ -163,6 +164,9 @@ def _mark_checkout_session_paid(
         )
 
     db.commit()
+
+    notify_purchase(db, user, payment_record.plan_key, payment_record.amount_cents, payment_record.plan_type)
+
     return payment_record
 
 
@@ -247,6 +251,8 @@ def _handle_subscription_deleted(db: Session, subscription: dict) -> None:
     user.active_plan = "free"
     user.plan_status = "inactive"
 
+    notify_service_canceled(db, user, sub_id)
+
     _activity(db, user.id, "subscription_cancelled", "Subscription cancelled", {"subscription_id": sub_id})
     db.commit()
 
@@ -260,6 +266,10 @@ def _handle_subscription_updated(db: Session, subscription: dict) -> None:
         return
 
     user.subscription_status = new_status
+
+    if new_status == "paused":
+        notify_account_paused(db, user)
+
     db.commit()
 
 

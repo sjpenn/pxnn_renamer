@@ -11,6 +11,7 @@ from ..core.config import settings
 from ..core.security import create_access_token, set_auth_cookie
 from ..database.models import ActivityLog, User
 from ..database.session import get_db
+from ..services.email_service import notify_new_signup
 from ..services.site_settings import get_setting
 
 router = APIRouter(tags=["oauth"])
@@ -25,18 +26,19 @@ oauth.register(
 )
 
 
-def _resolve_or_create_google_user(db: Session, google_sub: str, email: str) -> User:
-    """Find existing user by google_sub, link by email, or create new user."""
+def _resolve_or_create_google_user(db: Session, google_sub: str, email: str) -> tuple[User, bool]:
+    """Find existing user by google_sub, link by email, or create new user.
+    Returns (user, is_new) tuple."""
     user = db.query(User).filter(User.google_sub == google_sub).first()
     if user:
-        return user
+        return user, False
 
     if email:
         user = db.query(User).filter(User.email == email).first()
         if user:
             user.google_sub = google_sub
             db.commit()
-            return user
+            return user, False
 
     # Derive a unique username from email
     name_hint = email.split("@")[0][:20] if email else "user"
@@ -78,7 +80,7 @@ def _resolve_or_create_google_user(db: Session, google_sub: str, email: str) -> 
         )
 
     db.commit()
-    return user
+    return user, True
 
 
 @router.get("/auth/google/login")
@@ -109,7 +111,10 @@ async def google_callback(
     google_sub = userinfo["sub"]
     email = userinfo.get("email", "")
 
-    user = _resolve_or_create_google_user(db, google_sub=google_sub, email=email)
+    user, is_new = _resolve_or_create_google_user(db, google_sub=google_sub, email=email)
+
+    if is_new:
+        notify_new_signup(db, user, method="google")
 
     jwt_token = create_access_token(str(user.id))
     response = RedirectResponse(url="/app", status_code=303)
