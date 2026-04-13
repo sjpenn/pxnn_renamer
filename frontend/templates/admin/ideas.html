@@ -1,0 +1,62 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-display font-bold text-ink">Idea Lab</h1>
+    <p class="mt-1 text-sm text-ink-dim">Capture ideas, then let AI analyze viability, market fit, and go-to-market strategy.</p>
+  </div>
+
+  <!-- Create Form -->
+  <form action="/admin/ideas" method="POST"
+        class="rounded-xl border border-hairline bg-stage-raised p-5 space-y-4">
+    <p class="text-[10px] font-bold uppercase tracking-widest text-cyan">New Idea</p>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-[10px] font-bold uppercase tracking-widest text-ink-mute mb-1">Title</label>
+        <input type="text" name="title" required placeholder="e.g., AI-powered beat marketplace"
+               class="w-full rounded-lg border border-hairline bg-stage px-3 py-2 text-sm text-ink placeholder-ink-mute focus:border-cyan focus:outline-none">
+      </div>
+      <div>
+        <label class="block text-[10px] font-bold uppercase tracking-widest text-ink-mute mb-1">Description</label>
+        <textarea name="description" required rows="3" placeholder="Describe the idea in detail — what problem does it solve, who is it for, how would it work?"
+                  class="w-full rounded-lg border border-hairline bg-stage px-3 py-2 text-sm text-ink placeholder-ink-mute focus:border-cyan focus:outline-none"></textarea>
+      </div>
+    </div>
+    <button type="submit" class="px-4 py-2 rounded-lg bg-cyan text-stage text-xs font-bold uppercase tracking-widest hover:bg-cyan/80 transition">
+      Capture Idea
+    </button>
+  </form>
+
+  <!-- Ideas List -->
+  {% if ideas %}
+  <div class="space-y-3">
+    {% for idea in ideas %}
+    <a href="/admin/ideas/{{ idea.id }}" class="block rounded-xl border border-hairline bg-stage-raised p-5 hover:border-cyan/30 transition">
+      <div class="flex items-start justify-between gap-4">
+        <div class="space-y-1 flex-1">
+          <div class="flex items-center gap-2">
+            <h3 class="text-base font-bold text-ink">{{ idea.title }}</h3>
+            {% if idea.status == 'analyzed' %}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-success/15 text-success">Analyzed</span>
+            {% elif idea.status == 'archived' %}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-ink-mute/15 text-ink-mute">Archived</span>
+            {% else %}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-amber/15 text-amber">Draft</span>
+            {% endif %}
+          </div>
+          <p class="text-sm text-ink-dim line-clamp-2">{{ idea.description[:150] }}{% if idea.description|length > 150 %}...{% endif %}</p>
+          <p class="text-xs text-ink-mute">{{ idea.created_at.strftime('%b %d, %Y') }}</p>
+        </div>
+        <span class="material-symbols-outlined text-ink-mute text-sm shrink-0 mt-1">chevron_right</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="rounded-xl border border-dashed border-hairline p-8 text-center text-sm text-ink-mute">
+    No ideas yet. Capture one above.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

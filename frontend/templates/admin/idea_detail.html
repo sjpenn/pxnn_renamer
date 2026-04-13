@@ -1,0 +1,190 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="space-y-6">
+  <!-- Back link + Actions -->
+  <div class="flex items-center justify-between">
+    <a href="/admin/ideas" class="text-sm text-cyan hover:text-ink transition flex items-center gap-1">
+      <span class="material-symbols-outlined text-sm">arrow_back</span> All Ideas
+    </a>
+    <div class="flex items-center gap-2">
+      {% if idea.status != 'analyzed' %}
+      <form action="/admin/ideas/{{ idea.id }}/analyze" method="POST">
+        <button type="submit" class="px-4 py-2 rounded-lg bg-cyan text-stage text-xs font-bold uppercase tracking-widest hover:bg-cyan/80 transition">
+          Analyze with AI
+        </button>
+      </form>
+      {% else %}
+      <form action="/admin/ideas/{{ idea.id }}/analyze" method="POST">
+        <button type="submit" class="px-4 py-2 rounded-lg border border-cyan/30 text-xs font-bold uppercase tracking-widest text-cyan hover:bg-cyan/10 transition">
+          Re-analyze
+        </button>
+      </form>
+      {% endif %}
+      <form action="/admin/ideas/{{ idea.id }}/archive" method="POST">
+        <button type="submit" class="px-3 py-2 rounded-lg border border-hairline text-xs font-bold uppercase tracking-widest text-ink-dim hover:text-ink transition">
+          {% if idea.status == 'archived' %}Unarchive{% else %}Archive{% endif %}
+        </button>
+      </form>
+      <form action="/admin/ideas/{{ idea.id }}/delete" method="POST" onsubmit="return confirm('Delete this idea?')">
+        <button type="submit" class="px-3 py-2 rounded-lg border border-hairline text-xs font-bold uppercase tracking-widest text-danger hover:text-danger transition">
+          Delete
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Idea Header -->
+  <div class="rounded-xl border border-hairline bg-stage-raised p-6">
+    <div class="flex items-center gap-2 mb-2">
+      <h1 class="text-2xl font-display font-bold text-ink">{{ idea.title }}</h1>
+      {% if idea.status == 'analyzed' %}
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-success/15 text-success">Analyzed</span>
+      {% elif idea.status == 'archived' %}
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-ink-mute/15 text-ink-mute">Archived</span>
+      {% else %}
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-amber/15 text-amber">Draft</span>
+      {% endif %}
+    </div>
+    <p class="text-sm text-ink-dim leading-relaxed">{{ idea.description }}</p>
+    <p class="mt-3 text-xs text-ink-mute">Created {{ idea.created_at.strftime('%B %d, %Y at %H:%M') }}</p>
+  </div>
+
+  {% if not analysis %}
+  <div class="rounded-xl border border-dashed border-cyan/30 p-12 text-center">
+    <span class="material-symbols-outlined text-4xl text-cyan mb-3 block">psychology</span>
+    <h3 class="text-lg font-bold text-ink mb-1">Ready for AI Analysis</h3>
+    <p class="text-sm text-ink-dim mb-4">Click "Analyze with AI" to expand this idea into a full business analysis.</p>
+  </div>
+  {% else %}
+
+  <!-- Summary + Viability Score -->
+  <div class="grid gap-6 lg:grid-cols-3">
+    <div class="lg:col-span-2 rounded-xl border border-hairline bg-stage-raised p-6">
+      <p class="text-[10px] font-bold uppercase tracking-widest text-cyan mb-2">Summary</p>
+      <p class="text-sm text-ink leading-relaxed">{{ analysis.summary }}</p>
+    </div>
+    <div class="rounded-xl border border-hairline bg-stage-raised p-6 text-center">
+      <p class="text-[10px] font-bold uppercase tracking-widest text-cyan mb-3">Viability Score</p>
+      {% set score = analysis.viability_score|default(5) %}
+      <div class="text-5xl font-display font-extrabold {% if score >= 7 %}text-success{% elif score >= 4 %}text-amber{% else %}text-danger{% endif %}">
+        {{ score }}<span class="text-lg text-ink-mute">/10</span>
+      </div>
+      <p class="mt-3 text-xs text-ink-dim leading-relaxed">{{ analysis.viability_reasoning }}</p>
+    </div>
+  </div>
+
+  <!-- Market Analysis -->
+  <div class="rounded-xl border border-hairline bg-stage-raised p-6">
+    <p class="text-[10px] font-bold uppercase tracking-widest text-cyan mb-4">Market Analysis</p>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-ink-mute mb-1">Saturation</p>
+        {% set sat = analysis.market_analysis.saturation|default('unknown') %}
+        <span class="px-2 py-1 rounded-lg text-xs font-bold uppercase
+          {% if sat == 'low' %}bg-success/15 text-success
+          {% elif sat == 'high' %}bg-danger/15 text-danger
+          {% else %}bg-amber/15 text-amber{% endif %}">
+          {{ sat }}
+        </span>
+      </div>
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-ink-mute mb-1">Target Audience</p>
+        <p class="text-sm text-ink">{{ analysis.market_analysis.target_audience|default('N/A') }}</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-ink-mute mb-1">Market Size</p>
+        <p class="text-sm text-ink">{{ analysis.market_analysis.market_size|default('N/A') }}</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-ink-mute mb-1">Competitors</p>
+        <ul class="text-sm text-ink space-y-0.5">
+          {% for comp in analysis.market_analysis.competitors|default([]) %}
+          <li>{{ comp }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Areas to Improve -->
+  <div class="rounded-xl border border-hairline bg-stage-raised p-6">
+    <p class="text-[10px] font-bold uppercase tracking-widest text-cyan mb-3">Areas to Improve</p>
+    <ul class="space-y-2">
+      {% for item in analysis.improvements|default([]) %}
+      <li class="flex items-start gap-2 text-sm text-ink">
+        <span class="material-symbols-outlined text-sm text-amber mt-0.5 shrink-0">lightbulb</span>
+        {{ item }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Todo Items -->
+  <div class="rounded-xl border border-hairline bg-stage-raised p-6">
+    <p class="text-[10px] font-bold uppercase tracking-widest text-cyan mb-3">Implementation Checklist</p>
+    <div class="space-y-2">
+      {% for item in analysis.todo_items|default([]) %}
+      <div class="flex items-center gap-3 text-sm">
+        <span class="h-5 w-5 rounded border border-hairline bg-stage shrink-0"></span>
+        <span class="text-ink flex-1">{{ item.task }}</span>
+        {% set cat = item.category|default('dev') %}
+        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest shrink-0
+          {% if cat == 'dev' %}bg-cyan/15 text-cyan
+          {% elif cat == 'design' %}bg-purple-400/15 text-purple-400
+          {% elif cat == 'marketing' %}bg-amber/15 text-amber
+          {% else %}bg-ink-mute/15 text-ink-mute{% endif %}">
+          {{ cat }}
+        </span>
+        {% set effort = item.effort|default('medium') %}
+        <span class="text-[9px] font-bold uppercase tracking-widest shrink-0
+          {% if effort == 'small' %}text-success
+          {% elif effort == 'large' %}text-danger
+          {% else %}text-amber{% endif %}">
+          {{ effort }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Cost Estimate -->
+  {% if analysis.cost_estimate %}
+  <div class="rounded-xl border border-hairline bg-stage-raised p-6">
+    <p class="text-[10px] font-bold uppercase tracking-widest text-cyan mb-4">Estimated Costs (USD)</p>
+    <div class="space-y-3">
+      {% set costs = analysis.cost_estimate %}
+      {% for label, key in [('Development', 'development'), ('Marketing', 'marketing'), ('Infrastructure', 'infrastructure'), ('Legal & Ops', 'legal_ops')] %}
+      {% if costs[key] is defined %}
+      <div class="flex items-center justify-between text-sm border-b border-hairline pb-2">
+        <span class="text-ink-dim">{{ label }}</span>
+        <span class="font-bold text-ink">${{ '{:,}'.format(costs[key].min|default(0)) }} — ${{ '{:,}'.format(costs[key].max|default(0)) }}</span>
+      </div>
+      {% endif %}
+      {% endfor %}
+      {% if costs.total is defined %}
+      <div class="flex items-center justify-between text-sm pt-1">
+        <span class="font-bold text-cyan">Total Estimate</span>
+        <span class="font-display font-bold text-lg text-ink">${{ '{:,}'.format(costs.total.min|default(0)) }} — ${{ '{:,}'.format(costs.total.max|default(0)) }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Go to Market -->
+  <div class="rounded-xl border border-hairline bg-stage-raised p-6">
+    <p class="text-[10px] font-bold uppercase tracking-widest text-cyan mb-3">Go-to-Market Strategy</p>
+    <ol class="space-y-2">
+      {% for step in analysis.go_to_market|default([]) %}
+      <li class="flex items-start gap-3 text-sm text-ink">
+        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-cyan/15 text-cyan text-[10px] font-bold shrink-0">{{ loop.index }}</span>
+        {{ step }}
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+
+  {% endif %}
+</div>
+{% endblock %}
