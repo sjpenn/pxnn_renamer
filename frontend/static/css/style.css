@@ -38,10 +38,11 @@ body > * { position: relative; z-index: 1; }
 }
 .btn-primary {
   background-color: var(--color-cyan);
-  color: var(--color-stage);
-  text-shadow: 0 1px 0 rgba(0,240,255,0.3); /* cyan glow on text */
+  color: #000000;
+  font-weight: 800;
+  text-shadow: none;
 }
-.btn-primary:hover { background-color: var(--color-ink); color: var(--color-stage); box-shadow: 0 0 24px rgba(0,240,255,0.18); /* glow-cyan */ }
+.btn-primary:hover { background-color: var(--color-ink); color: #000000; box-shadow: 0 0 24px rgba(0,240,255,0.18); /* glow-cyan */ }
 .btn-primary:disabled { background-color: var(--color-rail); color: var(--color-ink-dim); cursor: not-allowed; box-shadow: none; text-shadow: none; }
 
 .btn-ghost {
