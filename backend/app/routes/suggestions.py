@@ -36,12 +36,13 @@ def _collect_field(db: Session, user_id: int, field: str, multivalued: bool) -> 
         )
         for name in candidates:
             if name not in ranking:
-                ranking[name] = (-index, 1)
+                ranking[name] = (index, 1)
             else:
                 first_seen, count = ranking[name]
                 ranking[name] = (first_seen, count + 1)
 
-    return sorted(ranking.keys(), key=lambda name: (-ranking[name][0], -ranking[name][1]))
+    # Sort by most-recent-first (ascending index), then frequency descending.
+    return sorted(ranking.keys(), key=lambda name: (ranking[name][0], -ranking[name][1]))
 
 
 @router.get("/producers")

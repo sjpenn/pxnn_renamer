@@ -1609,6 +1609,16 @@
         const controller = window.NameLine.mount(root, {
           onChange(serialized) {
             latestSerialized = serialized;
+            const hasEmptyIdentity = serialized.blocks.some(
+              (b) => (b.type === "ARTIST" || b.type === "PRODUCER") && !(b.value || "").trim()
+            );
+            const gate = document.getElementById("go-review") || document.querySelector("[data-nl-submit-gate]");
+            if (gate) {
+              gate.disabled = hasEmptyIdentity;
+              gate.classList.toggle("opacity-50", hasEmptyIdentity);
+              gate.classList.toggle("cursor-not-allowed", hasEmptyIdentity);
+              gate.title = hasEmptyIdentity ? "Fill in all artist/producer blocks first" : "";
+            }
             if (typeof window.refreshPreview === "function") window.refreshPreview();
           },
         });
