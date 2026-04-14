@@ -269,6 +269,130 @@
     input.select();
   }
 
+  function mount(root, options) {
+    options = options || {};
+    const legendEl   = root.querySelector("[data-nl-legend]");
+    const paletteEl  = root.querySelector("[data-nl-palette]");
+    const lineEl     = root.querySelector("[data-nl-line]");
+    const separatorSelect = root.querySelector("[data-nl-separator]");
+    const resetBtn   = root.querySelector("[data-nl-reset]");
+
+    const state = createState(loadPersisted() || undefined);
+    if (separatorSelect) separatorSelect.value = state.globalSeparator;
+
+    function notifyChange() {
+      persist(state);
+      if (typeof options.onChange === "function") options.onChange(serialize(state));
+    }
+
+    function rerender() {
+      renderLine();
+      notifyChange();
+    }
+
+    function renderLine() {
+      lineEl.innerHTML = "";
+      state.blocks.forEach((block) => {
+        const chip = renderChip(block, {
+          onRemove(id) {
+            state.blocks = state.blocks.filter((b) => b.id !== id);
+            rerender();
+          },
+          onEdit(id, chipEl) {
+            const target = state.blocks.find((b) => b.id === id);
+            if (!target) return;
+            openEditor(chipEl, target, (newValue) => {
+              target.value = newValue;
+              rerender();
+            });
+          },
+        });
+        attachDrag(chip);
+        lineEl.appendChild(chip);
+      });
+    }
+
+    function attachDrag(chipEl) {
+      chipEl.addEventListener("dragstart", (event) => {
+        event.dataTransfer.setData("text/plain", chipEl.dataset.blockId);
+        event.dataTransfer.effectAllowed = "move";
+        chipEl.style.opacity = "0.4";
+      });
+      chipEl.addEventListener("dragend", () => {
+        chipEl.style.opacity = "";
+        lineEl.querySelectorAll(".nl-chip").forEach((c) => {
+          c.classList.remove("nl-drop-before", "nl-drop-after");
+        });
+      });
+      chipEl.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        const rect = chipEl.getBoundingClientRect();
+        const after = event.clientX - rect.left > rect.width / 2;
+        chipEl.classList.toggle("nl-drop-after", after);
+        chipEl.classList.toggle("nl-drop-before", !after);
+      });
+      chipEl.addEventListener("dragleave", () => {
+        chipEl.classList.remove("nl-drop-before", "nl-drop-after");
+      });
+      chipEl.addEventListener("drop", (event) => {
+        event.preventDefault();
+        const sourceId = event.dataTransfer.getData("text/plain");
+        if (!sourceId || sourceId === chipEl.dataset.blockId) return;
+        const rect = chipEl.getBoundingClientRect();
+        const after = event.clientX - rect.left > rect.width / 2;
+        const targetId = chipEl.dataset.blockId;
+        const sourceIndex = state.blocks.findIndex((b) => b.id === sourceId);
+        if (sourceIndex < 0) return;
+        const [moved] = state.blocks.splice(sourceIndex, 1);
+        const targetIndex = state.blocks.findIndex((b) => b.id === targetId);
+        state.blocks.splice(after ? targetIndex + 1 : targetIndex, 0, moved);
+        rerender();
+      });
+    }
+
+    if (legendEl) renderLegend(legendEl);
+    if (paletteEl) {
+      renderPalette(paletteEl, {
+        onAdd(type) {
+          const block = normalizeBlock({ type });
+          if (!block) return;
+          state.blocks.push(block);
+          rerender();
+          const meta = TOKEN_CATEGORIES[type];
+          if (meta && meta.hasValue) {
+            const chip = lineEl.querySelector('[data-block-id="' + block.id + '"]');
+            if (chip) openEditor(chip, block, (newValue) => {
+              block.value = newValue;
+              rerender();
+            });
+          }
+        },
+      });
+    }
+    if (separatorSelect) {
+      separatorSelect.addEventListener("change", () => {
+        state.globalSeparator = separatorSelect.value || "_";
+        rerender();
+      });
+    }
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        const fresh = createState();
+        state.blocks = fresh.blocks;
+        state.globalSeparator = fresh.globalSeparator;
+        if (separatorSelect) separatorSelect.value = state.globalSeparator;
+        rerender();
+      });
+    }
+
+    rerender();
+
+    return {
+      getState: () => state,
+      getSerialized: () => serialize(state),
+    };
+  }
+
   window.NameLine = {
     TOKEN_CATEGORIES,
     DEFAULT_BLOCKS,
@@ -283,5 +407,6 @@
     renderLegend,
     openEditor,
     fetchSuggestions,
+    mount,
   };
 })();
