@@ -74,6 +74,201 @@
     }
   }
 
+  // --- Rendering ---
+
+  function familyFor(type) {
+    const meta = TOKEN_CATEGORIES[type];
+    return meta ? meta.family : "literal";
+  }
+
+  function renderChip(block, handlers) {
+    const meta = TOKEN_CATEGORIES[block.type] || { family: "literal", label: block.type, icon: "help" };
+    const chip = document.createElement("span");
+    chip.className = "nl-chip nl-family-" + meta.family;
+    chip.setAttribute("draggable", "true");
+    chip.dataset.blockId = block.id;
+    chip.dataset.blockType = block.type;
+
+    const swatch = document.createElement("span");
+    swatch.className = "nl-chip-swatch";
+    chip.appendChild(swatch);
+
+    const icon = document.createElement("span");
+    icon.className = "material-symbols-outlined nl-chip-icon";
+    icon.textContent = meta.icon;
+    chip.appendChild(icon);
+
+    if (meta.hasValue) {
+      const valueText = block.value || "";
+      if (!valueText) chip.dataset.empty = "true";
+
+      if (!meta.literal) {
+        const label = document.createElement("span");
+        label.textContent = meta.label + ": ";
+        chip.appendChild(label);
+      }
+
+      const valueNode = document.createElement("span");
+      valueNode.className = "nl-chip-value";
+      valueNode.textContent = valueText || (meta.literal ? "…" : "empty");
+      chip.appendChild(valueNode);
+
+      chip.addEventListener("click", (event) => {
+        if (event.target.classList.contains("nl-chip-remove")) return;
+        handlers.onEdit(block.id, chip);
+      });
+    } else {
+      const label = document.createElement("span");
+      label.textContent = meta.label;
+      chip.appendChild(label);
+    }
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "nl-chip-remove";
+    removeBtn.textContent = "×";
+    removeBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      handlers.onRemove(block.id);
+    });
+    chip.appendChild(removeBtn);
+
+    return chip;
+  }
+
+  function renderPalette(container, handlers) {
+    container.innerHTML = "";
+    Object.keys(TOKEN_CATEGORIES).forEach((type) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = "+ " + TOKEN_CATEGORIES[type].label;
+      btn.addEventListener("click", () => handlers.onAdd(type));
+      container.appendChild(btn);
+    });
+  }
+
+  function renderLegend(container) {
+    container.innerHTML = "";
+    const families = [
+      ["identity", "Identity"],
+      ["content", "Content"],
+      ["metadata", "Metadata"],
+      ["variant", "Variant"],
+      ["literal", "Literal"],
+    ];
+    families.forEach(([family, label]) => {
+      const item = document.createElement("span");
+      item.className = "nl-legend-item";
+      const swatch = document.createElement("span");
+      swatch.className = "nl-swatch nl-family-" + family;
+      item.appendChild(swatch);
+      item.appendChild(document.createTextNode(label));
+      container.appendChild(item);
+    });
+  }
+
+  // --- Autocomplete ---
+
+  const suggestionsCache = { ARTIST: null, PRODUCER: null };
+
+  async function fetchSuggestions(blockType) {
+    if (suggestionsCache[blockType] !== null && suggestionsCache[blockType] !== undefined) {
+      return suggestionsCache[blockType];
+    }
+    const endpoint = blockType === "ARTIST" ? "/api/suggestions/artists" : "/api/suggestions/producers";
+    try {
+      const response = await fetch(endpoint, { credentials: "same-origin" });
+      if (!response.ok) {
+        suggestionsCache[blockType] = [];
+        return [];
+      }
+      const body = await response.json();
+      const values = Array.isArray(body.values) ? body.values : [];
+      suggestionsCache[blockType] = values;
+      return values;
+    } catch (_err) {
+      suggestionsCache[blockType] = [];
+      return [];
+    }
+  }
+
+  function openEditor(chipEl, block, onCommit) {
+    chipEl.innerHTML = "";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "nl-chip-input";
+    input.value = block.value || "";
+    input.placeholder = (TOKEN_CATEGORIES[block.type] && TOKEN_CATEGORIES[block.type].label) || "";
+    chipEl.appendChild(input);
+
+    let dropdown = null;
+    let activeIndex = -1;
+    let options = [];
+    let committed = false;
+
+    function closeDropdown() {
+      if (dropdown) dropdown.remove();
+      dropdown = null;
+      activeIndex = -1;
+      options = [];
+    }
+
+    function commit() {
+      if (committed) return;
+      committed = true;
+      closeDropdown();
+      onCommit(input.value.trim());
+    }
+
+    function renderDropdown(values) {
+      closeDropdown();
+      const query = input.value.toLowerCase();
+      const filtered = values.filter((v) => v.toLowerCase().includes(query)).slice(0, 8);
+      if (!filtered.length) return;
+      dropdown = document.createElement("div");
+      dropdown.className = "nl-autocomplete";
+      filtered.forEach((value) => {
+        const item = document.createElement("div");
+        item.className = "nl-autocomplete-item";
+        item.textContent = value;
+        item.addEventListener("mousedown", (event) => {
+          event.preventDefault();
+          input.value = value;
+          commit();
+        });
+        dropdown.appendChild(item);
+      });
+      chipEl.appendChild(dropdown);
+      options = filtered;
+    }
+
+    function highlightActive() {
+      if (!dropdown) return;
+      Array.from(dropdown.children).forEach((child, index) => {
+        child.classList.toggle("is-active", index === activeIndex);
+      });
+    }
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") { event.preventDefault(); commit(); }
+      else if (event.key === "Escape") { closeDropdown(); committed = true; onCommit(block.value || ""); }
+      else if (event.key === "ArrowDown" && dropdown) { activeIndex = Math.min(activeIndex + 1, options.length - 1); highlightActive(); }
+      else if (event.key === "ArrowUp" && dropdown)   { activeIndex = Math.max(activeIndex - 1, 0); highlightActive(); }
+    });
+    input.addEventListener("blur", () => { setTimeout(commit, 100); });
+
+    const meta = TOKEN_CATEGORIES[block.type];
+    if (meta && !meta.literal && (block.type === "ARTIST" || block.type === "PRODUCER")) {
+      fetchSuggestions(block.type).then((values) => {
+        renderDropdown(values);
+        input.addEventListener("input", () => renderDropdown(values));
+      });
+    }
+
+    input.focus();
+    input.select();
+  }
+
   window.NameLine = {
     TOKEN_CATEGORIES,
     DEFAULT_BLOCKS,
@@ -83,5 +278,10 @@
     persist,
     newId,
     normalizeBlock,
+    renderChip,
+    renderPalette,
+    renderLegend,
+    openEditor,
+    fetchSuggestions,
   };
 })();
