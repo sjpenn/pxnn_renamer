@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from ..core.security import get_current_user
 from ..database.models import ActivityLog, File as StoredFile, FileCollection, User
 from ..database.session import get_db
+from ..services.name_line import render_blocks as _render_blocks_line
 
 router = APIRouter(tags=["wizard"])
 
@@ -589,6 +590,117 @@ def _build_preview_names(
     return resolved_names
 
 
+def _legacy_template_from_blocks(blocks: list[dict]) -> str:
+    """Produce a legacy-shape template string for persistence/display."""
+    parts: list[str] = []
+    for block in blocks:
+        block_type = (block.get("type") or "").upper()
+        if block_type == "TEXT":
+            parts.append(str(block.get("value") or ""))
+        elif block_type == "PRODUCER":
+            parts.append("PRODUCER")
+        elif block_type == "ARTIST":
+            parts.append("ARTIST")
+        elif block_type in {"TITLE", "MIX", "VERSION", "BPM", "DATE", "KEY", "INDEX"}:
+            parts.append(block_type)
+    return "_".join(parts) if parts else "ARTIST_TITLE_PRODUCERS_MIX_VERSION"
+
+
+def _first_block_value(blocks: list[dict], block_type: str) -> str:
+    for block in blocks:
+        if (block.get("type") or "").upper() == block_type:
+            value = str(block.get("value") or "").strip()
+            if value:
+                return value
+    return ""
+
+
+def _all_block_values(blocks: list[dict], block_type: str) -> list[str]:
+    values: list[str] = []
+    for block in blocks:
+        if (block.get("type") or "").upper() == block_type:
+            value = str(block.get("value") or "").strip()
+            if value:
+                values.append(value)
+    return values
+
+
+def _build_preview_names_from_blocks(
+    files: list[dict],
+    *,
+    blocks: list[dict],
+    global_separator: str,
+    delimiter: str,
+    case_style: str,
+    safe_cleanup: bool,
+    file_overrides: dict[str, dict[str, str]],
+) -> list[dict]:
+    resolved_names: list[dict] = []
+    seen_names: dict[str, int] = {}
+
+    for file_item in files:
+        extracted_fields = file_item["extracted_fields"]
+        overrides = file_overrides.get(file_item["id"], {})
+        # Merge extracted + overrides for singleton token lookup, then apply case.
+        merged = {**extracted_fields, **{k: v for k, v in overrides.items() if v}}
+        shaped_extracted = _build_token_values(merged, case_style)
+        shaped_blocks = [
+            {
+                **block,
+                "value": _apply_case_style(str(block.get("value") or ""), case_style)
+                if (block.get("type") or "").upper() in {"ARTIST", "PRODUCER"}
+                else block.get("value"),
+            }
+            for block in blocks
+        ]
+        rendered_label = _render_blocks_line(
+            shaped_blocks,
+            global_separator=global_separator,
+            extracted_fields=shaped_extracted,
+        )
+        preview_stem = _sanitize_rendered_text(rendered_label, delimiter, safe_cleanup)
+        preview_stem = preview_stem or _sanitize_rendered_text(
+            shaped_extracted.get("original", file_item["stem"]), delimiter, True
+        )
+        preview_stem = preview_stem or f"file_{shaped_extracted.get('index', '00')}"
+        candidate_name = f"{preview_stem}{file_item['suffix']}"
+
+        seen_count = seen_names.get(candidate_name, 0)
+        if seen_count:
+            duplicate_stem = f"{preview_stem}{DELIMITER_MAP.get(delimiter, '_')}{seen_count + 1}"
+            candidate_name = f"{duplicate_stem}{file_item['suffix']}"
+        seen_names[f"{preview_stem}{file_item['suffix']}"] = seen_count + 1
+
+        resolved_fields = {
+            "artist": _first_block_value(blocks, "ARTIST"),
+            "title": shaped_extracted.get("title", ""),
+            "producers": "; ".join(_all_block_values(blocks, "PRODUCER")),
+            "mix": shaped_extracted.get("mix", ""),
+            "version": shaped_extracted.get("version", ""),
+            "bpm": shaped_extracted.get("bpm", ""),
+            "date": shaped_extracted.get("date", ""),
+            "key": shaped_extracted.get("key", ""),
+            "index": shaped_extracted.get("index", ""),
+            "original": shaped_extracted.get("original", ""),
+            "ext": shaped_extracted.get("ext", ""),
+        }
+
+        resolved_names.append(
+            {
+                "id": file_item["id"],
+                "original_name": file_item["original_name"],
+                "preview_name": candidate_name,
+                "rendered_label": rendered_label,
+                "size_bytes": file_item["size_bytes"],
+                "size_label": _format_size(file_item["size_bytes"]),
+                "extracted_fields": extracted_fields,
+                "resolved_fields": resolved_fields,
+            }
+        )
+
+    return resolved_names
+
+
 def _sync_collection_files(db: Session, collection: FileCollection, file_entries: list[dict]) -> None:
     existing_files = {file_record.external_id: file_record for file_record in collection.files}
 
@@ -752,6 +864,7 @@ async def preview_renames(
     default_artist: str = Form(""),
     default_producers: str = Form(""),
     file_overrides_json: str = Form(""),
+    blocks_json: str = Form(""),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -759,24 +872,48 @@ async def preview_renames(
     collection = _get_user_collection(db, current_user.id, session_id)
     preview_already_logged = collection.preview_generated_at is not None
     file_overrides = _parse_overrides(file_overrides_json)
-    preview_items = _build_preview_names(
-        metadata["files"],
-        format_template=format_template,
-        delimiter=delimiter,
-        case_style=case_style,
-        safe_cleanup=safe_cleanup,
-        default_artist=default_artist,
-        default_producers=default_producers,
-        file_overrides=file_overrides,
-    )
+
+    blocks_payload = None
+    if blocks_json.strip():
+        try:
+            blocks_payload = json.loads(blocks_json)
+        except json.JSONDecodeError as exc:
+            raise HTTPException(status_code=400, detail=f"Invalid blocks_json: {exc}") from exc
+        if not isinstance(blocks_payload, dict) or not isinstance(blocks_payload.get("blocks"), list):
+            raise HTTPException(status_code=400, detail="blocks_json must contain a 'blocks' array")
+
+    if blocks_payload is not None:
+        preview_items = _build_preview_names_from_blocks(
+            metadata["files"],
+            blocks=blocks_payload["blocks"],
+            global_separator=str(blocks_payload.get("global_separator") or "_"),
+            delimiter=delimiter,
+            case_style=case_style,
+            safe_cleanup=safe_cleanup,
+            file_overrides=file_overrides,
+        )
+        effective_format_template = _legacy_template_from_blocks(blocks_payload["blocks"])
+    else:
+        preview_items = _build_preview_names(
+            metadata["files"],
+            format_template=format_template,
+            delimiter=delimiter,
+            case_style=case_style,
+            safe_cleanup=safe_cleanup,
+            default_artist=default_artist,
+            default_producers=default_producers,
+            file_overrides=file_overrides,
+        )
+        effective_format_template = format_template
 
     metadata["options"] = {
-        "format_template": format_template,
+        "format_template": effective_format_template,
         "delimiter": delimiter,
         "case_style": case_style,
         "safe_cleanup": safe_cleanup,
         "default_artist": default_artist,
         "default_producers": default_producers,
+        "blocks_json": blocks_json,
     }
     metadata["preview"] = preview_items
     _save_metadata(session_id, metadata)
@@ -784,7 +921,7 @@ async def preview_renames(
     _update_collection_preview(
         collection,
         preview_items,
-        format_template=format_template,
+        format_template=effective_format_template,
         delimiter=delimiter,
         case_style=case_style,
         safe_cleanup=safe_cleanup,
