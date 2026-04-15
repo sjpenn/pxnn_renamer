@@ -35,6 +35,9 @@
   border: 1px solid transparent;
 }
 .nl-chip[draggable="true"]:active { cursor: grabbing; }
+.nl-chip > span:not(.nl-chip-remove) { pointer-events: none; }
+.nl-chip .nl-chip-input { pointer-events: auto; }
+.nl-chip .nl-autocomplete { pointer-events: auto; }
 .nl-chip .nl-chip-swatch { width: 3px; align-self: stretch; border-radius: 2px; margin-right: 4px; }
 .nl-chip .nl-chip-icon { font-size: 14px; opacity: 0.7; }
 .nl-chip .nl-chip-remove {

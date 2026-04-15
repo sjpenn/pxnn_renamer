@@ -312,43 +312,75 @@
       });
     }
 
+    let currentDragId = null;
+
+    function clearDropIndicators() {
+      lineEl.querySelectorAll(".nl-chip").forEach((c) => {
+        c.classList.remove("nl-drop-before", "nl-drop-after");
+      });
+    }
+
+    function insertionTargetFromPoint(clientX) {
+      const chips = Array.from(lineEl.querySelectorAll(".nl-chip"));
+      for (const chip of chips) {
+        if (chip.dataset.blockId === currentDragId) continue;
+        const rect = chip.getBoundingClientRect();
+        if (clientX < rect.left + rect.width / 2) {
+          return { chip, after: false };
+        }
+      }
+      const last = chips.filter((c) => c.dataset.blockId !== currentDragId).pop();
+      return last ? { chip: last, after: true } : null;
+    }
+
     function attachDrag(chipEl) {
       chipEl.addEventListener("dragstart", (event) => {
+        currentDragId = chipEl.dataset.blockId;
         event.dataTransfer.setData("text/plain", chipEl.dataset.blockId);
         event.dataTransfer.effectAllowed = "move";
-        chipEl.style.opacity = "0.4";
+        setTimeout(() => { chipEl.style.opacity = "0.4"; }, 0);
       });
       chipEl.addEventListener("dragend", () => {
         chipEl.style.opacity = "";
-        lineEl.querySelectorAll(".nl-chip").forEach((c) => {
-          c.classList.remove("nl-drop-before", "nl-drop-after");
-        });
-      });
-      chipEl.addEventListener("dragover", (event) => {
-        event.preventDefault();
-        const rect = chipEl.getBoundingClientRect();
-        const after = event.clientX - rect.left > rect.width / 2;
-        chipEl.classList.toggle("nl-drop-after", after);
-        chipEl.classList.toggle("nl-drop-before", !after);
-      });
-      chipEl.addEventListener("dragleave", () => {
-        chipEl.classList.remove("nl-drop-before", "nl-drop-after");
-      });
-      chipEl.addEventListener("drop", (event) => {
-        event.preventDefault();
-        const sourceId = event.dataTransfer.getData("text/plain");
-        if (!sourceId || sourceId === chipEl.dataset.blockId) return;
-        const rect = chipEl.getBoundingClientRect();
-        const after = event.clientX - rect.left > rect.width / 2;
-        const targetId = chipEl.dataset.blockId;
-        const sourceIndex = state.blocks.findIndex((b) => b.id === sourceId);
-        if (sourceIndex < 0) return;
-        const [moved] = state.blocks.splice(sourceIndex, 1);
-        const targetIndex = state.blocks.findIndex((b) => b.id === targetId);
-        state.blocks.splice(after ? targetIndex + 1 : targetIndex, 0, moved);
-        rerender();
+        currentDragId = null;
+        clearDropIndicators();
       });
     }
+
+    lineEl.addEventListener("dragover", (event) => {
+      if (!currentDragId) return;
+      event.preventDefault();
+      if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+      const target = insertionTargetFromPoint(event.clientX);
+      clearDropIndicators();
+      if (target) {
+        target.chip.classList.toggle("nl-drop-after", target.after);
+        target.chip.classList.toggle("nl-drop-before", !target.after);
+      }
+    });
+
+    lineEl.addEventListener("dragleave", (event) => {
+      if (event.target === lineEl) clearDropIndicators();
+    });
+
+    lineEl.addEventListener("drop", (event) => {
+      event.preventDefault();
+      const sourceId = event.dataTransfer.getData("text/plain") || currentDragId;
+      clearDropIndicators();
+      if (!sourceId) return;
+      const sourceIndex = state.blocks.findIndex((b) => b.id === sourceId);
+      if (sourceIndex < 0) return;
+      const target = insertionTargetFromPoint(event.clientX);
+      const [moved] = state.blocks.splice(sourceIndex, 1);
+      if (!target) {
+        state.blocks.push(moved);
+      } else {
+        const targetIndex = state.blocks.findIndex((b) => b.id === target.chip.dataset.blockId);
+        state.blocks.splice(target.after ? targetIndex + 1 : targetIndex, 0, moved);
+      }
+      currentDragId = null;
+      rerender();
+    });
 
     if (legendEl) renderLegend(legendEl);
     if (paletteEl) {
