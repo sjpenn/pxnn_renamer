@@ -320,17 +320,25 @@
       });
     }
 
-    function insertionTargetFromPoint(clientX) {
-      const chips = Array.from(lineEl.querySelectorAll(".nl-chip"));
+    function insertionTargetFromPoint(clientX, clientY) {
+      const chips = Array.from(lineEl.querySelectorAll(".nl-chip"))
+        .filter((c) => c.dataset.blockId !== currentDragId);
+      if (!chips.length) return null;
+      let best = null;
+      let bestDistance = Infinity;
       for (const chip of chips) {
-        if (chip.dataset.blockId === currentDragId) continue;
         const rect = chip.getBoundingClientRect();
-        if (clientX < rect.left + rect.width / 2) {
-          return { chip, after: false };
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const dx = clientX - centerX;
+        const dy = clientY - centerY;
+        const distance = Math.abs(dy) * 4 + Math.abs(dx);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = { chip, after: dx > 0 };
         }
       }
-      const last = chips.filter((c) => c.dataset.blockId !== currentDragId).pop();
-      return last ? { chip: last, after: true } : null;
+      return best;
     }
 
     function attachDrag(chipEl) {
@@ -351,7 +359,7 @@
       if (!currentDragId) return;
       event.preventDefault();
       if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
-      const target = insertionTargetFromPoint(event.clientX);
+      const target = insertionTargetFromPoint(event.clientX, event.clientY);
       clearDropIndicators();
       if (target) {
         target.chip.classList.toggle("nl-drop-after", target.after);
@@ -370,7 +378,7 @@
       if (!sourceId) return;
       const sourceIndex = state.blocks.findIndex((b) => b.id === sourceId);
       if (sourceIndex < 0) return;
-      const target = insertionTargetFromPoint(event.clientX);
+      const target = insertionTargetFromPoint(event.clientX, event.clientY);
       const [moved] = state.blocks.splice(sourceIndex, 1);
       if (!target) {
         state.blocks.push(moved);
