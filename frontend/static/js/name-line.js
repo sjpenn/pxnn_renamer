@@ -85,7 +85,6 @@
     const meta = TOKEN_CATEGORIES[block.type] || { family: "literal", label: block.type, icon: "help" };
     const chip = document.createElement("span");
     chip.className = "nl-chip nl-family-" + meta.family;
-    chip.setAttribute("draggable", "true");
     chip.dataset.blockId = block.id;
     chip.dataset.blockType = block.type;
 
@@ -312,7 +311,10 @@
       });
     }
 
-    let currentDragId = null;
+    // Pointer-based drag-and-drop (HTML5 DnD has inconsistent browser behavior
+    // for in-page sortables). Threshold prevents accidental drags on click.
+    const DRAG_THRESHOLD_PX = 4;
+    let drag = null;
 
     function clearDropIndicators() {
       lineEl.querySelectorAll(".nl-chip").forEach((c) => {
@@ -320,9 +322,9 @@
       });
     }
 
-    function insertionTargetFromPoint(clientX, clientY) {
+    function insertionTargetFromPoint(clientX, clientY, excludeId) {
       const chips = Array.from(lineEl.querySelectorAll(".nl-chip"))
-        .filter((c) => c.dataset.blockId !== currentDragId);
+        .filter((c) => c.dataset.blockId !== excludeId);
       if (!chips.length) return null;
       let best = null;
       let bestDistance = Infinity;
@@ -341,54 +343,73 @@
       return best;
     }
 
-    function attachDrag(chipEl) {
-      chipEl.addEventListener("dragstart", (event) => {
-        currentDragId = chipEl.dataset.blockId;
-        event.dataTransfer.setData("text/plain", chipEl.dataset.blockId);
-        event.dataTransfer.effectAllowed = "move";
-        setTimeout(() => { chipEl.style.opacity = "0.4"; }, 0);
-      });
-      chipEl.addEventListener("dragend", () => {
-        chipEl.style.opacity = "";
-        currentDragId = null;
-        clearDropIndicators();
-      });
-    }
-
-    lineEl.addEventListener("dragover", (event) => {
-      if (!currentDragId) return;
+    function onPointerMove(event) {
+      if (!drag) return;
+      if (!drag.active) {
+        const dx = event.clientX - drag.startX;
+        const dy = event.clientY - drag.startY;
+        if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+        drag.active = true;
+        drag.chipEl.classList.add("nl-dragging");
+        drag.chipEl.style.opacity = "0.4";
+        document.body.style.cursor = "grabbing";
+      }
       event.preventDefault();
-      if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
-      const target = insertionTargetFromPoint(event.clientX, event.clientY);
+      const target = insertionTargetFromPoint(event.clientX, event.clientY, drag.blockId);
       clearDropIndicators();
       if (target) {
         target.chip.classList.toggle("nl-drop-after", target.after);
         target.chip.classList.toggle("nl-drop-before", !target.after);
       }
-    });
+      drag.lastTarget = target;
+    }
 
-    lineEl.addEventListener("dragleave", (event) => {
-      if (event.target === lineEl) clearDropIndicators();
-    });
-
-    lineEl.addEventListener("drop", (event) => {
-      event.preventDefault();
-      const sourceId = event.dataTransfer.getData("text/plain") || currentDragId;
+    function onPointerUp(event) {
+      if (!drag) return;
+      const wasActive = drag.active;
+      const { blockId, lastTarget, chipEl } = drag;
+      chipEl.classList.remove("nl-dragging");
+      chipEl.style.opacity = "";
+      document.body.style.cursor = "";
       clearDropIndicators();
-      if (!sourceId) return;
-      const sourceIndex = state.blocks.findIndex((b) => b.id === sourceId);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+      drag = null;
+      if (!wasActive) return;
+      if (!lastTarget) return;
+      const sourceIndex = state.blocks.findIndex((b) => b.id === blockId);
       if (sourceIndex < 0) return;
-      const target = insertionTargetFromPoint(event.clientX, event.clientY);
       const [moved] = state.blocks.splice(sourceIndex, 1);
-      if (!target) {
+      const targetIndex = state.blocks.findIndex(
+        (b) => b.id === lastTarget.chip.dataset.blockId
+      );
+      if (targetIndex < 0) {
         state.blocks.push(moved);
       } else {
-        const targetIndex = state.blocks.findIndex((b) => b.id === target.chip.dataset.blockId);
-        state.blocks.splice(target.after ? targetIndex + 1 : targetIndex, 0, moved);
+        state.blocks.splice(lastTarget.after ? targetIndex + 1 : targetIndex, 0, moved);
       }
-      currentDragId = null;
       rerender();
-    });
+    }
+
+    function attachDrag(chipEl) {
+      chipEl.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        const target = event.target;
+        if (target && target.closest && target.closest(".nl-chip-remove, .nl-chip-input, .nl-autocomplete")) return;
+        drag = {
+          blockId: chipEl.dataset.blockId,
+          chipEl,
+          startX: event.clientX,
+          startY: event.clientY,
+          active: false,
+          lastTarget: null,
+        };
+        window.addEventListener("pointermove", onPointerMove);
+        window.addEventListener("pointerup", onPointerUp);
+        window.addEventListener("pointercancel", onPointerUp);
+      });
+    }
 
     if (legendEl) renderLegend(legendEl);
     if (paletteEl) {

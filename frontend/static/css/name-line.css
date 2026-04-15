@@ -34,16 +34,15 @@
   user-select: none;
   border: 1px solid transparent;
 }
-.nl-chip[draggable="true"]:active { cursor: grabbing; }
-.nl-chip > span:not(.nl-chip-remove) { pointer-events: none; }
-.nl-chip .nl-chip-input { pointer-events: auto; }
-.nl-chip .nl-autocomplete { pointer-events: auto; }
+.nl-chip.nl-dragging { cursor: grabbing; }
 .nl-chip .nl-chip-swatch { width: 3px; align-self: stretch; border-radius: 2px; margin-right: 4px; }
 .nl-chip .nl-chip-icon { font-size: 14px; opacity: 0.7; }
 .nl-chip .nl-chip-remove {
-  opacity: 0; margin-left: 4px; border: none; background: transparent; cursor: pointer; font-size: 14px;
+  opacity: 0.65; margin-left: 4px; border: none; background: transparent; cursor: pointer;
+  font-size: 14px; font-weight: 700; line-height: 1; padding: 0 4px; border-radius: 999px;
+  color: inherit;
 }
-.nl-chip:hover .nl-chip-remove { opacity: 0.7; }
+.nl-chip .nl-chip-remove:hover { opacity: 1; background: rgba(204, 74, 61, 0.15); color: #a83a2e; }
 .nl-chip .nl-chip-input { border: none; outline: none; background: transparent; font: inherit; min-width: 80px; }
 
 .nl-family-identity { background: rgba(204, 112, 68, 0.10); color: #8a4a2a; }
