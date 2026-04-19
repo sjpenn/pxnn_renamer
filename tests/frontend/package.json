@@ -1,0 +1,11 @@
+{
+  "name": "name-line-frontend-tests",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node name-line.test.js"
+  },
+  "dependencies": {
+    "jsdom": "^24.0.0"
+  }
+}
