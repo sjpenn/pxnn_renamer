@@ -83,3 +83,38 @@ def test_unknown_block_type_ignored():
 
 def test_empty_blocks_list_renders_empty_string():
     assert render_blocks([], global_separator="_", extracted_fields=EXTRACTED) == ""
+
+
+def test_value_type_empty_causes_skip_but_fills_with_override_equivalent_upstream():
+    """Simulates the resolution chain: backend render_blocks only sees resolved values.
+    This test just asserts the service drops empty value-bearing blocks so the
+    filename doesn't have a dangling separator — the frontend's warning rule is
+    the one that catches this case for the user."""
+    blocks = [
+        {"type": "ARTIST", "value": ""},
+        {"type": "TITLE"},
+        {"type": "PRODUCER", "value": ""},
+    ]
+    result = render_blocks(blocks, global_separator="_", extracted_fields=EXTRACTED)
+    assert result == "Loaded Up"
+
+
+def test_text_block_value_preserved_verbatim_even_around_empty_values():
+    blocks = [
+        {"type": "ARTIST", "value": ""},
+        {"type": "TEXT", "value": "@"},
+        {"type": "TITLE"},
+    ]
+    result = render_blocks(blocks, global_separator="_", extracted_fields=EXTRACTED)
+    assert result == "@Loaded Up"
+
+
+def test_no_duplicate_separator_when_singleton_missing_between_tokens():
+    blocks = [
+        {"type": "ARTIST", "value": "Hurricane Wisdom"},
+        {"type": "BPM"},
+        {"type": "TITLE"},
+    ]
+    extracted = {**EXTRACTED, "bpm": ""}
+    result = render_blocks(blocks, global_separator="_", extracted_fields=extracted)
+    assert result == "Hurricane Wisdom_Loaded Up"
