@@ -65,3 +65,18 @@
 }
 .nl-autocomplete-item { padding: 6px 10px; font-size: 12px; cursor: pointer; }
 .nl-autocomplete-item:hover, .nl-autocomplete-item.is-active { background: var(--stage-sunken, #f3eee6); }
+
+.nl-chip .nl-grip {
+  font-size: 14px;
+  cursor: grab;
+  opacity: 0.45;
+  margin-right: 2px;
+  user-select: none;
+  touch-action: none;
+}
+.nl-chip .nl-grip:hover { opacity: 0.85; }
+.nl-chip.nl-ghost {
+  opacity: 0.35;
+  border: 1px dashed #cc7044;
+}
+.sortable-chosen { cursor: grabbing; }

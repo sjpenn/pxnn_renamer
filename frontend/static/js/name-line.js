@@ -88,6 +88,13 @@
     chip.dataset.blockId = block.id;
     chip.dataset.blockType = block.type;
 
+    const grip = document.createElement("span");
+    grip.className = "material-symbols-outlined nl-grip";
+    grip.textContent = "drag_indicator";
+    grip.setAttribute("aria-label", "Drag to reorder");
+    grip.addEventListener("click", (e) => e.stopPropagation());
+    chip.appendChild(grip);
+
     const swatch = document.createElement("span");
     swatch.className = "nl-chip-swatch";
     chip.appendChild(swatch);
@@ -113,7 +120,10 @@
       chip.appendChild(valueNode);
 
       chip.addEventListener("click", (event) => {
-        if (event.target.classList.contains("nl-chip-remove")) return;
+        const t = event.target;
+        if (t.closest(".nl-chip-remove")) return;
+        if (t.closest(".nl-grip")) return;
+        if (t.closest(".nl-chip-arrow")) return;
         handlers.onEdit(block.id, chip);
       });
     } else {
@@ -373,6 +383,20 @@
         rerender();
       });
     }
+
+    const sortable = (typeof Sortable !== "undefined" && Sortable.create)
+      ? Sortable.create(lineEl, {
+          handle: ".nl-grip",
+          animation: 150,
+          ghostClass: "nl-ghost",
+          onEnd(evt) {
+            if (evt.oldIndex === evt.newIndex) return;
+            const [moved] = state.blocks.splice(evt.oldIndex, 1);
+            state.blocks.splice(evt.newIndex, 0, moved);
+            rerender();
+          },
+        })
+      : null;
 
     rerender();
 
