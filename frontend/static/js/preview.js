@@ -156,23 +156,53 @@
     let currentFiles = [];
     let currentState = { blocks: [], globalSeparator: "_", overrides: {} };
 
+    function buildSampleFile() {
+      const getFields = typeof opts.getSampleFields === "function" ? opts.getSampleFields : () => ({});
+      return { id: "__sample__", fields: Object.assign({ ext: "wav" }, getFields() || {}) };
+    }
+
+    function renderSampleRow() {
+      const file = buildSampleFile();
+      const row = document.createElement("div");
+      row.className = "pv-row";
+      row.dataset.sample = "true";
+      const main = document.createElement("div");
+      main.className = "pv-row-main";
+      const hint = document.createElement("span");
+      hint.className = "pv-warn";
+      hint.style.color = "var(--color-ink-mute, #868584)";
+      hint.style.fontWeight = "600";
+      hint.textContent = "PREVIEW";
+      main.appendChild(hint);
+      const nameEl = document.createElement("div");
+      nameEl.className = "pv-name";
+      nameEl.textContent = computeRenderedName(currentState, file) || "(build your name line above)";
+      main.appendChild(nameEl);
+      row.appendChild(main);
+      return row;
+    }
+
     function render() {
       body.innerHTML = "";
       let warnCount = 0;
-      currentFiles.forEach((file) => {
-        const row = renderRow(file, currentState, {
-          onOverrideChange(fileId, field, value) {
-            if (typeof opts.onOverrideChange === "function") {
-              opts.onOverrideChange(fileId, field, value);
-            }
-          },
-        });
-        if (row.classList.contains("pv-row-warn")) warnCount++;
-        body.appendChild(row);
-      });
       const total = currentFiles.length;
       if (total === 0) {
-        counter.textContent = "No files uploaded yet";
+        body.appendChild(renderSampleRow());
+      } else {
+        currentFiles.forEach((file) => {
+          const row = renderRow(file, currentState, {
+            onOverrideChange(fileId, field, value) {
+              if (typeof opts.onOverrideChange === "function") {
+                opts.onOverrideChange(fileId, field, value);
+              }
+            },
+          });
+          if (row.classList.contains("pv-row-warn")) warnCount++;
+          body.appendChild(row);
+        });
+      }
+      if (total === 0) {
+        counter.textContent = "Sample preview — upload files to rename";
       } else if (warnCount === 0) {
         counter.textContent = `${total} files ready`;
       } else {

@@ -5,10 +5,10 @@
 {% block body_class %}bg-stage min-h-screen{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{{ url_for('static', path='/css/name-line.css') }}?v=name-line-9">
+<link rel="stylesheet" href="{{ url_for('static', path='/css/name-line.css') }}?v=name-line-10">
 <script src="{{ url_for('static', path='/vendor/sortable.min.js') }}"></script>
-<script src="{{ url_for('static', path='/js/name-line.js') }}?v=name-line-9"></script>
-<script src="{{ url_for('static', path='/js/preview.js') }}?v=name-line-9"></script>
+<script src="{{ url_for('static', path='/js/name-line.js') }}?v=name-line-10"></script>
+<script src="{{ url_for('static', path='/js/preview.js') }}?v=name-line-10"></script>
 {% endblock %}
 
 {% block body %}
@@ -1288,7 +1288,27 @@
 
         const previewRoot = document.getElementById("preview-root");
         if (previewRoot && window.Preview) {
+          function sampleFieldsFromAccountDetails() {
+            const txt = (id, fb) => {
+              const el = document.getElementById(id);
+              const v = el ? (el.textContent || "").trim() : "";
+              return v && v !== "—" ? v : fb;
+            };
+            return {
+              artist: "Artist",
+              producers: txt("acct-producer", "Producer"),
+              title: "Title",
+              bpm: txt("acct-bpm", "140"),
+              key: txt("acct-key", "Amin"),
+              date: txt("acct-date", "2026"),
+              mix: txt("acct-mix", "MAIN"),
+              version: txt("acct-version", "V1"),
+              index: "01",
+              ext: "wav",
+            };
+          }
           const previewCtrl = window.Preview.mount(previewRoot, {
+            getSampleFields: sampleFieldsFromAccountDetails,
             onOverrideChange(fileId, field, value) {
               state.fileEdits[fileId] = { ...(state.fileEdits[fileId] || {}), [field]: value };
               const trimmed = value == null ? "" : String(value).trim();
@@ -1444,6 +1464,7 @@
       localStorage.removeItem(KEY);
     }
     render();
+    if (typeof window.refreshPreview === "function") window.refreshPreview();
   }
 
   el.addEventListener('click', edit);
