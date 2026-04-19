@@ -30,29 +30,11 @@
                 </div>
 
                 <div class="mt-4 lg:mt-2 space-y-1">
-                    <p class="px-3 text-[11px] font-bold uppercase tracking-widest text-ink-mute opacity-50 mb-4">Wizard Workflow</p>
-                    <nav class="space-y-4" aria-label="Wizard steps">
-                        <button type="button" class="wizard-step is-active w-full text-left" data-step-target="1">
-                            <span class="wizard-step-index">01</span>
-                            <span>
-                                <span class="wizard-step-label">Add Files</span>
-                                <span class="wizard-step-copy">Stage tracks & inspect hints</span>
-                            </span>
-                        </button>
-                        <button type="button" class="wizard-step is-locked w-full text-left" data-step-target="2">
-                            <span class="wizard-step-index">02</span>
-                            <span>
-                                <span class="wizard-step-label">Define Metadata</span>
-                                <span class="wizard-step-copy">Set artist & clean producers</span>
-                            </span>
-                        </button>
-                        <button type="button" class="wizard-step is-locked w-full text-left" data-step-target="3">
-                            <span class="wizard-step-index">03</span>
-                            <span>
-                                <span class="wizard-step-label">Export Archive</span>
-                                <span class="wizard-step-copy">Review and download</span>
-                            </span>
-                        </button>
+                    <p class="px-3 text-[11px] font-bold uppercase tracking-widest text-ink-mute opacity-50 mb-4">Workflow</p>
+                    <nav class="space-y-2 text-xs text-ink-dim font-medium px-3" aria-label="Workflow steps">
+                        <p>1. Drop files in the staging zone</p>
+                        <p>2. Build your name rule below</p>
+                        <p>3. Download from the preview table</p>
                     </nav>
                 </div>
 
@@ -129,10 +111,10 @@
                     <div class="mt-8 space-y-8">
                         <div id="billing-banner" class="hidden rounded-2xl border border-success/30 bg-success/10 px-5 py-4 text-sm text-success"></div>
 
-                        <!-- Step 1: File Staging -->
-                        <section class="wizard-panel space-y-8" data-step-panel="1">
+                        <!-- File Staging -->
+                        <div class="space-y-8">
                             <div class="space-y-2">
-                                <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; STEP 01 · STAGE FILES</p>
+                                <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; STAGE FILES</p>
                                 <h3 class="text-2xl font-editorial text-ink">Stage Source Files</h3>
                                 <p class="max-w-2xl text-sm leading-6 text-ink-dim font-medium">
                                     Our precision parser will extract BPM, artist, and version metadata from your filenames.
@@ -160,19 +142,18 @@
                                     <p class="text-xs font-bold uppercase tracking-widest text-cyan">Workflow Tip</p>
                                 </div>
                                 <p class="text-xs leading-5 opacity-80 font-medium">
-                                    The fastest path is to define the artist once at Step 2. We'll automatically identify BPM and mix versions wherever possible.
+                                    Drop your files above, define the naming rule in the builder below, then download your archive.
                                 </p>
                             </div>
-                        </section>
+                        </div>
 
-                        <!-- Step 2: Metadata Definition -->
-                        <section class="wizard-panel hidden space-y-8 relative" data-step-panel="2">
-                            {% with block_key="step-2-metadata", block_label="Step 2 · Metadata" %}{% include "partials/ui_comment_widget.html" %}{% endwith %}
+                        <!-- Name Line builder -->
+                        <div class="space-y-8">
                             <div class="space-y-2">
-                                <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; STEP 02 · RULE BUILDER</p>
+                                <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; RULE BUILDER</p>
                                 <h3 class="text-2xl font-editorial text-ink">Define Metadata Rules</h3>
                                 <p class="max-w-xl text-sm leading-6 text-ink-dim font-medium">
-                                    Build your file name format below, then set casing and cleanup options.
+                                    Build your file name format below.
                                 </p>
                             </div>
 
@@ -195,133 +176,11 @@
                               </div>
                             </div>
 
-                            <form id="rename-form" class="space-y-6">
-                                <div class="grid gap-6 lg:grid-cols-2">
-                                    <label class="space-y-2">
-                                        <span class="text-xs font-bold uppercase tracking-wider text-ink-dim opacity-70 px-1">Separator Logic</span>
-                                        <select id="delimiter" name="delimiter" class="w-full rounded-xl border border-hairline bg-stage-raised px-4 py-3 text-sm outline-none transition focus:border-cyan focus:ring-2 focus:ring-cyan/30">
-                                            <option value="underscore" selected>Underscore (_)</option>
-                                            <option value="dash">Dash (-)</option>
-                                            <option value="space">Space ( )</option>
-                                            <option value="dot">Dot (.)</option>
-                                        </select>
-                                    </label>
+                            <div id="preview-root" class="mt-6"></div>
+                        </div>
 
-                                    <label class="space-y-2">
-                                        <span class="text-xs font-bold uppercase tracking-wider text-ink-dim opacity-70 px-1">Casing Style</span>
-                                        <select id="case_style" name="case_style" class="w-full rounded-xl border border-hairline bg-stage-raised px-4 py-3 text-sm outline-none transition focus:border-cyan focus:ring-2 focus:ring-cyan/30">
-                                            <option value="keep" selected>Professional / keep as is</option>
-                                            <option value="title">Title Case</option>
-                                            <option value="lower">lowercase</option>
-                                            <option value="upper">UPPERCASE</option>
-                                        </select>
-                                    </label>
-                                </div>
-
-                                <label class="flex items-center justify-between rounded-xl border border-hairline bg-stage p-5">
-                                    <div class="flex items-center gap-4">
-                                        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-success/15 text-success">
-                                            <span class="material-symbols-outlined">cleaning_services</span>
-                                        </div>
-                                        <div>
-                                            <span class="block text-sm font-bold text-ink">Precision Cleanup</span>
-                                            <span class="block text-xs text-ink-dim font-medium">Strips problem characters for archive-safe delivery.</span>
-                                        </div>
-                                    </div>
-                                    <input id="safe_cleanup" name="safe_cleanup" type="checkbox" checked class="h-6 w-6 rounded-lg border-hairline text-cyan focus:ring-cyan/30">
-                                </label>
-                            </form>
-
-                            <div class="space-y-4 pt-4 border-t border-hairline">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-xs font-bold uppercase tracking-widest text-ink-dim opacity-60">Per-file cleanup</p>
-                                        <h4 class="mt-1 font-display text-xl text-ink">Only edit the exceptions</h4>
-                                    </div>
-                                    <span class="rounded-full bg-stage-sunken px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white">Autofilled from filenames</span>
-                                </div>
-                                <div id="metadata-editor-list" class="space-y-4"></div>
-                            </div>
-
-                            <div class="flex flex-wrap items-center gap-3">
-                                <button id="refresh-preview" type="button" class="inline-flex items-center rounded-xl bg-stage-sunken px-6 py-3 text-sm font-bold text-white transition hover:bg-slate-800">
-                                    Refresh preview
-                                </button>
-                                <button id="go-review" type="button" class="inline-flex items-center rounded-xl border border-hairline bg-stage-raised px-6 py-3 text-sm font-bold text-ink transition hover:border-cyan">
-                                    Continue to review
-                                </button>
-                            </div>
-                        </section>
-
-                        <!-- Step 3: Review & Download -->
-                        <section class="wizard-panel hidden space-y-8 relative" data-step-panel="3">
-                            {% with block_key="step-3-export", block_label="Step 3 · Export" %}{% include "partials/ui_comment_widget.html" %}{% endwith %}
-                            <div class="space-y-2">
-                                <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; STEP 03 · COMMIT BATCH</p>
-                                <h3 class="text-2xl font-editorial text-ink">Final Review & Export</h3>
-                                <p class="max-w-xl text-sm leading-6 text-ink-dim font-medium">
-                                    Your standardized archive is ready. Verify the final names in the preview rail before downloading.
-                                </p>
-                            </div>
-
-                            <div class="grid gap-6 md:grid-cols-2">
-                                <div class="rounded-xl bg-stage-sunken p-8 text-white shadow-glow-cyan">
-                                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan mb-6">
-                                        <span class="material-symbols-outlined text-stage">sim_card_download</span>
-                                    </div>
-                                    <p class="text-[10px] font-bold uppercase tracking-widest opacity-60">Export Ready</p>
-                                    <p class="mt-2 font-display text-4xl font-bold" id="download-file-count">0 Files</p>
-                                    <p class="mt-4 text-xs leading-5 opacity-70 font-medium">
-                                        Standardized ZIP archive generated according to your precision metadata rules.
-                                    </p>
-                                    <a id="download-link" href="#" class="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-stage-raised py-4 text-sm font-bold text-cyan transition hover:bg-stage-raised-dim">
-                                        <span class="material-symbols-outlined text-sm">download</span>
-                                        DOWNLOAD ARCHIVE
-                                    </a>
-                                    <div id="credit-cost-indicator" class="mt-3 text-center text-xs font-medium">
-                                        <span id="credit-cost-first" class="hidden text-amber">
-                                            <span class="material-symbols-outlined text-xs align-middle">toll</span>
-                                            This will use 1 credit
-                                        </span>
-                                        <span id="credit-cost-free" class="hidden text-success">
-                                            <span class="material-symbols-outlined text-xs align-middle">check_circle</span>
-                                            Free re-download
-                                        </span>
-                                        <span id="credit-cost-none" class="hidden text-danger">
-                                            <span class="material-symbols-outlined text-xs align-middle">error</span>
-                                            You need 1 credit to export &mdash;
-                                            <button onclick="openBilling()" class="underline text-cyan">Buy credits</button>
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div class="rounded-xl border border-hairline bg-stage-raised p-8">
-                                    <p class="text-[10px] font-bold uppercase tracking-widest text-ink-mute mb-6">Active Rule Summary</p>
-                                    <dl class="space-y-4 text-sm">
-                                        <div class="flex justify-between border-b border-hairline pb-2">
-                                            <dt class="text-ink-dim font-medium">Format</dt>
-                                            <dd id="summary-format" class="font-bold text-ink text-right max-w-[180px] break-all font-mono text-[10px]">ARTIST_TITLE_PRODUCERS_MIX_VERSION</dd>
-                                        </div>
-                                        <div class="flex justify-between border-b border-hairline pb-2">
-                                            <dt class="text-ink-dim font-medium">Artist</dt>
-                                            <dd id="summary-artist" class="font-bold text-ink">Not set</dd>
-                                        </div>
-                                        <div class="flex justify-between border-b border-hairline pb-2">
-                                            <dt class="text-ink-dim font-medium">Producers</dt>
-                                            <dd id="summary-producers" class="font-bold text-ink">Not set</dd>
-                                        </div>
-                                        <div class="flex justify-between border-b border-hairline pb-2">
-                                            <dt class="text-ink-dim font-medium">Delimiter</dt>
-                                            <dd id="summary-delimiter" class="font-bold text-ink">Underscore</dd>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <dt class="text-ink-dim font-medium">Case</dt>
-                                            <dd id="summary-case" class="font-bold text-ink">Normal</dd>
-                                        </div>
-                                    </dl>
-                                </div>
-                            </div>
-                        </section>
+                        <!-- Download link (hidden, triggered by Preview module) -->
+                        <a id="download-link" href="#" class="hidden"></a>
 
                         <div class="pt-12 border-t border-hairline hidden md:block relative">
                             {% with block_key="workspace-overview", block_label="Workspace Overview" %}{% include "partials/ui_comment_widget.html" %}{% endwith %}
@@ -519,8 +378,6 @@
         }
 
         const state = {
-            activeStep: 1,
-            unlockedStep: 1,
             sessionId: null,
             uploadedFiles: [],
             preview: [],
@@ -533,32 +390,15 @@
             paymentOptions: initialPaymentOptions
         };
 
-        const stepButtons = Array.from(document.querySelectorAll("[data-step-target]"));
-        const stepPanels = Array.from(document.querySelectorAll("[data-step-panel]"));
         const dropzone = document.getElementById("dropzone");
         const fileInput = document.getElementById("file-input");
-        const refreshPreviewButton = document.getElementById("refresh-preview");
-        const goReviewButton = document.getElementById("go-review");
-        const renameForm = document.getElementById("rename-form");
-        const metadataEditorList = document.getElementById("metadata-editor-list");
         const statusPill = document.getElementById("status-pill");
-        const subtitle = document.getElementById("workspace-subtitle");
         const uploadList = document.getElementById("upload-list");
         const previewList = document.getElementById("preview-list");
         const queueCount = document.getElementById("queue-count");
         const previewCount = document.getElementById("preview-count");
         const previewBadge = document.getElementById("preview-badge");
-        const statFiles = document.getElementById("stat-files");
-        const statSize = document.getElementById("stat-size");
-        const statReady = document.getElementById("stat-ready");
         const downloadLink = document.getElementById("download-link");
-        const downloadFileCount = document.getElementById("download-file-count");
-        const summaryFormat = document.getElementById("summary-format");
-        const summaryArtist = document.getElementById("summary-artist");
-        const summaryProducers = document.getElementById("summary-producers");
-        const summaryDelimiter = document.getElementById("summary-delimiter");
-        const summaryCase = document.getElementById("summary-case");
-        const summaryCleanup = document.getElementById("summary-cleanup");
         const headerAuthPill = document.getElementById("header-auth-pill");
         const headerUserPill = document.getElementById("header-user-pill");
         const accountSidebarCopy = document.getElementById("account-sidebar-copy");
@@ -670,8 +510,6 @@
         }
 
         function resetWizardState() {
-            state.activeStep = 1;
-            state.unlockedStep = 1;
             state.sessionId = null;
             state.uploadedFiles = [];
             state.preview = [];
@@ -679,16 +517,9 @@
             state.totalSize = "0 B";
             state.downloadUrl = "#";
             fileInput.value = "";
-            renameForm.reset();
-            document.getElementById("delimiter").value = "underscore";
-            document.getElementById("case_style").value = "keep";
-            document.getElementById("safe_cleanup").checked = true;
             renderUploadList();
-            renderMetadataEditor();
             renderPreviewList();
             updateSummary();
-            updateStepUI();
-            setStep(1);
         }
 
         function renderFieldChips(fields, variant = "light") {
@@ -749,42 +580,6 @@
             `;
         }
 
-        function updateStepUI() {
-            stepPanels.forEach((panel) => {
-                panel.classList.toggle("hidden", Number(panel.dataset.stepPanel) !== state.activeStep);
-            });
-
-            stepButtons.forEach((button) => {
-                const step = Number(button.dataset.stepTarget);
-                button.disabled = step > state.unlockedStep;
-                button.classList.remove("is-active", "is-locked", "is-complete");
-
-                if (step === state.activeStep) {
-                    button.classList.add("is-active");
-                } else if (step > state.unlockedStep) {
-                    button.classList.add("is-locked");
-                } else {
-                    button.classList.add("is-complete");
-                }
-            });
-
-            if (state.activeStep === 1) {
-                subtitle.textContent = "Upload your audio files. WAV, MP3, and AIFF supported.";
-            } else if (state.activeStep === 2) {
-                subtitle.textContent = "Define the naming rules for this entire batch and edit individual tags.";
-            } else if (state.activeStep === 3) {
-                subtitle.textContent = "Verify the final names below and export your standardized archive.";
-            }
-        }
-
-        function setStep(step) {
-            if (step > state.unlockedStep) {
-                return;
-            }
-
-            state.activeStep = step;
-            updateStepUI();
-        }
 
         function renderUploadList() {
             if (!state.uploadedFiles.length) {
@@ -817,76 +612,6 @@
             `).join("");
         }
 
-        function renderMetadataEditor() {
-            if (!state.uploadedFiles.length) {
-                metadataEditorList.innerHTML = "";
-                return;
-            }
-
-            metadataEditorList.innerHTML = state.uploadedFiles.map((file) => {
-                const edits = state.fileEdits[file.id] || {};
-                return `
-                <article class="rounded-2xl border border-hairline bg-stage-raised p-6 transition-all hover:">
-                    <div class="flex items-center justify-between border-b border-hairline pb-4 mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-stage text-ink-dim">
-                                <span class="material-symbols-outlined text-sm">edit_note</span>
-                            </div>
-                            <h4 class="text-xs font-bold text-ink truncate max-w-[200px] sm:max-w-md">${escapeHtml(file.name)}</h4>
-                        </div>
-                        <span class="text-[10px] font-bold text-ink-mute opacity-40 uppercase tracking-widest">${file.id.slice(0,6)}</span>
-                    </div>
-
-                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <label class="space-y-1.5">
-                            <span class="px-1 text-[10px] font-bold uppercase tracking-widest text-ink-dim opacity-50">Manual Title Override</span>
-                            <input 
-                                type="text" 
-                                data-file-id="${file.id}" 
-                                data-field="title" 
-                                value="${escapeHtml(edits.title || "")}"
-                                placeholder="${escapeHtml(file.extracted_fields.title || "Unknown Title")}"
-                                class="w-full rounded-xl border border-hairline bg-stage px-3 py-2 text-xs font-medium text-ink outline-none focus:border-cyan focus:ring-1 focus:ring-cyan/30"
-                            >
-                        </label>
-                        <label class="space-y-1.5">
-                            <span class="px-1 text-[10px] font-bold uppercase tracking-widest text-ink-dim opacity-50">Producer Override</span>
-                            <input 
-                                type="text" 
-                                data-file-id="${file.id}" 
-                                data-field="producers" 
-                                value="${escapeHtml(edits.producers || "")}"
-                                placeholder="${escapeHtml(file.extracted_fields.producers || "System Default")}"
-                                class="w-full rounded-xl border border-hairline bg-stage px-3 py-2 text-xs font-medium text-ink outline-none focus:border-cyan focus:ring-1 focus:ring-cyan/30"
-                            >
-                        </label>
-                        <label class="space-y-1.5">
-                            <span class="px-1 text-[10px] font-bold uppercase tracking-widest text-ink-dim opacity-50">Mix Version</span>
-                            <input 
-                                type="text" 
-                                data-file-id="${file.id}" 
-                                data-field="mix" 
-                                value="${escapeHtml(edits.mix || "")}"
-                                placeholder="${escapeHtml(file.extracted_fields.mix || "Main Mix")}"
-                                class="w-full rounded-xl border border-hairline bg-stage px-3 py-2 text-xs font-medium text-ink outline-none focus:border-cyan focus:ring-1 focus:ring-cyan/30"
-                            >
-                        </label>
-                        <label class="space-y-1.5">
-                            <span class="px-1 text-[10px] font-bold uppercase tracking-widest text-ink-dim opacity-50">BPM</span>
-                            <input 
-                                type="text" 
-                                data-file-id="${file.id}" 
-                                data-field="bpm" 
-                                value="${escapeHtml(edits.bpm || "")}"
-                                placeholder="${escapeHtml(file.extracted_fields.bpm || "120")}"
-                                class="w-full rounded-xl border border-hairline bg-stage px-3 py-2 text-xs font-medium text-ink outline-none focus:border-cyan focus:ring-1 focus:ring-cyan/30"
-                            >
-                        </label>
-                    </div>
-                </article>
-                `;
-            }).join("");
-        }
 
         function renderPreviewList() {
             if (!state.preview.length) {
@@ -1092,27 +817,15 @@
         }
 
         function updateSummary() {
-            const nameLineState = (typeof window.getNameLineState === "function") ? window.getNameLineState() : null;
-            const formatValue = nameLineState ? JSON.stringify(nameLineState) : "Name Line";
-            const artistValue = "";
-            const producersValue = "";
-            const delimiterValue = document.getElementById("delimiter").value;
-            const caseValue = document.getElementById("case_style").value;
-            const cleanupValue = document.getElementById("safe_cleanup").checked;
-
-            if (summaryFormat) summaryFormat.textContent = formatValue;
-            if (summaryArtist) summaryArtist.textContent = artistValue || "Not set";
-            if (summaryProducers) summaryProducers.textContent = producersValue || "Not set";
-            if (summaryDelimiter) summaryDelimiter.textContent = delimiterLabels[delimiterValue];
-            if (summaryCase) summaryCase.textContent = caseLabels[caseValue];
-            if (summaryCleanup) summaryCleanup.textContent = cleanupValue ? "Enabled" : "Disabled";
+            const statFiles = document.getElementById("stat-files");
+            const statReady = document.getElementById("stat-ready");
             if (statFiles) statFiles.textContent = String(state.uploadedFiles.length);
-            if (statSize) statSize.textContent = state.totalSize;
             if (statReady) {
                 statReady.textContent = state.preview.length ? "Yes" : "No";
-                statReady.className = state.preview.length ? "text-sm font-semibold text-success" : "text-sm font-semibold text-ink-dim";
+                statReady.className = state.preview.length
+                    ? "text-xs font-bold px-2 py-0.5 rounded-full bg-success/15 text-success uppercase tracking-wider"
+                    : "text-xs font-bold px-2 py-0.5 rounded-full bg-rail text-ink-mute uppercase tracking-wider";
             }
-            if (downloadFileCount) downloadFileCount.textContent = `${state.preview.length} ${state.preview.length === 1 ? "file" : "files"}`;
         }
 
         async function parseError(response) {
@@ -1302,27 +1015,24 @@
             state.uploadedFiles = payload.files;
             state.totalSize = payload.total_size_label;
             state.fileEdits = buildInitialFileEdits(payload.files);
-            state.unlockedStep = 2;
-            state.activeStep = 2;
             renderUploadList();
-            renderMetadataEditor();
-            updateStepUI();
             updateSummary();
             setStatus("Files uploaded", "ready");
-            await refreshPreview(true);
+            if (typeof window.refreshPreview === "function") window.refreshPreview();
+            await fetchAndApplyPreview();
             await loadDashboard();
         }
 
-        async function refreshPreview(advanceToRename = false) {
+        async function fetchAndApplyPreview() {
             if (!state.sessionId) {
                 return;
             }
 
             const formData = new FormData();
             formData.append("session_id", state.sessionId);
-            formData.append("delimiter", document.getElementById("delimiter").value);
-            formData.append("case_style", document.getElementById("case_style").value);
-            formData.append("safe_cleanup", document.getElementById("safe_cleanup").checked ? "true" : "false");
+            formData.append("case_style", "keep");
+            formData.append("safe_cleanup", "true");
+            formData.append("delimiter", "underscore");
             const nameLineState = (typeof window.getNameLineState === "function") ? window.getNameLineState() : null;
             if (nameLineState) {
               formData.append("blocks_json", JSON.stringify(nameLineState));
@@ -1352,15 +1062,9 @@
             state.downloadUrl = payload.download_url;
             state.downloadCount = 0;
             updateCreditIndicator();
-            state.unlockedStep = 3;
             renderPreviewList();
-            updateSummary();
-            downloadLink.href = state.downloadUrl;
+            if (downloadLink) downloadLink.href = state.downloadUrl;
             setStatus("Preview ready", "ready");
-
-            if (advanceToRename) {
-                setStep(2);
-            }
         }
 
         async function downloadArchive(event) {
@@ -1428,24 +1132,6 @@
             }
         }
 
-        let refreshTimer = null;
-        function schedulePreviewRefresh() {
-            updateSummary();
-            if (!state.sessionId) {
-                return;
-            }
-
-            window.clearTimeout(refreshTimer);
-            refreshTimer = window.setTimeout(() => {
-                refreshPreview(false);
-            }, 260);
-        }
-
-        stepButtons.forEach((button) => {
-            button.addEventListener("click", () => {
-                setStep(Number(button.dataset.stepTarget));
-            });
-        });
 
         fileInput.addEventListener("change", async (event) => {
             await uploadFiles(event.target.files);
@@ -1483,26 +1169,6 @@
         });
 
 
-        renameForm.addEventListener("input", schedulePreviewRefresh);
-        metadataEditorList.addEventListener("input", (event) => {
-            const target = event.target;
-            if (!(target instanceof HTMLInputElement)) {
-                return;
-            }
-
-            const fileId = target.dataset.fileId;
-            const field = target.dataset.field;
-            if (!fileId || !field) {
-                return;
-            }
-
-            state.fileEdits[fileId] = {
-                ...(state.fileEdits[fileId] || {}),
-                [field]: target.value
-            };
-            schedulePreviewRefresh();
-        });
-
         if (loginForm) {
             loginForm.addEventListener("submit", async (event) => {
                 event.preventDefault();
@@ -1529,19 +1195,9 @@
             });
         }
 
-        if (refreshPreviewButton) refreshPreviewButton.addEventListener("click", () => refreshPreview(false));
-        if (goReviewButton) {
-            goReviewButton.addEventListener("click", async () => {
-                await refreshPreview(false);
-                setStep(3);
-            });
-        }
-
         if (downloadLink) downloadLink.addEventListener("click", downloadArchive);
 
-        updateStepUI();
         renderUploadList();
-        renderMetadataEditor();
         renderPreviewList();
         updateSummary();
         renderDashboard();
@@ -1594,12 +1250,6 @@
                 if (e.key === 'Escape') close();
             });
 
-            // Close on wizard step click (mobile users expect menu to close after navigation)
-            sidebar.querySelectorAll('[data-step-target]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (window.matchMedia('(max-width: 1023px)').matches) close();
-                });
-            });
         })();
     </script>
     <script>
@@ -1607,24 +1257,48 @@
         if (!window.NameLine) return;
         const root = document.getElementById("name-line-root");
         if (!root) return;
+
+        let currentNameLineState = { blocks: [], globalSeparator: "_" };
         let latestSerialized = null;
+
         const controller = window.NameLine.mount(root, {
           onChange(serialized) {
             latestSerialized = serialized;
-            const hasEmptyIdentity = serialized.blocks.some(
-              (b) => (b.type === "ARTIST" || b.type === "PRODUCER") && !(b.value || "").trim()
-            );
-            const gate = document.getElementById("go-review") || document.querySelector("[data-nl-submit-gate]");
-            if (gate) {
-              gate.disabled = hasEmptyIdentity;
-              gate.classList.toggle("opacity-50", hasEmptyIdentity);
-              gate.classList.toggle("cursor-not-allowed", hasEmptyIdentity);
-              gate.title = hasEmptyIdentity ? "Fill in all artist/producer blocks first" : "";
-            }
+            currentNameLineState = {
+              blocks: serialized.blocks,
+              globalSeparator: serialized.global_separator || serialized.globalSeparator || "_"
+            };
             if (typeof window.refreshPreview === "function") window.refreshPreview();
           },
         });
         window.getNameLineState = () => latestSerialized || controller.getSerialized();
+
+        const previewRoot = document.getElementById("preview-root");
+        if (previewRoot && window.Preview) {
+          const previewCtrl = window.Preview.mount(previewRoot, {
+            onOverrideChange(fileId, field, value) {
+              state.fileEdits[fileId] = { ...(state.fileEdits[fileId] || {}), [field]: value };
+              const trimmed = value == null ? "" : String(value).trim();
+              if (!trimmed) delete state.fileEdits[fileId][field];
+              if (state.fileEdits[fileId] && Object.keys(state.fileEdits[fileId]).length === 0) {
+                delete state.fileEdits[fileId];
+              }
+              previewCtrl.setNameLineState({ ...currentNameLineState, overrides: state.fileEdits });
+            },
+            onDownload() {
+              if (typeof window.triggerDownload === "function") window.triggerDownload();
+              else document.getElementById("download-link")?.click();
+            },
+          });
+
+          window.refreshPreview = function () {
+            previewCtrl.setNameLineState({ ...currentNameLineState, overrides: state.fileEdits });
+            previewCtrl.setFiles((state.uploadedFiles || []).map((f) => ({
+              id: f.id,
+              fields: f.fields || {},
+            })));
+          };
+        }
       })();
     </script>
 {% if current_user and current_user.is_admin %}
