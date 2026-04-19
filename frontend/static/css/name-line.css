@@ -80,3 +80,19 @@
   border: 1px dashed #cc7044;
 }
 .sortable-chosen { cursor: grabbing; }
+
+.nl-chip .nl-chip-arrow {
+  border: none;
+  background: transparent;
+  font-size: 10px;
+  padding: 0 3px;
+  cursor: pointer;
+  opacity: 0.55;
+  color: inherit;
+  line-height: 1;
+}
+.nl-chip .nl-chip-arrow:hover { opacity: 1; }
+.nl-chip .nl-chip-arrow[disabled] {
+  opacity: 0.15;
+  cursor: not-allowed;
+}

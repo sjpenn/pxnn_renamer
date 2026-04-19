@@ -123,6 +123,49 @@ test("clicking the chip body (not grip, not remove) triggers onEdit", () => {
   if (!edited) throw new Error("onEdit should fire on chip body click");
 });
 
+test("renderChip renders left/right arrow buttons", () => {
+  const { NameLine } = loadNameLine();
+  const chip = NameLine.renderChip(
+    { id: "b1", type: "TITLE" },
+    { onRemove() {}, onEdit() {}, onMoveLeft() {}, onMoveRight() {} }
+  );
+  if (!chip.querySelector(".nl-chip-arrow-left")) throw new Error("left arrow missing");
+  if (!chip.querySelector(".nl-chip-arrow-right")) throw new Error("right arrow missing");
+});
+
+test("clicking left arrow calls onMoveLeft with block id", () => {
+  const { dom, NameLine } = loadNameLine();
+  let movedId = null;
+  const chip = NameLine.renderChip(
+    { id: "b1", type: "TITLE" },
+    { onRemove() {}, onEdit() {}, onMoveLeft(id) { movedId = id; }, onMoveRight() {} }
+  );
+  chip.querySelector(".nl-chip-arrow-left").dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
+  if (movedId !== "b1") throw new Error("onMoveLeft not fired with id");
+});
+
+test("clicking right arrow calls onMoveRight with block id", () => {
+  const { dom, NameLine } = loadNameLine();
+  let movedId = null;
+  const chip = NameLine.renderChip(
+    { id: "b1", type: "TITLE" },
+    { onRemove() {}, onEdit() {}, onMoveLeft() {}, onMoveRight(id) { movedId = id; } }
+  );
+  chip.querySelector(".nl-chip-arrow-right").dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
+  if (movedId !== "b1") throw new Error("onMoveRight not fired with id");
+});
+
+test("click on arrow does not bubble to chip (no edit)", () => {
+  const { dom, NameLine } = loadNameLine();
+  let edited = false;
+  const chip = NameLine.renderChip(
+    { id: "b1", type: "TITLE" },
+    { onRemove() {}, onEdit() { edited = true; }, onMoveLeft() {}, onMoveRight() {} }
+  );
+  chip.querySelector(".nl-chip-arrow-right").dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
+  if (edited) throw new Error("edit fired on arrow click");
+});
+
 // Report.
 for (const r of results) {
   console.log(`${r.ok ? "PASS" : "FAIL"}  ${r.name}`);

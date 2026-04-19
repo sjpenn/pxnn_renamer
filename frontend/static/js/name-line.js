@@ -132,6 +132,28 @@
       chip.appendChild(label);
     }
 
+    const arrowLeft = document.createElement("button");
+    arrowLeft.type = "button";
+    arrowLeft.className = "nl-chip-arrow nl-chip-arrow-left";
+    arrowLeft.textContent = "◀";
+    arrowLeft.setAttribute("aria-label", "Move left");
+    arrowLeft.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (typeof handlers.onMoveLeft === "function") handlers.onMoveLeft(block.id);
+    });
+    chip.appendChild(arrowLeft);
+
+    const arrowRight = document.createElement("button");
+    arrowRight.type = "button";
+    arrowRight.className = "nl-chip-arrow nl-chip-arrow-right";
+    arrowRight.textContent = "▶";
+    arrowRight.setAttribute("aria-label", "Move right");
+    arrowRight.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (typeof handlers.onMoveRight === "function") handlers.onMoveRight(block.id);
+    });
+    chip.appendChild(arrowRight);
+
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.className = "nl-chip-remove";
@@ -346,6 +368,29 @@
             rerender();
           });
         },
+        onMoveLeft(id) { moveBlock(id, -1); },
+        onMoveRight(id) { moveBlock(id, 1); },
+      });
+      updateArrowDisabled();
+    }
+
+    function moveBlock(id, delta) {
+      const idx = state.blocks.findIndex((b) => b.id === id);
+      if (idx < 0) return;
+      const target = idx + delta;
+      if (target < 0 || target >= state.blocks.length) return;
+      const [moved] = state.blocks.splice(idx, 1);
+      state.blocks.splice(target, 0, moved);
+      rerender();
+    }
+
+    function updateArrowDisabled() {
+      const chips = Array.from(lineEl.children);
+      chips.forEach((chip, index) => {
+        const left = chip.querySelector(".nl-chip-arrow-left");
+        const right = chip.querySelector(".nl-chip-arrow-right");
+        if (left) left.toggleAttribute("disabled", index === 0);
+        if (right) right.toggleAttribute("disabled", index === chips.length - 1);
       });
     }
 
