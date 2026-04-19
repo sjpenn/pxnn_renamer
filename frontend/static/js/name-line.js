@@ -155,6 +155,7 @@
     arrowLeft.className = "nl-chip-arrow nl-chip-arrow-left";
     arrowLeft.textContent = "◀";
     arrowLeft.setAttribute("aria-label", "Move left");
+    arrowLeft.setAttribute("tabindex", "-1");
     arrowLeft.addEventListener("click", (event) => {
       event.stopPropagation();
       if (typeof handlers.onMoveLeft === "function") handlers.onMoveLeft(block.id);
@@ -166,6 +167,7 @@
     arrowRight.className = "nl-chip-arrow nl-chip-arrow-right";
     arrowRight.textContent = "▶";
     arrowRight.setAttribute("aria-label", "Move right");
+    arrowRight.setAttribute("tabindex", "-1");
     arrowRight.addEventListener("click", (event) => {
       event.stopPropagation();
       if (typeof handlers.onMoveRight === "function") handlers.onMoveRight(block.id);
@@ -176,6 +178,7 @@
     removeBtn.type = "button";
     removeBtn.className = "nl-chip-remove";
     removeBtn.textContent = "×";
+    removeBtn.setAttribute("tabindex", "-1");
     removeBtn.addEventListener("click", (event) => {
       event.stopPropagation();
       handlers.onRemove(block.id);
