@@ -101,3 +101,18 @@
   outline: 2px solid var(--cyan, #0bb7c4);
   outline-offset: 2px;
 }
+
+.pv-root { margin-top: 18px; }
+.pv-header { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; font-size: 12px; color: var(--ink-dim, #6b6257); }
+.pv-counter { font-weight: 600; }
+.pv-download {
+  padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700;
+  background: #cc7044; color: #fff; border: none; cursor: pointer;
+}
+.pv-download[disabled] { opacity: 0.5; cursor: not-allowed; }
+.pv-body { max-height: 420px; overflow-y: auto; border: 1px solid var(--hairline, #dcd4c8); border-radius: 10px; background: #fff; }
+.pv-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 10px; font-size: 12px; border-bottom: 1px solid #f3eee6; }
+.pv-row:last-child { border-bottom: none; }
+.pv-row-warn { border-left: 3px solid #cc4a3d; background: #fff4f2; }
+.pv-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.pv-warn { color: #cc4a3d; font-weight: 600; }

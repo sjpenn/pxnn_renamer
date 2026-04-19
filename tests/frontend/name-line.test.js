@@ -246,6 +246,65 @@ test("loadPersisted migrates v1 shape (no overrides key) by attaching empty over
   assertEqual(migrated.blocks[0].type, "TITLE", "blocks carried over");
 });
 
+function loadPreview(dom) {
+  const p = path.join(__dirname, "..", "..", "frontend", "static", "js", "preview.js");
+  const src = fs.readFileSync(p, "utf8");
+  vm.runInContext(src, dom.getInternalVMContext());
+  return dom.window.Preview;
+}
+
+test("Preview: warning when ARTIST chip empty and file has no parsed artist", () => {
+  const { dom } = loadNameLine();
+  const Preview = loadPreview(dom);
+  const state = {
+    blocks: [{ id: "b1", type: "ARTIST", value: "" }],
+    globalSeparator: "_",
+    overrides: {},
+  };
+  const file = { id: "f1", fields: { artist: "", title: "t", ext: "MP3" } };
+  const warnings = Preview.warningsForFile(state, file);
+  if (!warnings.some((w) => w.includes("artist"))) throw new Error("expected artist warning");
+});
+
+test("Preview: no warning when ARTIST chip filled even if file has nothing", () => {
+  const { dom } = loadNameLine();
+  const Preview = loadPreview(dom);
+  const state = {
+    blocks: [{ id: "b1", type: "ARTIST", value: "Hurricane" }],
+    globalSeparator: "_",
+    overrides: {},
+  };
+  const file = { id: "f1", fields: { artist: "", ext: "MP3" } };
+  const warnings = Preview.warningsForFile(state, file);
+  if (warnings.length) throw new Error("should be clean");
+});
+
+test("Preview: override replaces chip value for a specific file", () => {
+  const { dom } = loadNameLine();
+  const Preview = loadPreview(dom);
+  const state = {
+    blocks: [{ id: "b1", type: "ARTIST", value: "Default" }],
+    globalSeparator: "_",
+    overrides: { f1: { artist: "OverrideName" } },
+  };
+  const file = { id: "f1", fields: { artist: "", ext: "MP3" } };
+  const name = Preview.computeRenderedName(state, file);
+  if (!name.startsWith("OverrideName")) throw new Error("override not applied: " + name);
+});
+
+test("Preview: singleton TITLE missing from file does NOT produce a warning", () => {
+  const { dom } = loadNameLine();
+  const Preview = loadPreview(dom);
+  const state = {
+    blocks: [{ id: "b1", type: "ARTIST", value: "A" }, { id: "b2", type: "TITLE" }],
+    globalSeparator: "_",
+    overrides: {},
+  };
+  const file = { id: "f1", fields: { title: "", ext: "MP3" } };
+  const warnings = Preview.warningsForFile(state, file);
+  if (warnings.length) throw new Error("singleton missing should not warn");
+});
+
 // Report.
 for (const r of results) {
   console.log(`${r.ok ? "PASS" : "FAIL"}  ${r.name}`);
