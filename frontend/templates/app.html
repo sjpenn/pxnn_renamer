@@ -5,10 +5,10 @@
 {% block body_class %}bg-stage min-h-screen{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{{ url_for('static', path='/css/name-line.css') }}?v=name-line-6">
+<link rel="stylesheet" href="{{ url_for('static', path='/css/name-line.css') }}?v=name-line-7">
 <script src="{{ url_for('static', path='/vendor/sortable.min.js') }}"></script>
-<script src="{{ url_for('static', path='/js/name-line.js') }}?v=name-line-6"></script>
-<script src="{{ url_for('static', path='/js/preview.js') }}?v=name-line-6"></script>
+<script src="{{ url_for('static', path='/js/name-line.js') }}?v=name-line-7"></script>
+<script src="{{ url_for('static', path='/js/preview.js') }}?v=name-line-7"></script>
 {% endblock %}
 
 {% block body %}
@@ -31,10 +31,8 @@
 
                 <div class="mt-4 lg:mt-2 space-y-1">
                     <p class="px-3 text-[11px] font-bold uppercase tracking-widest text-ink-mute opacity-50 mb-4">Workflow</p>
-                    <nav class="space-y-2 text-xs text-ink-dim font-medium px-3" aria-label="Workflow steps">
-                        <p>1. Drop files in the staging zone</p>
-                        <p>2. Build your name rule below</p>
-                        <p>3. Download from the preview table</p>
+                    <nav class="space-y-2 text-xs text-ink-dim font-medium px-3" aria-label="Workflow">
+                        <p>Drop files, build the name, download.</p>
                     </nav>
                 </div>
 
@@ -102,9 +100,9 @@
                     <div class="flex items-start justify-between border-b border-hairline pb-6">
                         <div class="space-y-1">
                             <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; WORKSPACE</p>
-                            <h2 class="text-3xl font-editorial text-ink">Rename Wizard</h2>
+                            <h2 class="text-3xl font-editorial text-ink">Rename your files</h2>
                             <p id="workspace-subtitle" class="max-w-2xl text-sm leading-6 text-ink-dim font-medium">
-                                Step 1 of 3 -- Stage your source files to begin.
+                                Drop files, build the name, download.
                             </p>
                         </div>
                     </div>
@@ -113,14 +111,6 @@
 
                         <!-- File Staging -->
                         <div class="space-y-8">
-                            <div class="space-y-2">
-                                <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; STAGE FILES</p>
-                                <h3 class="text-2xl font-editorial text-ink">Stage Source Files</h3>
-                                <p class="max-w-2xl text-sm leading-6 text-ink-dim font-medium">
-                                    Our precision parser will extract BPM, artist, and version metadata from your filenames.
-                                </p>
-                            </div>
-
                             <div id="upload-zone">
                               <div class="dropzone-full">
                                 <div class="dropzone p-12 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan relative"
@@ -144,27 +134,10 @@
                               </div>
                             </div>
 
-                            <div class="rounded-2xl bg-stage-sunken p-5 text-white ">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <span class="material-symbols-outlined text-sm text-cyan">info</span>
-                                    <p class="text-xs font-bold uppercase tracking-widest text-cyan">Workflow Tip</p>
-                                </div>
-                                <p class="text-xs leading-5 opacity-80 font-medium">
-                                    Drop your files above, define the naming rule in the builder below, then download your archive.
-                                </p>
-                            </div>
                         </div>
 
                         <!-- Name Line builder -->
                         <div class="space-y-8">
-                            <div class="space-y-2">
-                                <p class="text-[11px] font-mono uppercase tracking-widest text-cyan">&gt; RULE BUILDER</p>
-                                <h3 class="text-2xl font-editorial text-ink">Define Metadata Rules</h3>
-                                <p class="max-w-xl text-sm leading-6 text-ink-dim font-medium">
-                                    Build your file name format below.
-                                </p>
-                            </div>
-
                             <div class="nl-sticky">
                               <div id="name-line-root" data-nl-root
                                    class="rounded-xl border border-hairline bg-stage-raised p-4 space-y-3">
