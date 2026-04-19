@@ -34,7 +34,7 @@
                     <div class="px-3 space-y-3 text-xs" aria-label="Account Details">
                         <div class="flex items-center justify-between">
                             <span class="text-ink-mute uppercase tracking-wider text-[10px]">Producer</span>
-                            <span class="text-ink font-medium" id="acct-producer">—</span>
+                            <span class="text-ink font-medium cursor-pointer hover:text-cyan transition" id="acct-producer" title="Click to edit" role="button" tabindex="0">—</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-ink-mute uppercase tracking-wider text-[10px]">Date</span>
@@ -1419,6 +1419,38 @@
 
   if (!document.hidden) start();
   window.addEventListener('beforeunload', ping);
+})();
+</script>
+
+<script>
+(function() {
+  var KEY = 'pxnn.producer';
+  var el = document.getElementById('acct-producer');
+  if (!el) return;
+
+  function render() {
+    var v = localStorage.getItem(KEY);
+    el.textContent = v && v.trim() ? v : '—';
+  }
+
+  function edit() {
+    var current = localStorage.getItem(KEY) || '';
+    var next = window.prompt('Producer name', current);
+    if (next === null) return;
+    next = next.trim();
+    if (next) {
+      localStorage.setItem(KEY, next);
+    } else {
+      localStorage.removeItem(KEY);
+    }
+    render();
+  }
+
+  el.addEventListener('click', edit);
+  el.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); edit(); }
+  });
+  render();
 })();
 </script>
 {% endblock %}
