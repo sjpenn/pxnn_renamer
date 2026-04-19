@@ -123,3 +123,16 @@
 .pv-edit-form { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; background: #faf6ef; border-radius: 8px; }
 .pv-edit-label { display: flex; flex-direction: column; font-size: 10px; text-transform: uppercase; color: #6b6257; font-weight: 600; }
 .pv-edit-input { padding: 4px 6px; border: 1px solid #dcd4c8; border-radius: 4px; font-size: 12px; background: #fff; min-width: 140px; }
+
+.nl-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--stage, #faf6ef);
+  padding-top: 8px;
+  margin-top: -8px;
+}
+
+.upload-collapsed .dropzone-full { display: none; }
+.upload-collapsed .dropzone-bar  { display: flex; }
+.dropzone-bar { display: none; align-items: center; justify-content: space-between; padding: 8px 14px; border: 1px solid var(--hairline, #dcd4c8); border-radius: 10px; font-size: 12px; }

@@ -121,19 +121,27 @@
                                 </p>
                             </div>
 
-                            <div class="dropzone p-12 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan relative"
-                                 id="dropzone"
-                                 role="button"
-                                 tabindex="0"
-                                 aria-label="Choose audio files to upload, or drag and drop them here">
-                                <div class="flex flex-col items-center justify-center text-center pointer-events-none">
-                                    <div class="text-cyan h-4 mx-auto mb-4 flex justify-center">{% include "partials/svg/eq_bars.html" %}</div>
-                                    <h3 class="font-editorial text-xl text-ink">Drag &amp; drop audio files</h3>
-                                    <p class="mt-1 text-sm text-ink-dim">or <span class="text-cyan font-medium underline underline-offset-2">click to browse</span></p>
-                                    <p class="mt-2 text-[11px] font-mono uppercase tracking-widest text-ink-dim">&gt; MP3 · WAV · AIFF · FLAC</p>
+                            <div id="upload-zone">
+                              <div class="dropzone-full">
+                                <div class="dropzone p-12 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan relative"
+                                     id="dropzone"
+                                     role="button"
+                                     tabindex="0"
+                                     aria-label="Choose audio files to upload, or drag and drop them here">
+                                    <div class="flex flex-col items-center justify-center text-center pointer-events-none">
+                                        <div class="text-cyan h-4 mx-auto mb-4 flex justify-center">{% include "partials/svg/eq_bars.html" %}</div>
+                                        <h3 class="font-editorial text-xl text-ink">Drag &amp; drop audio files</h3>
+                                        <p class="mt-1 text-sm text-ink-dim">or <span class="text-cyan font-medium underline underline-offset-2">click to browse</span></p>
+                                        <p class="mt-2 text-[11px] font-mono uppercase tracking-widest text-ink-dim">&gt; MP3 · WAV · AIFF · FLAC</p>
+                                    </div>
+                                    {% with block_key="dropzone", block_label="Dropzone" %}{% include "partials/ui_comment_widget.html" %}{% endwith %}
+                                    <input type="file" id="file-input" multiple class="hidden" accept=".wav,.mp3,.aif,.aiff,.flac">
                                 </div>
-                                {% with block_key="dropzone", block_label="Dropzone" %}{% include "partials/ui_comment_widget.html" %}{% endwith %}
-                                <input type="file" id="file-input" multiple class="hidden" accept=".wav,.mp3,.aif,.aiff,.flac">
+                              </div>
+                              <div class="dropzone-bar">
+                                <span><b id="upload-count">0</b> files loaded</span>
+                                <button type="button" id="upload-add-more" class="underline">+ add more</button>
+                              </div>
                             </div>
 
                             <div class="rounded-2xl bg-stage-sunken p-5 text-white ">
@@ -157,22 +165,24 @@
                                 </p>
                             </div>
 
-                            <div id="name-line-root" data-nl-root
-                                 class="rounded-xl border border-hairline bg-stage-raised p-4 space-y-3">
-                              <div class="nl-legend" data-nl-legend></div>
-                              <div class="nl-palette" data-nl-palette></div>
-                              <div class="nl-line" data-nl-line></div>
-                              <div class="flex items-center gap-3 text-xs text-ink-dim">
-                                <label class="flex items-center gap-2">
-                                  Separator:
-                                  <select data-nl-separator class="rounded border border-hairline bg-stage-raised px-2 py-1 text-xs">
-                                    <option value="_">_ underscore</option>
-                                    <option value="-">- dash</option>
-                                    <option value=" ">␣ space</option>
-                                    <option value=".">. dot</option>
-                                  </select>
-                                </label>
-                                <button type="button" data-nl-reset class="underline">Reset to default</button>
+                            <div class="nl-sticky">
+                              <div id="name-line-root" data-nl-root
+                                   class="rounded-xl border border-hairline bg-stage-raised p-4 space-y-3">
+                                <div class="nl-legend" data-nl-legend></div>
+                                <div class="nl-palette" data-nl-palette></div>
+                                <div class="nl-line" data-nl-line></div>
+                                <div class="flex items-center gap-3 text-xs text-ink-dim">
+                                  <label class="flex items-center gap-2">
+                                    Separator:
+                                    <select data-nl-separator class="rounded border border-hairline bg-stage-raised px-2 py-1 text-xs">
+                                      <option value="_">_ underscore</option>
+                                      <option value="-">- dash</option>
+                                      <option value=" ">␣ space</option>
+                                      <option value=".">. dot</option>
+                                    </select>
+                                  </label>
+                                  <button type="button" data-nl-reset class="underline">Reset to default</button>
+                                </div>
                               </div>
                             </div>
 
@@ -1018,6 +1028,9 @@
             renderUploadList();
             updateSummary();
             setStatus("Files uploaded", "ready");
+            document.getElementById("upload-zone").classList.add("upload-collapsed");
+            const countEl = document.getElementById("upload-count");
+            if (countEl) countEl.textContent = String(state.uploadedFiles.length);
             if (typeof window.refreshPreview === "function") window.refreshPreview();
             await fetchAndApplyPreview();
             await loadDashboard();
@@ -1196,6 +1209,10 @@
         }
 
         if (downloadLink) downloadLink.addEventListener("click", downloadArchive);
+
+        document.getElementById("upload-add-more")?.addEventListener("click", () => {
+            document.getElementById("upload-zone").classList.remove("upload-collapsed");
+        });
 
         renderUploadList();
         renderPreviewList();
