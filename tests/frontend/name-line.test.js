@@ -166,6 +166,62 @@ test("click on arrow does not bubble to chip (no edit)", () => {
   if (edited) throw new Error("edit fired on arrow click");
 });
 
+test("renderChip is focusable via tabindex=0", () => {
+  const { NameLine } = loadNameLine();
+  const chip = NameLine.renderChip({ id: "b1", type: "TITLE" }, { onRemove() {}, onEdit() {} });
+  if (chip.getAttribute("tabindex") !== "0") throw new Error("tabindex=0 missing");
+});
+
+test("Alt+ArrowRight on focused chip calls onMoveRight", () => {
+  const { dom, NameLine } = loadNameLine();
+  let movedId = null;
+  const chip = NameLine.renderChip(
+    { id: "b1", type: "TITLE" },
+    { onRemove() {}, onEdit() {}, onMoveLeft() {}, onMoveRight(id) { movedId = id; } }
+  );
+  dom.window.document.body.appendChild(chip);
+  const evt = new dom.window.KeyboardEvent("keydown", { key: "ArrowRight", altKey: true, bubbles: true });
+  chip.dispatchEvent(evt);
+  if (movedId !== "b1") throw new Error("onMoveRight not fired");
+});
+
+test("Alt+ArrowLeft on focused chip calls onMoveLeft", () => {
+  const { dom, NameLine } = loadNameLine();
+  let movedId = null;
+  const chip = NameLine.renderChip(
+    { id: "b1", type: "TITLE" },
+    { onRemove() {}, onEdit() {}, onMoveLeft(id) { movedId = id; }, onMoveRight() {} }
+  );
+  dom.window.document.body.appendChild(chip);
+  const evt = new dom.window.KeyboardEvent("keydown", { key: "ArrowLeft", altKey: true, bubbles: true });
+  chip.dispatchEvent(evt);
+  if (movedId !== "b1") throw new Error("onMoveLeft not fired");
+});
+
+test("Delete on focused chip calls onRemove", () => {
+  const { dom, NameLine } = loadNameLine();
+  let removedId = null;
+  const chip = NameLine.renderChip(
+    { id: "b1", type: "TITLE" },
+    { onRemove(id) { removedId = id; }, onEdit() {} }
+  );
+  dom.window.document.body.appendChild(chip);
+  chip.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Delete", bubbles: true }));
+  if (removedId !== "b1") throw new Error("onRemove not fired");
+});
+
+test("ArrowRight without Alt on focused chip does NOT call onMoveRight", () => {
+  const { dom, NameLine } = loadNameLine();
+  let moved = false;
+  const chip = NameLine.renderChip(
+    { id: "b1", type: "TITLE" },
+    { onRemove() {}, onEdit() {}, onMoveLeft() {}, onMoveRight() { moved = true; } }
+  );
+  dom.window.document.body.appendChild(chip);
+  chip.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+  if (moved) throw new Error("onMoveRight fired without Alt");
+});
+
 // Report.
 for (const r of results) {
   console.log(`${r.ok ? "PASS" : "FAIL"}  ${r.name}`);

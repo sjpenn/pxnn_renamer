@@ -87,6 +87,24 @@
     chip.className = "nl-chip nl-family-" + meta.family;
     chip.dataset.blockId = block.id;
     chip.dataset.blockType = block.type;
+    chip.setAttribute("tabindex", "0");
+    chip.addEventListener("keydown", (event) => {
+      if (event.target !== chip) return; // ignore keys from inner input
+      if (event.key === "ArrowLeft" && event.altKey) {
+        event.preventDefault();
+        if (typeof handlers.onMoveLeft === "function") handlers.onMoveLeft(block.id);
+      } else if (event.key === "ArrowRight" && event.altKey) {
+        event.preventDefault();
+        if (typeof handlers.onMoveRight === "function") handlers.onMoveRight(block.id);
+      } else if (event.key === "Delete" || event.key === "Backspace") {
+        event.preventDefault();
+        handlers.onRemove(block.id);
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        const meta = TOKEN_CATEGORIES[block.type];
+        if (meta && meta.hasValue) handlers.onEdit(block.id, chip);
+      }
+    });
 
     const grip = document.createElement("span");
     grip.className = "material-symbols-outlined nl-grip";
