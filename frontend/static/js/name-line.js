@@ -402,6 +402,7 @@
           if (!target) return;
           openEditor(chipEl, target, (newValue) => {
             target.value = newValue;
+            chipEl.remove();
             rerender();
           });
         },
@@ -444,6 +445,7 @@
             const chip = lineEl.querySelector('[data-block-id="' + block.id + '"]');
             if (chip) openEditor(chip, block, (newValue) => {
               block.value = newValue;
+              chip.remove();
               rerender();
             });
           }
