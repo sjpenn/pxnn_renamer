@@ -135,6 +135,39 @@
     return chip;
   }
 
+  function diffRenderLine(lineEl, blocks, handlers) {
+    const existingById = new Map();
+    Array.from(lineEl.children).forEach((child) => {
+      const id = child.dataset.blockId;
+      if (id) existingById.set(id, child);
+    });
+
+    const desiredIds = new Set(blocks.map((b) => b.id));
+    existingById.forEach((chip, id) => {
+      if (!desiredIds.has(id)) chip.remove();
+    });
+
+    blocks.forEach((block, index) => {
+      let chip = existingById.get(block.id);
+      if (chip) {
+        const meta = TOKEN_CATEGORIES[block.type];
+        if (meta && meta.hasValue) {
+          const valueNode = chip.querySelector(".nl-chip-value");
+          if (valueNode) {
+            const newText = block.value || (meta.literal ? "…" : "empty");
+            if (valueNode.textContent !== newText) valueNode.textContent = newText;
+          }
+          if (!block.value) chip.dataset.empty = "true";
+          else delete chip.dataset.empty;
+        }
+      } else {
+        chip = renderChip(block, handlers);
+      }
+      const currentAtIndex = lineEl.children[index];
+      if (currentAtIndex !== chip) lineEl.insertBefore(chip, currentAtIndex || null);
+    });
+  }
+
   function renderPalette(container, handlers) {
     container.innerHTML = "";
     Object.keys(TOKEN_CATEGORIES).forEach((type) => {
@@ -290,24 +323,19 @@
     }
 
     function renderLine() {
-      lineEl.innerHTML = "";
-      state.blocks.forEach((block) => {
-        const chip = renderChip(block, {
-          onRemove(id) {
-            state.blocks = state.blocks.filter((b) => b.id !== id);
+      diffRenderLine(lineEl, state.blocks, {
+        onRemove(id) {
+          state.blocks = state.blocks.filter((b) => b.id !== id);
+          rerender();
+        },
+        onEdit(id, chipEl) {
+          const target = state.blocks.find((b) => b.id === id);
+          if (!target) return;
+          openEditor(chipEl, target, (newValue) => {
+            target.value = newValue;
             rerender();
-          },
-          onEdit(id, chipEl) {
-            const target = state.blocks.find((b) => b.id === id);
-            if (!target) return;
-            openEditor(chipEl, target, (newValue) => {
-              target.value = newValue;
-              rerender();
-            });
-          },
-        });
-        attachDrag(chip);
-        lineEl.appendChild(chip);
+          });
+        },
       });
     }
 
@@ -468,6 +496,7 @@
     renderLegend,
     openEditor,
     fetchSuggestions,
+    diffRenderLine,
     mount,
   };
 })();

@@ -37,6 +37,62 @@ test("NameLine module loads and exposes createState", () => {
   }
 });
 
+test("diff-render keeps existing chip nodes when state order stays the same", () => {
+  const { dom, NameLine } = loadNameLine();
+  const line = dom.window.document.createElement("div");
+  const blocks = [
+    { id: "b1", type: "ARTIST", value: "A" },
+    { id: "b2", type: "TITLE" },
+    { id: "b3", type: "PRODUCER", value: "P" },
+  ];
+  NameLine.diffRenderLine(line, blocks, { onRemove() {}, onEdit() {} });
+  const firstChips = Array.from(line.children);
+  NameLine.diffRenderLine(line, blocks, { onRemove() {}, onEdit() {} });
+  const secondChips = Array.from(line.children);
+  for (let i = 0; i < firstChips.length; i++) {
+    if (firstChips[i] !== secondChips[i]) {
+      throw new Error(`chip at index ${i} was replaced, should be preserved`);
+    }
+  }
+});
+
+test("diff-render reorders existing chip nodes when state order changes", () => {
+  const { dom, NameLine } = loadNameLine();
+  const line = dom.window.document.createElement("div");
+  const blocks = [
+    { id: "b1", type: "ARTIST", value: "A" },
+    { id: "b2", type: "TITLE" },
+    { id: "b3", type: "PRODUCER", value: "P" },
+  ];
+  NameLine.diffRenderLine(line, blocks, { onRemove() {}, onEdit() {} });
+  const originalB1 = line.querySelector('[data-block-id="b1"]');
+  const originalB3 = line.querySelector('[data-block-id="b3"]');
+  const reordered = [blocks[2], blocks[0], blocks[1]];
+  NameLine.diffRenderLine(line, reordered, { onRemove() {}, onEdit() {} });
+  const afterB3 = line.querySelector('[data-block-id="b3"]');
+  const afterB1 = line.querySelector('[data-block-id="b1"]');
+  if (afterB3 !== originalB3) throw new Error("b3 node was replaced");
+  if (afterB1 !== originalB1) throw new Error("b1 node was replaced");
+  if (line.children[0] !== originalB3) throw new Error("b3 not in position 0");
+  if (line.children[1] !== originalB1) throw new Error("b1 not in position 1");
+});
+
+test("diff-render adds new chips and removes missing ones", () => {
+  const { dom, NameLine } = loadNameLine();
+  const line = dom.window.document.createElement("div");
+  NameLine.diffRenderLine(line, [{ id: "b1", type: "TITLE" }], { onRemove() {}, onEdit() {} });
+  if (line.children.length !== 1) throw new Error("initial render wrong");
+  NameLine.diffRenderLine(
+    line,
+    [{ id: "b1", type: "TITLE" }, { id: "b2", type: "BPM" }],
+    { onRemove() {}, onEdit() {} }
+  );
+  if (line.children.length !== 2) throw new Error("add failed");
+  NameLine.diffRenderLine(line, [{ id: "b2", type: "BPM" }], { onRemove() {}, onEdit() {} });
+  if (line.children.length !== 1) throw new Error("remove failed");
+  if (line.children[0].dataset.blockId !== "b2") throw new Error("wrong chip left");
+});
+
 // Report.
 for (const r of results) {
   console.log(`${r.ok ? "PASS" : "FAIL"}  ${r.name}`);
