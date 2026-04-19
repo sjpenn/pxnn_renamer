@@ -7,7 +7,7 @@ const JS_PATH = path.join(__dirname, "..", "..", "frontend", "static", "js", "na
 const SOURCE = fs.readFileSync(JS_PATH, "utf8");
 
 function loadNameLine() {
-  const dom = new JSDOM("<!doctype html><html><body></body></html>", { runScripts: "outside-only" });
+  const dom = new JSDOM("<!doctype html><html><body></body></html>", { runScripts: "outside-only", url: "http://localhost" });
   const context = dom.getInternalVMContext();
   vm.runInContext(SOURCE, context);
   return { dom, NameLine: dom.window.NameLine };
@@ -220,6 +220,30 @@ test("ArrowRight without Alt on focused chip does NOT call onMoveRight", () => {
   dom.window.document.body.appendChild(chip);
   chip.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
   if (moved) throw new Error("onMoveRight fired without Alt");
+});
+
+test("createState defaults overrides to empty object", () => {
+  const { NameLine } = loadNameLine();
+  const s = NameLine.createState();
+  assertEqual(s.overrides, {}, "overrides default");
+});
+
+test("createState preserves overrides when passed", () => {
+  const { NameLine } = loadNameLine();
+  const s = NameLine.createState({ blocks: [], globalSeparator: "_", overrides: { f1: { artist: "x" } } });
+  assertEqual(s.overrides, { f1: { artist: "x" } }, "overrides preserved");
+});
+
+test("loadPersisted migrates v1 shape (no overrides key) by attaching empty overrides via createState", () => {
+  const { dom, NameLine } = loadNameLine();
+  dom.window.localStorage.setItem(
+    "pxnn.nameLine.v1",
+    JSON.stringify({ blocks: [{ type: "TITLE" }], globalSeparator: "_" })
+  );
+  const migrated = NameLine.loadPersisted();
+  if (!migrated) throw new Error("no migration result");
+  assertEqual(migrated.overrides, {}, "migrated overrides");
+  assertEqual(migrated.blocks[0].type, "TITLE", "blocks carried over");
 });
 
 // Report.

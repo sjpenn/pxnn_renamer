@@ -22,7 +22,8 @@
     { type: "VERSION" },
   ];
 
-  const STORAGE_KEY = "pxnn.nameLine.v1";
+  const STORAGE_KEY = "pxnn.nameLine.v2";
+  const LEGACY_STORAGE_KEYS = ["pxnn.nameLine.v1"];
 
   function newId() {
     return "b_" + Math.random().toString(36).slice(2, 9);
@@ -41,7 +42,8 @@
     const rawBlocks = Array.isArray(initial && initial.blocks) ? initial.blocks : DEFAULT_BLOCKS;
     const blocks = rawBlocks.map(normalizeBlock).filter(Boolean);
     const globalSeparator = (initial && initial.globalSeparator) || "_";
-    return { blocks, globalSeparator };
+    const overrides = (initial && initial.overrides && typeof initial.overrides === "object") ? initial.overrides : {};
+    return { blocks, globalSeparator, overrides };
   }
 
   function serialize(state) {
@@ -53,14 +55,28 @@
           : { type: block.type };
       }),
       global_separator: state.globalSeparator,
+      overrides: state.overrides || {},
     };
   }
 
   function loadPersisted() {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw);
+      if (raw) return JSON.parse(raw);
+      for (const legacy of LEGACY_STORAGE_KEYS) {
+        const legacyRaw = window.localStorage.getItem(legacy);
+        if (legacyRaw) {
+          const parsed = JSON.parse(legacyRaw);
+          const migrated = {
+            blocks: Array.isArray(parsed && parsed.blocks) ? parsed.blocks : DEFAULT_BLOCKS,
+            globalSeparator: (parsed && parsed.globalSeparator) || "_",
+            overrides: {},
+          };
+          try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated)); } catch (_) {}
+          return migrated;
+        }
+      }
+      return null;
     } catch (_err) {
       return null;
     }
