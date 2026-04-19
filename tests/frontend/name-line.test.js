@@ -305,6 +305,48 @@ test("Preview: singleton TITLE missing from file does NOT produce a warning", ()
   if (warnings.length) throw new Error("singleton missing should not warn");
 });
 
+test("Preview: clicking ✎ on a warning row opens an edit form with one input per value-bearing block", () => {
+  const { dom } = loadNameLine();
+  const Preview = loadPreview(dom);
+  const root = dom.window.document.createElement("div");
+  const ctrl = Preview.mount(root, { onOverrideChange() {} });
+  ctrl.setFiles([{ id: "f1", fields: { artist: "", ext: "MP3" } }]);
+  ctrl.setNameLineState({
+    blocks: [{ id: "b1", type: "ARTIST", value: "" }, { id: "b2", type: "TITLE" }],
+    globalSeparator: "_",
+    overrides: {},
+  });
+  ctrl._renderNow();
+  const editBtn = root.querySelector('.pv-row[data-file-id="f1"] .pv-edit');
+  if (!editBtn) throw new Error("edit button missing on warning row");
+  editBtn.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
+  const input = root.querySelector('.pv-row[data-file-id="f1"] input[data-field="artist"]');
+  if (!input) throw new Error("artist input not rendered after edit click");
+});
+
+test("Preview: committing an edit calls onOverrideChange with file_id + field + value", () => {
+  const { dom } = loadNameLine();
+  const Preview = loadPreview(dom);
+  const root = dom.window.document.createElement("div");
+  let received = null;
+  const ctrl = Preview.mount(root, {
+    onOverrideChange(fileId, field, value) { received = { fileId, field, value }; },
+  });
+  ctrl.setFiles([{ id: "f1", fields: { artist: "", ext: "MP3" } }]);
+  ctrl.setNameLineState({
+    blocks: [{ id: "b1", type: "ARTIST", value: "" }],
+    globalSeparator: "_",
+    overrides: {},
+  });
+  ctrl._renderNow();
+  root.querySelector('.pv-row[data-file-id="f1"] .pv-edit').dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
+  const input = root.querySelector('.pv-row[data-file-id="f1"] input[data-field="artist"]');
+  input.value = "Hurricane Wisdom";
+  input.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+  if (!received) throw new Error("onOverrideChange not called");
+  assertEqual(received, { fileId: "f1", field: "artist", value: "Hurricane Wisdom" }, "override payload");
+});
+
 // Report.
 for (const r of results) {
   console.log(`${r.ok ? "PASS" : "FAIL"}  ${r.name}`);

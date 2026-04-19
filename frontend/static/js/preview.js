@@ -59,24 +59,74 @@
     return stem + ext;
   }
 
-  function renderRow(file, nameLineState) {
+  function renderRow(file, nameLineState, handlers) {
+    handlers = handlers || {};
     const warnings = warningsForFile(nameLineState, file);
     const row = document.createElement("div");
     row.className = "pv-row" + (warnings.length ? " pv-row-warn" : "");
     row.dataset.fileId = file.id;
 
+    const main = document.createElement("div");
+    main.className = "pv-row-main";
+
     const nameEl = document.createElement("div");
     nameEl.className = "pv-name";
     nameEl.textContent = computeRenderedName(nameLineState, file) || "(empty)";
-    row.appendChild(nameEl);
+    main.appendChild(nameEl);
 
     if (warnings.length) {
       const warnEl = document.createElement("div");
       warnEl.className = "pv-warn";
       warnEl.textContent = "⚠ " + warnings.join(", ");
-      row.appendChild(warnEl);
+      main.appendChild(warnEl);
     }
+
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "pv-edit";
+    editBtn.textContent = "✎";
+    editBtn.setAttribute("aria-label", "Edit this file's metadata");
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const existing = row.querySelector(".pv-edit-form");
+      if (existing) { existing.remove(); return; }
+      row.appendChild(buildEditForm(file, nameLineState, handlers));
+    });
+    main.appendChild(editBtn);
+
+    row.appendChild(main);
     return row;
+  }
+
+  function buildEditForm(file, nameLineState, handlers) {
+    const form = document.createElement("div");
+    form.className = "pv-edit-form";
+    const fields = new Set();
+    (nameLineState.blocks || []).forEach((block) => {
+      const t = String(block.type || "").toUpperCase();
+      if (VALUE_TYPE_FIELD[t]) fields.add(VALUE_TYPE_FIELD[t]);
+      if (SINGLETON_FIELDS[t]) fields.add(SINGLETON_FIELDS[t]);
+    });
+    const overrides = (nameLineState.overrides && nameLineState.overrides[file.id]) || {};
+    fields.forEach((field) => {
+      const label = document.createElement("label");
+      label.className = "pv-edit-label";
+      label.textContent = field;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "pv-edit-input";
+      input.dataset.field = field;
+      input.value = overrides[field] || (file.fields && file.fields[field]) || "";
+      input.placeholder = field;
+      input.addEventListener("change", () => {
+        if (typeof handlers.onOverrideChange === "function") {
+          handlers.onOverrideChange(file.id, field, input.value);
+        }
+      });
+      label.appendChild(input);
+      form.appendChild(label);
+    });
+    return form;
   }
 
   function mount(root, opts) {
@@ -110,7 +160,13 @@
       body.innerHTML = "";
       let warnCount = 0;
       currentFiles.forEach((file) => {
-        const row = renderRow(file, currentState);
+        const row = renderRow(file, currentState, {
+          onOverrideChange(fileId, field, value) {
+            if (typeof opts.onOverrideChange === "function") {
+              opts.onOverrideChange(fileId, field, value);
+            }
+          },
+        });
         if (row.classList.contains("pv-row-warn")) warnCount++;
         body.appendChild(row);
       });
