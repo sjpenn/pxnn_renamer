@@ -321,6 +321,64 @@ def _extract_inline_producer_pattern(stem: str, producers: list[str]) -> tuple[l
     return _dedupe_values(producers + [_clean_handle(pattern.group("producer"))]), pattern.group("title").strip()
 
 
+def _strip_parsed_tokens_from_title(
+    title: str,
+    bpm: str,
+    mix: str,
+    version: str,
+    key: str,
+    date: str,
+) -> str:
+    """Remove textual representations of parsed metadata from the title candidate.
+
+    Called after the extractor has populated the singleton fields. Only strips
+    tokens that correspond to a *confidently extracted* value — generic digits or
+    words that were not parsed into a field are left alone.
+    """
+    if not title:
+        return title
+
+    result = title
+
+    if bpm:
+        digit_match = re.match(r"(\d+)", bpm)
+        if digit_match:
+            digits = digit_match.group(1)
+            result = re.sub(rf"(?i)\b{re.escape(digits)}\s*bpm\b", " ", result)
+            result = re.sub(rf"(?<!\d){re.escape(digits)}(?!\d)", " ", result)
+
+    if mix:
+        for alias, canonical in MIX_TYPE_ALIASES.items():
+            if canonical == mix:
+                result = re.sub(rf"(?i)\b{re.escape(alias)}\b", " ", result)
+
+    if version:
+        v_lower = version.lower()
+        if re.fullmatch(r"v\d+", v_lower):
+            digits = v_lower[1:]
+            result = re.sub(rf"(?i)\b(?:version|ver|v)\s*{digits}\b", " ", result)
+        elif v_lower in {"final", "master"}:
+            result = re.sub(rf"(?i)\b{re.escape(version)}\b", " ", result)
+        elif v_lower.startswith("rev"):
+            result = re.sub(rf"(?i)\b{re.escape(version)}\b", " ", result)
+        elif re.fullmatch(r"(alt|mix|edit)\d+", v_lower):
+            result = re.sub(rf"(?i)\b{re.escape(version)}\b", " ", result)
+
+    if key:
+        result = re.sub(
+            rf"(?i)(?<![A-Za-z0-9#]){re.escape(key)}(?![A-Za-z0-9])",
+            " ",
+            result,
+        )
+
+    if date:
+        result = re.sub(rf"\b{re.escape(date)}\b", " ", result)
+
+    result = re.sub(r"\s+", " ", result).strip()
+    result = result.strip(" _-.")
+    return result
+
+
 def _parse_overrides(raw_value: str) -> dict[str, dict[str, str]]:
     if not raw_value.strip():
         return {}
@@ -434,6 +492,8 @@ def _extract_fields(stem: str, suffix: str, index: int) -> dict[str, str]:
     else:
         artist = ""
         title = _display_text(working_stem or stem)
+
+    title = _strip_parsed_tokens_from_title(title, bpm, mix, version, key, date)
 
     return {
         "artist": artist,

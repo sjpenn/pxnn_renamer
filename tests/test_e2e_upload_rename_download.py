@@ -108,13 +108,11 @@ def test_e2e_upload_arrange_download_roundtrip(client, logged_in_user):
     assert "140" in thunder,   f"Thunder1 should fall back to default BPM 140: {thunder}"
     assert "140" in pills,     f"pills should fall back to default BPM 140: {pills}"
 
-    # Original bug (fixed in d6868cc): three BPM chips → `_NNNBPM_NNNBPM_NNNBPM`.
-    # With only one BPM block in this test, no file should contain the triple-BPM artifact.
-    # (Note: a *second* "BPM" can appear when the TITLE extractor leaves a trailing
-    # "161BPM" inside the title — that's a separate pre-existing extractor issue, not
-    # the triple-chip bug we're guarding against here.)
+    # With only one BPM block in this test, no file should contain the BPM value
+    # more than once. Guards against both the triple-chip bug (fixed in d6868cc)
+    # and the extractor leaving "161BPM" inside the title alongside the chip.
     for name in names_v1.values():
-        assert name.count("BPM") < 3, f"triple-BPM artifact leaked into {name}"
+        assert name.count("BPM") <= 1, f"duplicate BPM leaked into {name}"
 
     # ---- 3. Reorder: TITLE _ PRODUCER _ KEY (different order, different fields) ----
     blocks_v2 = [
