@@ -5,10 +5,10 @@
 {% block body_class %}bg-stage min-h-screen{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{{ url_for('static', path='/css/name-line.css') }}?v=name-line-10">
+<link rel="stylesheet" href="{{ url_for('static', path='/css/name-line.css') }}?v=name-line-11">
 <script src="{{ url_for('static', path='/vendor/sortable.min.js') }}"></script>
-<script src="{{ url_for('static', path='/js/name-line.js') }}?v=name-line-10"></script>
-<script src="{{ url_for('static', path='/js/preview.js') }}?v=name-line-10"></script>
+<script src="{{ url_for('static', path='/js/name-line.js') }}?v=name-line-11"></script>
+<script src="{{ url_for('static', path='/js/preview.js') }}?v=name-line-11"></script>
 {% endblock %}
 
 {% block body %}
@@ -30,7 +30,7 @@
                 </div>
 
                 <div class="mt-4 lg:mt-2 space-y-1">
-                    <p class="px-3 text-[11px] font-bold uppercase tracking-widest text-ink-mute opacity-50 mb-4">Account Details</p>
+                    <p class="px-3 text-[12px] uppercase text-ink-mute pb-3 mb-5 border-b border-[rgba(226,226,226,0.12)]" style="letter-spacing:2.4px">Account Details</p>
                     <div class="px-3 space-y-3 text-xs" aria-label="Account Details">
                         <div class="flex items-center justify-between">
                             <span class="text-ink-mute uppercase tracking-wider text-[10px]">Producer</span>
@@ -61,8 +61,8 @@
 
                 <div class="mt-auto space-y-6">
                     <div class="rounded-2xl border border-hairline bg-stage-raised p-4">
-                        <p class="text-[11px] font-bold uppercase tracking-widest text-ink-mute opacity-50">Session Stats</p>
-                        <div class="mt-4 space-y-3">
+                        <p class="text-[12px] uppercase text-ink-mute pb-3 mb-4 border-b border-[rgba(226,226,226,0.12)]" style="letter-spacing:2.4px">Session Stats</p>
+                        <div class="space-y-3">
                             <div class="flex items-center justify-between">
                                 <span class="text-sm font-medium text-ink-dim">Batched</span>
                                 <span id="stat-files" class="text-sm font-bold text-ink">0</span>
@@ -75,9 +75,9 @@
                     </div>
 
                     <div id="account-sidebar-box" class="rounded-2xl border border-hairline bg-stage-raised p-4">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="material-symbols-outlined text-sm text-cyan">account_circle</span>
-                            <p class="text-[11px] font-bold uppercase tracking-widest text-cyan">Account</p>
+                        <div class="flex items-center gap-2 pb-3 mb-4 border-b border-[rgba(226,226,226,0.12)]">
+                            <span class="material-symbols-outlined text-sm text-ink-mute">account_circle</span>
+                            <p class="text-[12px] uppercase text-ink-mute" style="letter-spacing:2.4px">Account</p>
                         </div>
                         <p id="account-sidebar-copy" class="text-xs leading-5 text-ink-dim">
                             Sign in to save metadata history and unlock batch exports.
@@ -162,6 +162,10 @@
                         <!-- Name Line builder -->
                         <div class="space-y-8">
                             <div class="nl-sticky">
+                              <div class="flex items-center justify-between pb-3 mb-4 border-b border-[rgba(226,226,226,0.12)]">
+                                <h4 class="text-[12px] uppercase text-ink-mute" style="letter-spacing:2.4px">Name Formatter</h4>
+                                <span class="text-[11px] text-ink-dim">drag · reorder · edit</span>
+                              </div>
                               <div id="name-line-root" data-nl-root
                                    class="rounded-xl border border-hairline bg-stage-raised p-4 space-y-3">
                                 <div class="nl-legend" data-nl-legend></div>
@@ -182,7 +186,13 @@
                               </div>
                             </div>
 
-                            <div id="preview-root" class="mt-6"></div>
+                            <div>
+                                <div class="flex items-center justify-between pb-3 mb-4 border-b border-[rgba(226,226,226,0.12)]">
+                                    <h4 class="text-[12px] uppercase text-ink-mute" style="letter-spacing:2.4px">Output Filenames</h4>
+                                    <span id="output-filenames-hint" class="text-[11px] text-ink-dim">live preview</span>
+                                </div>
+                                <div id="preview-root"></div>
+                            </div>
                         </div>
 
                         <!-- Download link (hidden, triggered by Preview module) -->
@@ -333,9 +343,9 @@
 
                     <div class="mt-8 space-y-6">
                         <div class="space-y-4">
-                            <div class="flex items-center justify-between px-2">
-                                <h4 class="text-[11px] font-bold uppercase tracking-widest text-ink-dim opacity-60">Upload Queue</h4>
-                                <span id="queue-count" class="text-[10px] font-medium text-ink-dim">0 files</span>
+                            <div class="flex items-center justify-between pb-3 mb-2 border-b border-[rgba(226,226,226,0.12)]">
+                                <h4 class="text-[12px] uppercase text-ink-mute" style="letter-spacing:2.4px">Upload Queue</h4>
+                                <span id="queue-count" class="text-[11px] text-ink-dim">0 files</span>
                             </div>
                             <ul id="upload-list" class="space-y-3">
                                 <li class="rounded-2xl border border-dashed border-hairline bg-stage-raised/50 p-6 text-center">
@@ -345,9 +355,9 @@
                         </div>
 
                         <div class="space-y-4">
-                            <div class="flex items-center justify-between px-2">
-                                <h4 class="text-[11px] font-bold uppercase tracking-widest text-ink-dim opacity-60">Rename Preview</h4>
-                                <span id="preview-count" class="text-[10px] font-medium text-ink-dim">0 items</span>
+                            <div class="flex items-center justify-between pb-3 mb-2 border-b border-[rgba(226,226,226,0.12)]">
+                                <h4 class="text-[12px] uppercase text-ink-mute" style="letter-spacing:2.4px">Rename Preview</h4>
+                                <span id="preview-count" class="text-[11px] text-ink-dim">0 items</span>
                             </div>
                             <ul id="preview-list" class="space-y-3">
                                 <li class="rounded-2xl border border-hairline bg-stage-sunken p-6 text-center text-ink-mute">
@@ -1032,6 +1042,7 @@
             await loadDashboard();
         }
 
+        window.fetchAndApplyPreview = fetchAndApplyPreview;
         async function fetchAndApplyPreview() {
             if (!state.sessionId) {
                 return;
@@ -1273,6 +1284,16 @@
 
         let currentNameLineState = { blocks: [], globalSeparator: "_" };
         let latestSerialized = null;
+        let serverPreviewTimer = null;
+        function scheduleServerPreview() {
+          if (serverPreviewTimer) clearTimeout(serverPreviewTimer);
+          serverPreviewTimer = setTimeout(() => {
+            if (typeof window.fetchAndApplyPreview === "function") {
+              window.fetchAndApplyPreview();
+            }
+          }, 300);
+        }
+        window.scheduleServerPreview = scheduleServerPreview;
 
         const controller = window.NameLine.mount(root, {
           onChange(serialized) {
@@ -1282,6 +1303,7 @@
               globalSeparator: serialized.global_separator || serialized.globalSeparator || "_"
             };
             if (typeof window.refreshPreview === "function") window.refreshPreview();
+            scheduleServerPreview();
           },
         });
         window.getNameLineState = () => latestSerialized || controller.getSerialized();
@@ -1317,6 +1339,7 @@
                 delete state.fileEdits[fileId];
               }
               previewCtrl.setNameLineState({ ...currentNameLineState, overrides: state.fileEdits });
+              scheduleServerPreview();
             },
             onDownload() {
               if (typeof window.triggerDownload === "function") window.triggerDownload();
@@ -1465,6 +1488,7 @@
     }
     render();
     if (typeof window.refreshPreview === "function") window.refreshPreview();
+    if (typeof window.scheduleServerPreview === "function") window.scheduleServerPreview();
   }
 
   el.addEventListener('click', edit);
