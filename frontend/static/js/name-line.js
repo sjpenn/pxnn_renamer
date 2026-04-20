@@ -506,9 +506,33 @@
 
     rerender();
 
+    function setSingleValueType(type, value) {
+      const upper = String(type || "").toUpperCase();
+      const meta = TOKEN_CATEGORIES[upper];
+      if (!meta || !meta.hasValue) return false;
+      const next = String(value == null ? "" : value);
+      let changed = false;
+      state.blocks.forEach((block) => {
+        if (block.type === upper && block.value !== next) {
+          block.value = next;
+          changed = true;
+        }
+      });
+      if (changed) rerender();
+      return changed;
+    }
+
+    function getFirstValueOfType(type) {
+      const upper = String(type || "").toUpperCase();
+      const match = state.blocks.find((b) => b.type === upper);
+      return match ? (match.value || "") : "";
+    }
+
     return {
       getState: () => state,
       getSerialized: () => serialize(state),
+      setSingleValueType,
+      getFirstValueOfType,
     };
   }
 

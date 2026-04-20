@@ -5,10 +5,10 @@
 {% block body_class %}bg-stage min-h-screen{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{{ url_for('static', path='/css/name-line.css') }}?v=name-line-12">
+<link rel="stylesheet" href="{{ url_for('static', path='/css/name-line.css') }}?v=name-line-13">
 <script src="{{ url_for('static', path='/vendor/sortable.min.js') }}"></script>
-<script src="{{ url_for('static', path='/js/name-line.js') }}?v=name-line-12"></script>
-<script src="{{ url_for('static', path='/js/preview.js') }}?v=name-line-12"></script>
+<script src="{{ url_for('static', path='/js/name-line.js') }}?v=name-line-13"></script>
+<script src="{{ url_for('static', path='/js/preview.js') }}?v=name-line-13"></script>
 {% endblock %}
 
 {% block body %}
@@ -38,23 +38,23 @@
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-ink-mute uppercase tracking-wider text-[10px]">Date</span>
-                            <span class="text-ink font-medium" id="acct-date">2026</span>
+                            <span class="text-ink font-medium cursor-pointer hover:text-cyan transition" id="acct-date" title="Click to edit" role="button" tabindex="0">2026</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-ink-mute uppercase tracking-wider text-[10px]">BPM</span>
-                            <span class="text-ink font-medium" id="acct-bpm">140</span>
+                            <span class="text-ink font-medium cursor-pointer hover:text-cyan transition" id="acct-bpm" title="Click to edit" role="button" tabindex="0">140</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-ink-mute uppercase tracking-wider text-[10px]">Key</span>
-                            <span class="text-ink font-medium" id="acct-key">Amin</span>
+                            <span class="text-ink font-medium cursor-pointer hover:text-cyan transition" id="acct-key" title="Click to edit" role="button" tabindex="0">Amin</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-ink-mute uppercase tracking-wider text-[10px]">Mix</span>
-                            <span class="text-ink font-medium" id="acct-mix">MAIN</span>
+                            <span class="text-ink font-medium cursor-pointer hover:text-cyan transition" id="acct-mix" title="Click to edit" role="button" tabindex="0">MAIN</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-ink-mute uppercase tracking-wider text-[10px]">Version</span>
-                            <span class="text-ink font-medium" id="acct-version">V1</span>
+                            <span class="text-ink font-medium cursor-pointer hover:text-cyan transition" id="acct-version" title="Click to edit" role="button" tabindex="0">V1</span>
                         </div>
                     </div>
                 </div>
@@ -1305,11 +1305,16 @@
               blocks: serialized.blocks,
               globalSeparator: serialized.global_separator || serialized.globalSeparator || "_"
             };
+            // Auto-sync: if first PRODUCER chip value differs from sidebar, push chip value to sidebar
+            if (typeof window.syncSidebarFromChip === "function") {
+              window.syncSidebarFromChip("PRODUCER");
+            }
             if (typeof window.refreshPreview === "function") window.refreshPreview();
             scheduleServerPreview();
           },
         });
         window.getNameLineState = () => latestSerialized || controller.getSerialized();
+        window.nameLineController = controller;
 
         const previewRoot = document.getElementById("preview-root");
         if (previewRoot && window.Preview) {
@@ -1483,35 +1488,80 @@
 
 <script>
 (function() {
-  var KEY = 'pxnn.producer';
-  var el = document.getElementById('acct-producer');
-  if (!el) return;
+  // Account Details editor — all sidebar fields click-to-edit with localStorage persistence.
+  // Producer auto-syncs bidirectionally with PRODUCER chips in the name line.
+  var FIELDS = [
+    { id: 'acct-producer', key: 'pxnn.producer', label: 'Producer',   fallback: '—',      syncChip: 'PRODUCER' },
+    { id: 'acct-date',     key: 'pxnn.date',     label: 'Date',       fallback: '2026' },
+    { id: 'acct-bpm',      key: 'pxnn.bpm',      label: 'BPM',        fallback: '140'  },
+    { id: 'acct-key',      key: 'pxnn.key',      label: 'Key',        fallback: 'Amin' },
+    { id: 'acct-mix',      key: 'pxnn.mix',      label: 'Mix',        fallback: 'MAIN' },
+    { id: 'acct-version',  key: 'pxnn.version',  label: 'Version',    fallback: 'V1'   },
+  ];
 
-  function render() {
-    var v = localStorage.getItem(KEY);
-    el.textContent = v && v.trim() ? v : '—';
+  function read(field) {
+    try { return localStorage.getItem(field.key) || ''; } catch (_) { return ''; }
   }
 
-  function edit() {
-    var current = localStorage.getItem(KEY) || '';
-    var next = window.prompt('Producer name', current);
-    if (next === null) return;
-    next = next.trim();
-    if (next) {
-      localStorage.setItem(KEY, next);
-    } else {
-      localStorage.removeItem(KEY);
-    }
-    render();
+  function write(field, value) {
+    try {
+      if (value && value.trim()) localStorage.setItem(field.key, value);
+      else localStorage.removeItem(field.key);
+    } catch (_) { /* ignore */ }
+  }
+
+  function render(field) {
+    var el = document.getElementById(field.id);
+    if (!el) return;
+    var v = read(field);
+    el.textContent = v && v.trim() ? v : field.fallback;
+  }
+
+  function notifyPreview() {
     if (typeof window.refreshPreview === "function") window.refreshPreview();
     if (typeof window.scheduleServerPreview === "function") window.scheduleServerPreview();
   }
 
-  el.addEventListener('click', edit);
-  el.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); edit(); }
+  function edit(field) {
+    var current = read(field);
+    var next = window.prompt(field.label, current);
+    if (next === null) return;
+    next = next.trim();
+    write(field, next);
+    render(field);
+    // Sidebar -> chip sync: push new value into matching name-line chips
+    if (field.syncChip && window.nameLineController &&
+        typeof window.nameLineController.setSingleValueType === "function") {
+      window.nameLineController.setSingleValueType(field.syncChip, next);
+      // setSingleValueType triggers rerender + onChange, which refreshes preview.
+      // But if no chip existed, we still need to refresh for the account_defaults path.
+    }
+    notifyPreview();
+  }
+
+  FIELDS.forEach(function(field) {
+    var el = document.getElementById(field.id);
+    if (!el) return;
+    el.addEventListener('click', function() { edit(field); });
+    el.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); edit(field); }
+    });
+    render(field);
   });
-  render();
+
+  // Chip -> sidebar sync: when a PRODUCER chip value changes, update sidebar.
+  // Called from NameLine onChange.
+  window.syncSidebarFromChip = function(chipType) {
+    if (chipType !== 'PRODUCER') return; // only Producer is bidirectionally synced
+    if (!window.nameLineController ||
+        typeof window.nameLineController.getFirstValueOfType !== "function") return;
+    var chipValue = window.nameLineController.getFirstValueOfType('PRODUCER');
+    if (!chipValue) return; // don't clobber sidebar with empty chip value
+    var field = FIELDS[0]; // producer
+    if (read(field) === chipValue) return;
+    write(field, chipValue);
+    render(field);
+  };
 })();
 </script>
 {% endblock %}
