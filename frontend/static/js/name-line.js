@@ -242,9 +242,29 @@
     Object.keys(TOKEN_CATEGORIES).forEach((type) => {
       const btn = document.createElement("button");
       btn.type = "button";
+      btn.dataset.tokenType = type;
       btn.textContent = "+ " + TOKEN_CATEGORIES[type].label;
-      btn.addEventListener("click", () => handlers.onAdd(type));
+      btn.addEventListener("click", () => {
+        if (btn.hasAttribute("disabled")) return;
+        handlers.onAdd(type);
+      });
       container.appendChild(btn);
+    });
+  }
+
+  function updatePaletteDisabled(container, blocks) {
+    if (!container) return;
+    const usedSingletons = new Set();
+    (blocks || []).forEach((block) => {
+      const meta = TOKEN_CATEGORIES[block.type];
+      if (meta && !meta.repeatable) usedSingletons.add(block.type);
+    });
+    Array.from(container.querySelectorAll("button[data-token-type]")).forEach((btn) => {
+      const type = btn.dataset.tokenType;
+      const meta = TOKEN_CATEGORIES[type];
+      const disabled = meta && !meta.repeatable && usedSingletons.has(type);
+      btn.toggleAttribute("disabled", !!disabled);
+      btn.title = disabled ? TOKEN_CATEGORIES[type].label + " is already in the name line" : "";
     });
   }
 
@@ -388,6 +408,7 @@
 
     function rerender() {
       renderLine();
+      updatePaletteDisabled(paletteEl, state.blocks);
       notifyChange();
     }
 
@@ -436,12 +457,13 @@
     if (paletteEl) {
       renderPalette(paletteEl, {
         onAdd(type) {
+          const typeMeta = TOKEN_CATEGORIES[type];
+          if (typeMeta && !typeMeta.repeatable && state.blocks.some((b) => b.type === type)) return;
           const block = normalizeBlock({ type });
           if (!block) return;
           state.blocks.push(block);
           rerender();
-          const meta = TOKEN_CATEGORIES[type];
-          if (meta && meta.hasValue) {
+          if (typeMeta && typeMeta.hasValue) {
             const chip = lineEl.querySelector('[data-block-id="' + block.id + '"]');
             if (chip) openEditor(chip, block, (newValue) => {
               block.value = newValue;

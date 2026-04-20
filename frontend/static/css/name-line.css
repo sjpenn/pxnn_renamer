@@ -19,6 +19,18 @@
   color: var(--color-ink, #faf9f6);
   border-color: var(--color-cyan, #c9a66b);
 }
+.nl-palette button[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: var(--color-stage-sunken, #131211);
+  color: var(--color-ink-mute, #868584);
+  border-color: var(--color-hairline, rgba(175, 174, 172, 0.12));
+}
+.nl-palette button[disabled]:hover {
+  background: var(--color-stage-sunken, #131211);
+  color: var(--color-ink-mute, #868584);
+  border-color: var(--color-hairline, rgba(175, 174, 172, 0.12));
+}
 
 .nl-line {
   display: flex; flex-wrap: wrap; align-items: center; gap: 4px;

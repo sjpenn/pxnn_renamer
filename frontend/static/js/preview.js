@@ -7,37 +7,38 @@
     DATE: "date", KEY: "key", INDEX: "index",
   };
 
-  function resolveForFile(block, file, overrides) {
+  function resolveForFile(block, file, overrides, accountDefaults) {
     const perFile = overrides && overrides[file.id] ? overrides[file.id] : {};
+    const defaults = accountDefaults || {};
     const blockType = String(block.type || "").toUpperCase();
     if (VALUE_TYPE_FIELD[blockType]) {
       const field = VALUE_TYPE_FIELD[blockType];
-      return (perFile[field] || block.value || (file.fields && file.fields[field]) || "").trim();
+      return (perFile[field] || block.value || (file.fields && file.fields[field]) || defaults[field] || "").trim();
     }
     if (SINGLETON_FIELDS[blockType]) {
       const field = SINGLETON_FIELDS[blockType];
-      return (perFile[field] || (file.fields && file.fields[field]) || "").trim();
+      return (perFile[field] || (file.fields && file.fields[field]) || defaults[field] || "").trim();
     }
     if (blockType === "TEXT") return String(block.value || "");
     return "";
   }
 
-  function warningsForFile(nameLineState, file) {
+  function warningsForFile(nameLineState, file, accountDefaults) {
     const warnings = [];
     (nameLineState.blocks || []).forEach((block) => {
       const t = String(block.type || "").toUpperCase();
-      if (!VALUE_TYPE_FIELD[t] && t !== "TEXT") return;
+      if (!VALUE_TYPE_FIELD[t] && !SINGLETON_FIELDS[t] && t !== "TEXT") return;
       if (t === "TEXT") {
         if (!String(block.value || "").trim()) warnings.push("empty text block");
         return;
       }
-      const val = resolveForFile(block, file, nameLineState.overrides || {});
+      const val = resolveForFile(block, file, nameLineState.overrides || {}, accountDefaults);
       if (!val) warnings.push(`missing ${t.toLowerCase()}`);
     });
     return warnings;
   }
 
-  function computeRenderedName(nameLineState, file) {
+  function computeRenderedName(nameLineState, file, accountDefaults) {
     const sep = nameLineState.globalSeparator || "_";
     const parts = [];
     let prevWasToken = false;
@@ -48,7 +49,7 @@
         if (text) { parts.push(text); prevWasToken = false; }
         return;
       }
-      const val = resolveForFile(block, file, nameLineState.overrides || {});
+      const val = resolveForFile(block, file, nameLineState.overrides || {}, accountDefaults);
       if (!val) return;
       if (prevWasToken) parts.push(sep);
       parts.push(val);
@@ -59,9 +60,9 @@
     return stem + ext;
   }
 
-  function renderRow(file, nameLineState, handlers) {
+  function renderRow(file, nameLineState, handlers, accountDefaults) {
     handlers = handlers || {};
-    const warnings = warningsForFile(nameLineState, file);
+    const warnings = warningsForFile(nameLineState, file, accountDefaults);
     const row = document.createElement("div");
     row.className = "pv-row" + (warnings.length ? " pv-row-warn" : "");
     row.dataset.fileId = file.id;
@@ -71,7 +72,7 @@
 
     const nameEl = document.createElement("div");
     nameEl.className = "pv-name";
-    nameEl.textContent = computeRenderedName(nameLineState, file) || "(empty)";
+    nameEl.textContent = computeRenderedName(nameLineState, file, accountDefaults) || "(empty)";
     main.appendChild(nameEl);
 
     if (warnings.length) {
@@ -161,6 +162,11 @@
       return { id: "__sample__", fields: Object.assign({ ext: "wav" }, getFields() || {}) };
     }
 
+    function currentAccountDefaults() {
+      const fn = typeof opts.getAccountDefaults === "function" ? opts.getAccountDefaults : null;
+      return fn ? (fn() || {}) : {};
+    }
+
     function renderSampleRow() {
       const file = buildSampleFile();
       const row = document.createElement("div");
@@ -176,7 +182,7 @@
       main.appendChild(hint);
       const nameEl = document.createElement("div");
       nameEl.className = "pv-name";
-      nameEl.textContent = computeRenderedName(currentState, file) || "(build your name line above)";
+      nameEl.textContent = computeRenderedName(currentState, file, currentAccountDefaults()) || "(build your name line above)";
       main.appendChild(nameEl);
       row.appendChild(main);
       return row;
@@ -186,6 +192,7 @@
       body.innerHTML = "";
       let warnCount = 0;
       const total = currentFiles.length;
+      const accountDefaults = currentAccountDefaults();
       if (total === 0) {
         body.appendChild(renderSampleRow());
       } else {
@@ -196,7 +203,7 @@
                 opts.onOverrideChange(fileId, field, value);
               }
             },
-          });
+          }, accountDefaults);
           if (row.classList.contains("pv-row-warn")) warnCount++;
           body.appendChild(row);
         });

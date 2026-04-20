@@ -5,10 +5,10 @@
 {% block body_class %}bg-stage min-h-screen{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{{ url_for('static', path='/css/name-line.css') }}?v=name-line-11">
+<link rel="stylesheet" href="{{ url_for('static', path='/css/name-line.css') }}?v=name-line-12">
 <script src="{{ url_for('static', path='/vendor/sortable.min.js') }}"></script>
-<script src="{{ url_for('static', path='/js/name-line.js') }}?v=name-line-11"></script>
-<script src="{{ url_for('static', path='/js/preview.js') }}?v=name-line-11"></script>
+<script src="{{ url_for('static', path='/js/name-line.js') }}?v=name-line-12"></script>
+<script src="{{ url_for('static', path='/js/preview.js') }}?v=name-line-12"></script>
 {% endblock %}
 
 {% block body %}
@@ -1058,6 +1058,9 @@
               formData.append("blocks_json", JSON.stringify(nameLineState));
             }
             formData.append("file_overrides_json", serializeOverrides());
+            if (typeof window.getAccountDefaults === "function") {
+              formData.append("account_defaults_json", JSON.stringify(window.getAccountDefaults()));
+            }
 
             setStatus("Refreshing preview", "working");
 
@@ -1310,27 +1313,40 @@
 
         const previewRoot = document.getElementById("preview-root");
         if (previewRoot && window.Preview) {
-          function sampleFieldsFromAccountDetails() {
-            const txt = (id, fb) => {
-              const el = document.getElementById(id);
-              const v = el ? (el.textContent || "").trim() : "";
-              return v && v !== "—" ? v : fb;
+          function readAcct(id) {
+            const el = document.getElementById(id);
+            const v = el ? (el.textContent || "").trim() : "";
+            return v && v !== "—" ? v : "";
+          }
+          function accountDefaultsFromSidebar() {
+            return {
+              producers: readAcct("acct-producer"),
+              bpm: readAcct("acct-bpm"),
+              key: readAcct("acct-key"),
+              date: readAcct("acct-date"),
+              mix: readAcct("acct-mix"),
+              version: readAcct("acct-version"),
             };
+          }
+          window.getAccountDefaults = accountDefaultsFromSidebar;
+          function sampleFieldsFromAccountDetails() {
+            const d = accountDefaultsFromSidebar();
             return {
               artist: "Artist",
-              producers: txt("acct-producer", "Producer"),
+              producers: d.producers || "Producer",
               title: "Title",
-              bpm: txt("acct-bpm", "140"),
-              key: txt("acct-key", "Amin"),
-              date: txt("acct-date", "2026"),
-              mix: txt("acct-mix", "MAIN"),
-              version: txt("acct-version", "V1"),
+              bpm: d.bpm || "140",
+              key: d.key || "Amin",
+              date: d.date || "2026",
+              mix: d.mix || "MAIN",
+              version: d.version || "V1",
               index: "01",
               ext: "wav",
             };
           }
           const previewCtrl = window.Preview.mount(previewRoot, {
             getSampleFields: sampleFieldsFromAccountDetails,
+            getAccountDefaults: accountDefaultsFromSidebar,
             onOverrideChange(fileId, field, value) {
               state.fileEdits[fileId] = { ...(state.fileEdits[fileId] || {}), [field]: value };
               const trimmed = value == null ? "" : String(value).trim();

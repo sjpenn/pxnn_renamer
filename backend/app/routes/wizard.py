@@ -634,6 +634,7 @@ def _build_preview_names_from_blocks(
     case_style: str,
     safe_cleanup: bool,
     file_overrides: dict[str, dict[str, str]],
+    account_defaults: dict[str, str] | None = None,
 ) -> list[dict]:
     resolved_names: list[dict] = []
     seen_names: dict[str, int] = {}
@@ -657,6 +658,7 @@ def _build_preview_names_from_blocks(
             shaped_blocks,
             global_separator=global_separator,
             extracted_fields=shaped_extracted,
+            account_defaults=account_defaults or {},
         )
         preview_stem = _sanitize_rendered_text(rendered_label, delimiter, safe_cleanup)
         preview_stem = preview_stem or _sanitize_rendered_text(
@@ -865,6 +867,7 @@ async def preview_renames(
     default_producers: str = Form(""),
     file_overrides_json: str = Form(""),
     blocks_json: str = Form(""),
+    account_defaults_json: str = Form(""),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -882,6 +885,15 @@ async def preview_renames(
         if not isinstance(blocks_payload, dict) or not isinstance(blocks_payload.get("blocks"), list):
             raise HTTPException(status_code=400, detail="blocks_json must contain a 'blocks' array")
 
+    account_defaults: dict[str, str] = {}
+    if account_defaults_json.strip():
+        try:
+            parsed_defaults = json.loads(account_defaults_json)
+        except json.JSONDecodeError as exc:
+            raise HTTPException(status_code=400, detail=f"Invalid account_defaults_json: {exc}") from exc
+        if isinstance(parsed_defaults, dict):
+            account_defaults = {str(k): str(v or "") for k, v in parsed_defaults.items()}
+
     if blocks_payload is not None:
         preview_items = _build_preview_names_from_blocks(
             metadata["files"],
@@ -891,6 +903,7 @@ async def preview_renames(
             case_style=case_style,
             safe_cleanup=safe_cleanup,
             file_overrides=file_overrides,
+            account_defaults=account_defaults,
         )
         effective_format_template = _legacy_template_from_blocks(blocks_payload["blocks"])
     else:
