@@ -574,3 +574,18 @@ footer {
 .shadow-glow-magenta {
   box-shadow: none;
 }
+
+/* ============================================================
+   Touch & small-screen adjustments
+   ============================================================ */
+@media (pointer: coarse) {
+  /* 16px inputs prevent iOS Safari focus auto-zoom */
+  .input, select, textarea { font-size: 16px; }
+}
+
+@media (max-width: 480px) {
+  /* Hero filename animation: wrap + shrink so it never clips at 375px */
+  .filename-before { font-size: 0.72rem; word-break: break-all; }
+  .filename-after  { font-size: 0.78rem; word-break: break-all; }
+  .filename-arrow  { font-size: 1rem; }
+}

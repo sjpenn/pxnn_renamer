@@ -5,10 +5,10 @@
 {% block body_class %}bg-stage min-h-screen{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{{ url_for('static', path='/css/name-line.css') }}?v=name-line-13">
+<link rel="stylesheet" href="{{ url_for('static', path='/css/name-line.css') }}?v=name-line-14">
 <script src="{{ url_for('static', path='/vendor/sortable.min.js') }}"></script>
-<script src="{{ url_for('static', path='/js/name-line.js') }}?v=name-line-13"></script>
-<script src="{{ url_for('static', path='/js/preview.js') }}?v=name-line-13"></script>
+<script src="{{ url_for('static', path='/js/name-line.js') }}?v=name-line-14"></script>
+<script src="{{ url_for('static', path='/js/preview.js') }}?v=name-line-14"></script>
 {% endblock %}
 
 {% block body %}
@@ -16,7 +16,7 @@
 {% include "partials/nav.html" %}
     <div class="app-noise opacity-30"></div>
 
-    <div class="relative flex min-h-screen">
+    <div class="relative flex flex-col lg:flex-row min-h-screen">
         <!-- Mobile sidebar backdrop -->
         <div id="sidebar-backdrop" class="hidden lg:hidden fixed inset-0 z-40 bg-stage-sunken/80 backdrop-blur-sm" aria-hidden="true"></div>
 
@@ -118,7 +118,7 @@
             <div class="flex-1 p-4 sm:p-6 lg:p-8">
                 <div class="mx-auto max-w-6xl space-y-6 sm:space-y-8">
 
-                <div class="rounded-xl border border-hairline bg-stage-raised p-8 relative">
+                <div class="rounded-xl border border-hairline bg-stage-raised p-4 sm:p-8 relative">
                     {% with block_key="step-1-stage-files", block_label="Step 1 · Stage Files" %}{% include "partials/ui_comment_widget.html" %}{% endwith %}
                     <div class="flex items-start justify-between border-b border-hairline pb-6">
                         <div class="space-y-1">
@@ -136,7 +136,7 @@
                         <div class="space-y-8">
                             <div id="upload-zone">
                               <div class="dropzone-full">
-                                <div class="dropzone p-12 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan relative"
+                                <div class="dropzone p-6 sm:p-12 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan relative"
                                      id="dropzone"
                                      role="button"
                                      tabindex="0"
@@ -330,9 +330,9 @@
         </div>
         </main>
 
-        <!-- Right Sidebar: Preview Rail -->
-        <aside class="w-96 border-l border-hairline bg-stage-raised/50 overflow-y-auto hidden lg:block">
-                <div class="p-8">
+        <!-- Right Sidebar: Preview Rail (stacks below main content on mobile) -->
+        <aside class="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-hairline bg-stage-raised/50 overflow-y-auto block">
+                <div class="p-4 sm:p-8">
                     <div class="flex items-center justify-between border-b border-hairline pb-6">
                         <div>
                             <p class="text-[10px] font-bold uppercase tracking-widest text-ink-mute">Real-time Preview</p>
@@ -515,6 +515,11 @@
         }
 
         function setAuthFeedback(message = "") {
+            // #auth-feedback does not exist on this page; surface messages via the banner instead.
+            if (!authFeedback) {
+                if (message) setBanner(message, "warning");
+                return;
+            }
             if (!message) {
                 authFeedback.classList.add("hidden");
                 authFeedback.textContent = "";
@@ -523,6 +528,15 @@
 
             authFeedback.classList.remove("hidden");
             authFeedback.textContent = message;
+        }
+
+        function handleUnauthorized() {
+            // Session expired or revoked — clear state and send the user to sign in.
+            state.user = null;
+            state.dashboard = emptyDashboard();
+            setStatus("Session expired", "alert");
+            setBanner("Your session has expired. Redirecting to sign in…", "warning");
+            window.setTimeout(() => { window.location.href = "/login"; }, 1200);
         }
 
         function resetWizardState() {
@@ -920,14 +934,13 @@
         }
 
         async function logout() {
-            await fetch("/api/auth/logout", { method: "POST" });
-            state.user = null;
-            state.dashboard = emptyDashboard();
-            setAuthFeedback("");
-            setBanner("You have been signed out.", "success");
-            setStatus("Signed out", "working");
-            resetWizardState();
-            renderDashboard();
+            try {
+                await fetch("/api/auth/logout", { method: "POST" });
+            } finally {
+                state.user = null;
+                state.dashboard = emptyDashboard();
+                window.location.href = "/";
+            }
         }
 
         async function cancelSubscription() {

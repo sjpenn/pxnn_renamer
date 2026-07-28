@@ -34,7 +34,7 @@ class FileCollection(Base):
     __tablename__ = "file_collections"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     session_id = Column(String, unique=True, nullable=False, index=True)
     name = Column(String, nullable=False)
     format_template = Column(String, default="ARTIST_TITLE_PRODUCERS_MIX_VERSION", nullable=False)
@@ -57,7 +57,7 @@ class File(Base):
     __tablename__ = "files"
 
     id = Column(Integer, primary_key=True, index=True)
-    collection_id = Column(Integer, ForeignKey("file_collections.id", ondelete="CASCADE"), nullable=False)
+    collection_id = Column(Integer, ForeignKey("file_collections.id", ondelete="CASCADE"), nullable=False, index=True)
     external_id = Column(String, unique=True, nullable=False, index=True)
     original_path = Column(String, nullable=False)
     current_path = Column(String, nullable=False)
@@ -76,8 +76,8 @@ class ActivityLog(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    collection_id = Column(Integer, ForeignKey("file_collections.id", ondelete="SET NULL"), nullable=True)
-    event_type = Column(String, nullable=False)
+    collection_id = Column(Integer, ForeignKey("file_collections.id", ondelete="SET NULL"), nullable=True, index=True)
+    event_type = Column(String, nullable=False, index=True)
     summary = Column(String, nullable=False)
     details_json = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

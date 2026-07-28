@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "build:css": "tailwindcss -i frontend/static/css/tailwind-input.css -o frontend/static/css/tailwind.min.css --minify",
+    "watch:css": "tailwindcss -i frontend/static/css/tailwind-input.css -o frontend/static/css/tailwind.min.css --watch"
+  },
   "devDependencies": {
     "tailwindcss": "^3.4.19"
   }

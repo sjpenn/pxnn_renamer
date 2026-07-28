@@ -26,14 +26,17 @@ oauth.register(
 )
 
 
-def _resolve_or_create_google_user(db: Session, google_sub: str, email: str) -> tuple[User, bool]:
-    """Find existing user by google_sub, link by email, or create new user.
-    Returns (user, is_new) tuple."""
+def _resolve_or_create_google_user(
+    db: Session, google_sub: str, email: str, email_verified: bool = False
+) -> tuple[User, bool]:
+    """Find existing user by google_sub, link by email (only if Google reports the
+    email as verified — prevents account takeover via unverified addresses), or
+    create a new user. Returns (user, is_new) tuple."""
     user = db.query(User).filter(User.google_sub == google_sub).first()
     if user:
         return user, False
 
-    if email:
+    if email and email_verified:
         user = db.query(User).filter(User.email == email).first()
         if user:
             user.google_sub = google_sub
@@ -110,8 +113,11 @@ async def google_callback(
 
     google_sub = userinfo["sub"]
     email = userinfo.get("email", "")
+    email_verified = bool(userinfo.get("email_verified", False))
 
-    user, is_new = _resolve_or_create_google_user(db, google_sub=google_sub, email=email)
+    user, is_new = _resolve_or_create_google_user(
+        db, google_sub=google_sub, email=email, email_verified=email_verified
+    )
 
     if is_new:
         notify_new_signup(db, user, method="google")

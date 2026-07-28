@@ -4,7 +4,7 @@
         {# Left: logo + marketing links (desktop) #}
         <div class="flex items-center gap-8">
             <a href="{% if current_user %}/app{% else %}/{% endif %}" class="flex items-center gap-2 font-editorial text-lg text-ink">
-                <span class="text-cyan">{% include "partials/svg/wordmark_glyph.html" %}</span>
+                <img src="/static/img/brand/pxnn-logo-192.png" alt="PxNN logo" class="h-9 w-9" width="36" height="36" />
                 PxNN
             </a>
             {% if page in ['home', 'login', 'register'] %}

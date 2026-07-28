@@ -218,3 +218,23 @@
 }
 .dropzone-bar b { color: var(--color-ink, #faf9f6); font-weight: 700; }
 .dropzone-bar .underline { color: var(--color-cyan, #c9a66b); }
+
+/* ============================================================
+   Touch-device adjustments — 44px targets, no iOS focus zoom
+   ============================================================ */
+@media (pointer: coarse) {
+  .nl-palette { gap: 8px; }
+  .nl-palette button { min-height: 44px; padding: 10px 16px; font-size: 13px; }
+  .nl-line { min-height: 64px; }
+  .nl-chip { min-height: 40px; padding: 8px 12px; font-size: 14px; }
+  .nl-chip .nl-chip-remove { font-size: 18px; padding: 6px 10px; min-width: 36px; min-height: 36px; }
+  .nl-chip .nl-chip-arrow { font-size: 16px; padding: 6px 8px; min-width: 32px; min-height: 32px; }
+  .nl-chip .nl-chip-input { font-size: 16px; }
+  .nl-autocomplete-item { padding: 12px 14px; font-size: 14px; }
+  .pv-download { min-height: 44px; padding: 12px 20px; font-size: 13px; }
+  .pv-edit { min-width: 40px; min-height: 40px; display: inline-flex; align-items: center; justify-content: center; }
+  .pv-edit-input { font-size: 16px; min-height: 40px; }
+}
+
+/* Long generated filenames must wrap instead of overflowing on phones */
+.pv-name { word-break: break-all; overflow-wrap: anywhere; }

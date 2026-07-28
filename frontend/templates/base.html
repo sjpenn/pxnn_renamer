@@ -5,17 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}PxNN — Filename studio for beatmakers{% endblock %}</title>
 
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/brand/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="/static/img/brand/favicon-64.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/img/brand/apple-touch-icon.png">
+    <meta name="theme-color" content="#1a1918">
+    <meta property="og:title" content="PxNN — Filename studio for beatmakers">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="/static/img/brand/pxnn-logo-512.png">
+    <meta name="description" content="PxNN — bulk file renaming studio for music producers. Clean, consistent filenames for your beats, stems, and sample packs.">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&family=Geist+Mono:wght@400;500&display=swap"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Geist+Mono:wght@400;500&display=swap"
         rel="stylesheet">
     <link
-        href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=block"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="/static/css/tailwind.min.css?v=warm-2">
-    <link rel="stylesheet" href="/static/css/style.css?v=warm-2">
+    <link rel="stylesheet" href="/static/css/tailwind.min.css?v=warm-3">
+    <link rel="stylesheet" href="/static/css/style.css?v=warm-3">
 
     <style>
       :root {
@@ -37,6 +46,22 @@
         --color-hairline-raised:#4a4948;
         --color-danger-hover:   #e06b63;
         --color-danger-light:   #e88a84;
+
+        /* RGB triplets — required so Tailwind opacity modifiers (bg-cyan/10 etc.) work */
+        --color-stage-rgb:        26 25 24;
+        --color-stage-raised-rgb: 36 35 34;
+        --color-stage-sunken-rgb: 19 18 17;
+        --color-rail-rgb:         46 45 43;
+        --color-ink-rgb:          250 249 246;
+        --color-ink-dim-rgb:      175 174 172;
+        --color-ink-mute-rgb:     134 133 132;
+        --color-ink-soft-rgb:     200 199 197;
+        --color-cyan-rgb:         201 166 107;
+        --color-cyan-soft-rgb:    168 136 79;
+        --color-magenta-rgb:      134 133 132;
+        --color-amber-rgb:        201 166 107;
+        --color-success-rgb:      127 184 112;
+        --color-danger-rgb:       212 86 78;
       }
     </style>
 

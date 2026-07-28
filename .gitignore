@@ -43,3 +43,7 @@ node_modules/
 
 # Brainstorming visual companion
 .superpowers/
+screenshots/
+.pi-subagents/
+.claude/worktrees/
+nameline-v2-*.png

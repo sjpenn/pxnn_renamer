@@ -16,7 +16,8 @@ from .core.security import (
     serialize_user,
     set_pending_plan,
 )
-from sqlalchemy import func
+from sqlalchemy import func, text
+from fastapi.responses import JSONResponse
 from .database.bootstrap import bootstrap_database
 from .database.models import UIComment, User
 from .database.session import get_db
@@ -48,7 +49,11 @@ class NoCacheHTMLMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         content_type = response.headers.get("content-type", "")
-        if content_type.startswith("text/html"):
+        if request.url.path.startswith("/static"):
+            # Templates use query-string versioning (?v=...), so long-lived
+            # immutable caching is safe and removes per-asset conditional requests.
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        elif content_type.startswith("text/html"):
             response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
@@ -210,6 +215,16 @@ async def profile_page(
             "google_oauth_enabled": bool(settings.GOOGLE_CLIENT_ID),
         },
     )
+
+
+@app.get("/health")
+async def health(db: Session = Depends(get_db)):
+    """Liveness/readiness probe for Coolify and load balancers."""
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "ok"}
+    except Exception:
+        return JSONResponse(status_code=503, content={"status": "degraded", "db": "unreachable"})
 
 
 @app.on_event("startup")

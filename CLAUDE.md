@@ -17,7 +17,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Backend Development
 - **Dependencies**: Install via `pip install -r requirements.txt`
-- **Tests**: (No tests currently identified, but typically `pytest` would be used)
+- **Tests**: (Run tests with `pytest tests/ --ignore=tests/frontend` (169 tests).
+
+### Deployment
+- **Platform**: Coolify (self-hosted) at `coolify.eudaven.com`
+- **Production URL**: served via Coolify-managed domain
+- **Database**: Postgres auto-created on container start (`docker/ensure_db.py`); verified by `docker/verify_db.sh`
 
 ## Project Architecture
 

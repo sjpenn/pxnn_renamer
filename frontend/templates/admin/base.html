@@ -10,12 +10,13 @@
 
 {% block body %}
 <div class="min-h-screen bg-stage text-ink">
-  <header class="border-b border-hairline px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-6">
-      <span class="text-lg font-editorial tracking-tight text-ink">
+  <header class="border-b border-hairline px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap items-center gap-4 sm:gap-6 min-w-0">
+      <span class="flex items-center gap-2 text-lg font-editorial tracking-tight text-ink whitespace-nowrap">
+        <img src="/static/img/brand/pxnn-logo-192.png" alt="PxNN logo" class="h-7 w-7" width="28" height="28" />
         <span class="text-cyan">Admin</span> · PxNN
       </span>
-      <nav class="flex items-center gap-4 text-sm text-ink-dim">
+      <nav class="flex items-center gap-4 text-sm text-ink-dim overflow-x-auto whitespace-nowrap max-w-full pb-1">
         <a href="/admin" class="hover:text-ink transition">Dashboard</a>
         <a href="/admin/users" class="hover:text-ink transition">Users</a>
         <a href="/admin/announcements" class="hover:text-ink transition">Announcements</a>

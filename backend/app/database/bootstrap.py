@@ -56,6 +56,14 @@ def bootstrap_database() -> None:
     _run_ddl_safe("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_google_sub ON users (google_sub) WHERE google_sub IS NOT NULL")
     _run_ddl_safe("CREATE INDEX IF NOT EXISTS ix_users_email ON users (email)")
 
+    # Hot-path FK / composite indexes (Postgres does not auto-index FKs)
+    _run_ddl_safe("CREATE INDEX IF NOT EXISTS ix_file_collections_user_id ON file_collections (user_id)")
+    _run_ddl_safe("CREATE INDEX IF NOT EXISTS ix_files_collection_id ON files (collection_id)")
+    _run_ddl_safe("CREATE INDEX IF NOT EXISTS ix_activity_logs_collection_id ON activity_logs (collection_id)")
+    _run_ddl_safe("CREATE INDEX IF NOT EXISTS ix_activity_logs_event_type ON activity_logs (event_type)")
+    _run_ddl_safe("CREATE INDEX IF NOT EXISTS ix_activity_logs_user_event_created ON activity_logs (user_id, event_type, created_at)")
+    _run_ddl_safe("CREATE INDEX IF NOT EXISTS ix_user_sessions_user_ended ON user_sessions (user_id, ended_at)")
+
     # FileCollections
     _ensure_column(
         "file_collections",

@@ -403,7 +403,14 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
         except stripe.error.SignatureVerificationError as exc:
             raise HTTPException(status_code=400, detail="Invalid Stripe signature.") from exc
     else:
-        # No webhook secret configured — only safe in test/dev environments
+        # No webhook secret configured — only allowed in local dev.
+        # In production (https APP_URL) an unverified webhook could be forged
+        # to grant credits, so refuse to process it.
+        if settings.APP_URL.startswith("https://"):
+            raise HTTPException(
+                status_code=503,
+                detail="Webhook secret not configured; refusing unverified webhook in production.",
+            )
         try:
             event = json.loads(payload)
         except Exception as exc:
