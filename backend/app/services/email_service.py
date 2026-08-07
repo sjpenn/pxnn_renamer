@@ -57,6 +57,35 @@ def _detail_row(label: str, value: str) -> str:
     return f'<tr><td style="padding: 4px 12px 4px 0; color: #666; font-size: 14px;">{label}</td><td style="padding: 4px 0; font-size: 14px;"><strong>{value}</strong></td></tr>'
 
 
+def send_password_reset(user: User, reset_url: str) -> bool:
+    """Send a password reset link to the user's own email. Returns True if sent."""
+    if not settings.RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY not set — cannot send password reset to %s", user.username)
+        return False
+    if not user.email:
+        return False
+
+    resend.api_key = settings.RESEND_API_KEY
+    body = f"""
+    <h2 style="margin: 0 0 16px; font-size: 18px;">Reset your PxNN password</h2>
+    <p style="font-size: 14px; color: #444;">We received a request to reset the password for <strong>{user.username}</strong>.
+    This link expires in {settings.PASSWORD_RESET_TOKEN_MINUTES} minutes.</p>
+    <p style="margin: 24px 0;"><a href="{reset_url}" style="background: #06b6d4; color: #000; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 600;">Reset password</a></p>
+    <p style="font-size: 12px; color: #888;">If you did not request this, you can safely ignore this email.</p>
+    """
+    try:
+        resend.Emails.send({
+            "from": settings.EMAIL_FROM_ADDRESS,
+            "to": [user.email],
+            "subject": "Reset your PxNN password",
+            "html": _email_wrapper(body),
+        })
+        return True
+    except Exception:
+        logger.exception("Failed to send password reset email to %s", user.email)
+        return False
+
+
 def notify_new_signup(db: Session, user: User, method: str = "form") -> None:
     body = f"""
     <h2 style="margin: 0 0 16px; font-size: 18px;">New User Signup</h2>

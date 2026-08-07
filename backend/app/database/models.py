@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, Column, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from .session import Base
@@ -269,3 +269,36 @@ class Idea(Base):
     created_by_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
+class CouponCode(Base):
+    __tablename__ = "coupon_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String, unique=True, nullable=False, index=True)
+    credits = Column(Integer, nullable=False)
+    max_redemptions = Column(Integer, nullable=True)  # NULL = unlimited
+    redeemed_count = Column(Integer, default=0, nullable=False)
+    expires_at = Column(DateTime, nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False, index=True)
+    note = Column(String, nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    redemptions = relationship("CouponRedemption", back_populates="coupon", cascade="all, delete-orphan")
+
+
+class CouponRedemption(Base):
+    __tablename__ = "coupon_redemptions"
+    __table_args__ = (
+        UniqueConstraint("coupon_id", "user_id", name="uq_coupon_redemption_user"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    coupon_id = Column(Integer, ForeignKey("coupon_codes.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    credits_granted = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    coupon = relationship("CouponCode", back_populates="redemptions")
+    user = relationship("User")

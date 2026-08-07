@@ -108,6 +108,16 @@
                 </div>
             </dl>
             <a href="/app?billing=options" class="mt-4 inline-block text-sm font-semibold text-cyan hover:text-white transition">Manage billing →</a>
+
+            <div class="mt-6 pt-4 border-t border-hairline">
+                <p class="text-[11px] font-mono uppercase tracking-widest text-ink-dim">Have a code?</p>
+                <div id="redeem-error" class="hidden mt-3 rounded-xl bg-danger/10 border border-danger/30 p-3 text-sm text-danger"></div>
+                <div id="redeem-ok" class="hidden mt-3 rounded-xl bg-cyan/10 border border-cyan/30 p-3 text-sm text-cyan"></div>
+                <form id="redeem-form" class="mt-3 flex gap-2">
+                    <input type="text" name="code" required placeholder="PXNN-XXXXXX" class="input flex-1 font-mono uppercase" autocomplete="off">
+                    <button type="submit" class="btn btn-primary px-4">Redeem</button>
+                </form>
+            </div>
         </article>
 
         {# Card 5: Danger zone #}
@@ -178,6 +188,27 @@
                 const data = await response.json().catch(() => ({ detail: 'Delete failed.' }));
                 deleteError.textContent = data.detail || 'Delete failed.';
                 deleteError.classList.remove('hidden');
+            }
+        });
+    }
+
+    const redeemForm = document.getElementById('redeem-form');
+    const redeemError = document.getElementById('redeem-error');
+    const redeemOk = document.getElementById('redeem-ok');
+    if (redeemForm) {
+        redeemForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            redeemError.classList.add('hidden');
+            redeemOk.classList.add('hidden');
+            const response = await fetch('/api/credits/redeem', { method: 'POST', body: new FormData(redeemForm) });
+            const data = await response.json().catch(() => ({}));
+            if (response.ok) {
+                redeemOk.textContent = '+' + data.credits_granted + ' credits added — new balance: ' + data.credit_balance;
+                redeemOk.classList.remove('hidden');
+                redeemForm.reset();
+            } else {
+                redeemError.textContent = data.detail || 'That code could not be redeemed.';
+                redeemError.classList.remove('hidden');
             }
         });
     }

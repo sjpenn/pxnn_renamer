@@ -27,7 +27,7 @@
     const warnings = [];
     (nameLineState.blocks || []).forEach((block) => {
       const t = String(block.type || "").toUpperCase();
-      if (!VALUE_TYPE_FIELD[t] && !SINGLETON_FIELDS[t] && t !== "TEXT") return;
+      if (!VALUE_TYPE_FIELD[t] && t !== "TEXT") return;
       if (t === "TEXT") {
         if (!String(block.value || "").trim()) warnings.push("empty text block");
         return;

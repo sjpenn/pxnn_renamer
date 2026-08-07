@@ -1,0 +1,190 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="flex items-center justify-between">
+  <h1 class="text-2xl font-display font-semibold text-ink">Founder Console</h1>
+  <span class="text-xs text-ink-dim uppercase tracking-wider">Advanced controls</span>
+</div>
+
+{% if notice %}
+<div class="bg-stage-raised border border-cyan rounded-xl px-4 py-3 text-sm text-cyan">{{ notice }}</div>
+{% endif %}
+{% if error %}
+<div class="bg-stage-raised border border-magenta rounded-xl px-4 py-3 text-sm text-magenta">{{ error }}</div>
+{% endif %}
+
+<!-- Config / integration status -->
+<section class="bg-stage-raised border border-hairline rounded-xl p-4">
+  <h2 class="text-lg font-display text-ink mb-3">Launch readiness</h2>
+  <ul class="grid grid-cols-1 md:grid-cols-2 gap-2">
+    {% for item in config_status %}
+    <li class="flex items-start gap-2 text-sm">
+      <span class="{% if item.ok %}text-cyan{% else %}text-magenta{% endif %} font-bold">{% if item.ok %}✓{% else %}✗{% endif %}</span>
+      <span>
+        <span class="text-ink">{{ item.label }}</span>
+        {% if item.hint %}<span class="block text-xs text-ink-dim">{{ item.hint }}</span>{% endif %}
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+  <!-- Send free credits -->
+  <section class="bg-stage-raised border border-hairline rounded-xl p-4">
+    <h2 class="text-lg font-display text-ink mb-3">Send free credits</h2>
+    <form method="post" action="/admin/founder/credits" class="flex flex-wrap items-end gap-3">
+      <label class="text-sm text-ink-dim flex-1 min-w-[180px]">
+        Username or email
+        <input name="username" required placeholder="e.g. hurricanewisdom"
+               class="mt-1 w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink" />
+      </label>
+      <label class="text-sm text-ink-dim w-28">
+        Amount
+        <input name="amount" type="number" required value="5"
+               class="mt-1 w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink" />
+      </label>
+      <button type="submit" class="px-4 py-2 bg-cyan text-black rounded font-medium text-sm">Send</button>
+    </form>
+    <p class="text-xs text-ink-dim mt-2">Use a negative amount to claw back credits (floor is 0).</p>
+
+    {% if recent_grants %}
+    <h3 class="text-xs uppercase tracking-wider text-ink-dim mt-4 mb-2">Recent credit activity</h3>
+    <ul class="space-y-1 text-xs text-ink-dim max-h-40 overflow-y-auto">
+      {% for log in recent_grants %}
+      <li><span class="text-ink">{{ log.summary }}</span> · user #{{ log.user_id }} · {{ log.created_at.strftime('%b %d %H:%M') }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+
+  <!-- Platform settings -->
+  <section class="bg-stage-raised border border-hairline rounded-xl p-4">
+    <h2 class="text-lg font-display text-ink mb-3">Platform settings</h2>
+    <form method="post" action="/admin/founder/settings" class="space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <label class="text-sm text-ink-dim">
+          Trial credits at signup
+          <input name="trial_credits" type="number" min="0" value="{{ trial_credits }}"
+                 class="mt-1 w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink" />
+        </label>
+        <label class="text-sm text-ink-dim">
+          Max files per batch
+          <input name="max_upload_files" type="number" min="1" value="{{ max_upload_files }}"
+                 class="mt-1 w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink" />
+        </label>
+        <label class="text-sm text-ink-dim">
+          Max file size (MB)
+          <input name="max_upload_file_mb" type="number" min="1" value="{{ max_upload_file_mb }}"
+                 class="mt-1 w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink" />
+        </label>
+        <label class="text-sm text-ink-dim">
+          Max batch size (MB)
+          <input name="max_upload_batch_mb" type="number" min="1" value="{{ max_upload_batch_mb }}"
+                 class="mt-1 w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink" />
+        </label>
+      </div>
+      <label class="text-sm text-ink-dim block">
+        Allowed file extensions (comma-separated, "*" = allow all)
+        <input name="allowed_upload_extensions" value="{{ allowed_extensions }}"
+               class="mt-1 w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink" />
+      </label>
+      <button type="submit" class="px-4 py-2 bg-cyan text-black rounded font-medium text-sm">Save settings</button>
+      <a href="/admin/pricing" class="ml-3 text-sm text-cyan hover:text-ink transition">Edit plan pricing →</a>
+    </form>
+  </section>
+</div>
+
+<!-- Coupon codes -->
+<section class="bg-stage-raised border border-hairline rounded-xl p-4">
+  <h2 class="text-lg font-display text-ink mb-3">Coupon codes</h2>
+  <form method="post" action="/admin/founder/coupons" class="flex flex-wrap items-end gap-3 mb-4">
+    <label class="text-sm text-ink-dim w-40">
+      Code (blank = auto)
+      <input name="code" placeholder="LAUNCH25"
+             class="mt-1 w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink" />
+    </label>
+    <label class="text-sm text-ink-dim w-24">
+      Credits
+      <input name="credits" type="number" min="1" required value="5"
+             class="mt-1 w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink" />
+    </label>
+    <label class="text-sm text-ink-dim w-32">
+      Max redemptions
+      <input name="max_redemptions" type="number" min="1" placeholder="∞"
+             class="mt-1 w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink" />
+    </label>
+    <label class="text-sm text-ink-dim w-40">
+      Expires on
+      <input name="expires_on" type="date"
+             class="mt-1 w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink" />
+    </label>
+    <label class="text-sm text-ink-dim flex-1 min-w-[160px]">
+      Note
+      <input name="note" placeholder="Launch promo for IG"
+             class="mt-1 w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink" />
+    </label>
+    <button type="submit" class="px-4 py-2 bg-cyan text-black rounded font-medium text-sm">Create</button>
+  </form>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm min-w-[640px]">
+      <thead class="text-ink-dim text-xs uppercase tracking-wider">
+        <tr class="border-b border-hairline">
+          <th class="text-left px-3 py-2">Code</th>
+          <th class="text-right px-3 py-2">Credits</th>
+          <th class="text-right px-3 py-2">Redeemed</th>
+          <th class="text-left px-3 py-2">Expires</th>
+          <th class="text-left px-3 py-2">Note</th>
+          <th class="text-center px-3 py-2">Status</th>
+          <th class="text-right px-3 py-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-hairline">
+        {% for c in coupons %}
+        <tr>
+          <td class="px-3 py-2 font-mono text-ink">{{ c.code }}</td>
+          <td class="px-3 py-2 text-right text-ink">{{ c.credits }}</td>
+          <td class="px-3 py-2 text-right text-ink-dim">{{ c.redeemed_count }}{% if c.max_redemptions %}/{{ c.max_redemptions }}{% endif %}</td>
+          <td class="px-3 py-2 text-ink-dim">{{ c.expires_at.strftime('%Y-%m-%d') if c.expires_at else '—' }}</td>
+          <td class="px-3 py-2 text-ink-dim">{{ c.note or '—' }}</td>
+          <td class="px-3 py-2 text-center">
+            <span class="text-xs px-2 py-1 rounded border {% if c.is_active %}border-cyan text-cyan{% else %}border-hairline text-ink-mute{% endif %}">
+              {{ 'active' if c.is_active else 'off' }}
+            </span>
+          </td>
+          <td class="px-3 py-2 text-right whitespace-nowrap">
+            <form method="post" action="/admin/founder/coupons/{{ c.id }}/toggle" class="inline">
+              <button type="submit" class="text-xs text-cyan hover:text-ink transition">{{ 'disable' if c.is_active else 'enable' }}</button>
+            </form>
+            <form method="post" action="/admin/founder/coupons/{{ c.id }}/delete" class="inline ml-2"
+                  onsubmit="return confirm('Delete coupon {{ c.code }}?');">
+              <button type="submit" class="text-xs text-magenta hover:text-ink transition">delete</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="px-3 py-4 text-ink-dim text-center">No coupons yet — create your first above.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="text-xs text-ink-dim mt-2">Users redeem codes from their Profile page (or POST /api/credits/redeem).</p>
+</section>
+
+<!-- Admin team -->
+<section class="bg-stage-raised border border-hairline rounded-xl p-4">
+  <h2 class="text-lg font-display text-ink mb-3">Admin team</h2>
+  <ul class="space-y-1 text-sm">
+    {% for a in admins %}
+    <li class="flex items-center gap-2">
+      <span class="text-magenta text-xs border border-magenta rounded px-2 py-0.5">ADMIN</span>
+      <span class="text-ink">{{ a.username }}</span>
+      <span class="text-ink-dim text-xs">{{ a.email or '' }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  <p class="text-xs text-ink-dim mt-2">Grant or revoke admin from the <a href="/admin/users" class="text-cyan hover:text-ink">Users page</a>.</p>
+</section>
+{% endblock %}

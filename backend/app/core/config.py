@@ -29,6 +29,25 @@ class Settings(BaseSettings):
     RESEND_API_KEY: Optional[str] = None
     EMAIL_FROM_ADDRESS: str = "notifications@gedsio.com"
 
+    # Upload guardrails (founder-tunable via site settings; these are the defaults)
+    MAX_UPLOAD_FILES: int = 200
+    MAX_UPLOAD_FILE_MB: int = 300
+    MAX_UPLOAD_BATCH_MB: int = 2048
+    ALLOWED_UPLOAD_EXTENSIONS: str = (
+        "mp3,wav,aif,aiff,flac,ogg,oga,m4a,aac,wma,alac,opus,mid,midi,"
+        "mp4,mov,m4v,zip,ptx,als,flp,logicx,band,rpp,cpr,np3,seq,sesx,stems"
+    )
+
+    # Simple per-IP rate limiting for auth endpoints
+    RATE_LIMIT_ENABLED: bool = True
+    RATE_LIMIT_REGISTER_PER_WINDOW: int = 10
+    RATE_LIMIT_LOGIN_PER_WINDOW: int = 15
+    RATE_LIMIT_FORGOT_PER_WINDOW: int = 5
+    RATE_LIMIT_WINDOW_SECONDS: int = 300
+
+    # Password reset
+    PASSWORD_RESET_TOKEN_MINUTES: int = 30
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

@@ -30,6 +30,30 @@ def create_access_token(subject: str) -> str:
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.ALGORITHM)
 
 
+def create_password_reset_token(user_id: int) -> str:
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=settings.PASSWORD_RESET_TOKEN_MINUTES)
+    payload = {
+        "sub": str(user_id),
+        "purpose": "password_reset",
+        "exp": expires_at,
+    }
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.ALGORITHM)
+
+
+def verify_password_reset_token(token: str) -> Optional[int]:
+    """Return the user id for a valid password-reset token, else None."""
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.ALGORITHM])
+    except JWTError:
+        return None
+    if payload.get("purpose") != "password_reset":
+        return None
+    try:
+        return int(payload.get("sub"))
+    except (TypeError, ValueError):
+        return None
+
+
 def set_auth_cookie(response: Response, token: str) -> None:
     response.set_cookie(
         key=settings.COOKIE_NAME,

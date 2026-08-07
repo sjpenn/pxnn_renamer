@@ -21,7 +21,10 @@ from fastapi.responses import JSONResponse
 from .database.bootstrap import bootstrap_database
 from .database.models import UIComment, User
 from .database.session import get_db
+import logging
+
 from .routes.auth import router as auth_router
+from .routes.coupons import router as coupons_router
 from .routes.funnel import router as funnel_router
 from .routes.dashboard import router as dashboard_router
 from .routes.oauth import router as oauth_router
@@ -71,6 +74,7 @@ templates = Jinja2Templates(directory=str(BASE_DIR / "frontend" / "templates"))
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "frontend" / "static")), name="static")
 
 app.include_router(auth_router)
+app.include_router(coupons_router)
 app.include_router(dashboard_router)
 app.include_router(oauth_router)
 app.include_router(payments_router)
@@ -198,6 +202,38 @@ async def register_page(
     )
 
 
+@app.get("/forgot", response_class=HTMLResponse)
+async def forgot_page(
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    if current_user:
+        return RedirectResponse(url="/app", status_code=303)
+    return templates.TemplateResponse(
+        request,
+        "auth/forgot.html",
+        {"current_user": None, "page": "forgot"},
+    )
+
+
+@app.get("/reset", response_class=HTMLResponse)
+async def reset_page(
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    if current_user:
+        return RedirectResponse(url="/app", status_code=303)
+    return templates.TemplateResponse(
+        request,
+        "auth/reset.html",
+        {
+            "current_user": None,
+            "page": "reset",
+            "token": request.query_params.get("token", ""),
+        },
+    )
+
+
 @app.get("/profile", response_class=HTMLResponse)
 async def profile_page(
     request: Request,
@@ -229,6 +265,17 @@ async def health(db: Session = Depends(get_db)):
 
 @app.on_event("startup")
 def startup_event():
+    logger = logging.getLogger("pxnn.startup")
+    if settings.JWT_SECRET == "change-me-in-production":
+        if settings.APP_URL.startswith("https://"):
+            raise RuntimeError(
+                "Refusing to start: JWT_SECRET is still the default value on a "
+                "production (https) deployment. Set JWT_SECRET in the environment."
+            )
+        logger.warning(
+            "JWT_SECRET is the default value — fine for local dev, "
+            "but set a real secret before deploying."
+        )
     bootstrap_database()
 
 

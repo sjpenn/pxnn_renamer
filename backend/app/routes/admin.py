@@ -1065,3 +1065,222 @@ async def admin_ideas_delete(
         db.delete(idea)
         db.commit()
     return RedirectResponse(url="/admin/ideas", status_code=303)
+
+
+# ---------------------------------------------------------------------------
+# Founder console — advanced controls in one place
+# ---------------------------------------------------------------------------
+
+from datetime import date as _date  # noqa: E402
+
+from ..core.config import settings as _app_settings  # noqa: E402
+from ..database.models import CouponCode, CouponRedemption  # noqa: E402
+from ..services.coupons import CouponError, create_coupon  # noqa: E402
+
+
+def _founder_config_status() -> list[dict]:
+    """Live integration/config checklist shown on the founder page."""
+    jwt_ok = _app_settings.JWT_SECRET != "change-me-in-production"
+    https_ok = _app_settings.APP_URL.startswith("https://")
+    return [
+        {"label": "JWT secret set (non-default)", "ok": jwt_ok,
+         "hint": "" if jwt_ok else "Set JWT_SECRET in the environment before going live."},
+        {"label": "HTTPS app URL (secure cookies)", "ok": https_ok,
+         "hint": "" if https_ok else "Set APP_URL to your https:// domain in production."},
+        {"label": "Stripe payments", "ok": bool(_app_settings.STRIPE_SECRET_KEY),
+         "hint": "" if _app_settings.STRIPE_SECRET_KEY else "Add STRIPE_SECRET_KEY + price IDs to enable checkout."},
+        {"label": "Stripe webhook", "ok": bool(_app_settings.STRIPE_WEBHOOK_SECRET),
+         "hint": "" if _app_settings.STRIPE_WEBHOOK_SECRET else "Add STRIPE_WEBHOOK_SECRET so purchases grant credits."},
+        {"label": "Google sign-in", "ok": bool(_app_settings.GOOGLE_CLIENT_ID),
+         "hint": "" if _app_settings.GOOGLE_CLIENT_ID else "Optional: add GOOGLE_CLIENT_ID / SECRET."},
+        {"label": "Email (Resend)", "ok": bool(_app_settings.RESEND_API_KEY),
+         "hint": "" if _app_settings.RESEND_API_KEY else "Add RESEND_API_KEY for signup alerts + password resets."},
+    ]
+
+
+@router.get("/founder", response_class=HTMLResponse)
+async def admin_founder_page(
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    coupons = db.query(CouponCode).order_by(CouponCode.created_at.desc()).limit(100).all()
+    admins = db.query(User).filter(User.is_admin.is_(True)).order_by(User.created_at).all()
+    recent_grants = (
+        db.query(ActivityLog)
+        .filter(ActivityLog.event_type.in_(["admin_credit_grant", "coupon_redeemed"]))
+        .order_by(ActivityLog.created_at.desc())
+        .limit(15)
+        .all()
+    )
+    return templates.TemplateResponse(
+        request,
+        "admin/founder.html",
+        {
+            "current_user": admin,
+            "title": "Founder · PxNN Admin",
+            "config_status": _founder_config_status(),
+            "coupons": coupons,
+            "admins": admins,
+            "recent_grants": recent_grants,
+            "trial_credits": get_setting(db, "trial_credits", "5"),
+            "allowed_extensions": get_setting(
+                db, "allowed_upload_extensions", _app_settings.ALLOWED_UPLOAD_EXTENSIONS
+            ),
+            "max_upload_files": get_setting(db, "max_upload_files", str(_app_settings.MAX_UPLOAD_FILES)),
+            "max_upload_file_mb": get_setting(db, "max_upload_file_mb", str(_app_settings.MAX_UPLOAD_FILE_MB)),
+            "max_upload_batch_mb": get_setting(db, "max_upload_batch_mb", str(_app_settings.MAX_UPLOAD_BATCH_MB)),
+            "notice": request.query_params.get("notice", ""),
+            "error": request.query_params.get("error", ""),
+        },
+    )
+
+
+@router.post("/founder/credits")
+async def admin_founder_grant_credits(
+    username: str = Form(...),
+    amount: int = Form(...),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    if amount == 0:
+        return RedirectResponse(url="/admin/founder?error=Amount+cannot+be+zero", status_code=303)
+
+    lookup = username.strip().lower()
+    target = (
+        db.query(User)
+        .filter((User.username == lookup) | (User.email == lookup))
+        .first()
+    )
+    if not target:
+        return RedirectResponse(url="/admin/founder?error=User+not+found", status_code=303)
+
+    previous = target.credit_balance
+    target.credit_balance = max(0, previous + amount)
+    db.add(
+        ActivityLog(
+            user_id=target.id,
+            event_type="admin_credit_grant",
+            summary=f"Founder granted {amount} credits",
+            details_json=json.dumps(
+                {
+                    "granted_by": admin.username,
+                    "amount": amount,
+                    "previous_balance": previous,
+                    "new_balance": target.credit_balance,
+                }
+            ),
+        )
+    )
+    db.commit()
+    return RedirectResponse(
+        url=f"/admin/founder?notice={abs(amount)}+credits+{'granted+to' if amount > 0 else 'removed+from'}+{target.username}",
+        status_code=303,
+    )
+
+
+@router.post("/founder/coupons")
+async def admin_founder_create_coupon(
+    credits: int = Form(...),
+    code: str = Form(""),
+    max_redemptions: str = Form(""),
+    expires_on: str = Form(""),
+    note: str = Form(""),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    expires_at = None
+    if expires_on.strip():
+        try:
+            expires_at = datetime.combine(_date.fromisoformat(expires_on.strip()), datetime.max.time())
+        except ValueError:
+            return RedirectResponse(url="/admin/founder?error=Invalid+expiry+date", status_code=303)
+
+    max_r = None
+    if max_redemptions.strip():
+        try:
+            max_r = int(max_redemptions)
+        except ValueError:
+            return RedirectResponse(url="/admin/founder?error=Invalid+redemption+limit", status_code=303)
+
+    try:
+        coupon = create_coupon(
+            db,
+            credits=credits,
+            code=code or None,
+            max_redemptions=max_r,
+            expires_at=expires_at,
+            note=note,
+            created_by_id=admin.id,
+        )
+    except CouponError as exc:
+        return RedirectResponse(url=f"/admin/founder?error={str(exc).replace(' ', '+')}", status_code=303)
+
+    db.commit()
+    return RedirectResponse(url=f"/admin/founder?notice=Coupon+{coupon.code}+created", status_code=303)
+
+
+@router.post("/founder/coupons/{coupon_id}/toggle")
+async def admin_founder_toggle_coupon(
+    coupon_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    coupon = db.query(CouponCode).filter(CouponCode.id == coupon_id).first()
+    if not coupon:
+        raise HTTPException(status_code=404, detail="Coupon not found.")
+    coupon.is_active = not coupon.is_active
+    db.commit()
+    return RedirectResponse(url="/admin/founder", status_code=303)
+
+
+@router.post("/founder/coupons/{coupon_id}/delete")
+async def admin_founder_delete_coupon(
+    coupon_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    coupon = db.query(CouponCode).filter(CouponCode.id == coupon_id).first()
+    if coupon:
+        db.delete(coupon)
+        db.commit()
+    return RedirectResponse(url="/admin/founder", status_code=303)
+
+
+@router.post("/founder/settings")
+async def admin_founder_update_settings(
+    trial_credits: str = Form(""),
+    allowed_upload_extensions: str = Form(""),
+    max_upload_files: str = Form(""),
+    max_upload_file_mb: str = Form(""),
+    max_upload_batch_mb: str = Form(""),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    numeric_fields = {
+        "trial_credits": trial_credits,
+        "max_upload_files": max_upload_files,
+        "max_upload_file_mb": max_upload_file_mb,
+        "max_upload_batch_mb": max_upload_batch_mb,
+    }
+    for key, raw in numeric_fields.items():
+        raw = raw.strip()
+        if not raw:
+            continue
+        try:
+            value = int(raw)
+        except ValueError:
+            return RedirectResponse(url=f"/admin/founder?error=Invalid+value+for+{key}", status_code=303)
+        if value < 0:
+            return RedirectResponse(url=f"/admin/founder?error={key}+cannot+be+negative", status_code=303)
+        set_setting(db, key, str(value), admin_id=admin.id)
+
+    if allowed_upload_extensions.strip():
+        cleaned = ",".join(
+            ext.strip().lstrip(".").lower()
+            for ext in allowed_upload_extensions.split(",")
+            if ext.strip()
+        ) or "*"
+        set_setting(db, "allowed_upload_extensions", cleaned, admin_id=admin.id)
+
+    return RedirectResponse(url="/admin/founder?notice=Settings+saved", status_code=303)

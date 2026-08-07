@@ -12,12 +12,33 @@ from fastapi import APIRouter, Depends, File as UploadFormFile, Form, HTTPExcept
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
+from ..core.config import settings
 from ..core.security import get_current_user
 from ..database.models import ActivityLog, File as StoredFile, FileCollection, User
 from ..database.session import get_db
 from ..services.name_line import render_blocks as _render_blocks_line
+from ..services.site_settings import get_setting
 
 router = APIRouter(tags=["wizard"])
+
+UPLOAD_CHUNK_SIZE = 1024 * 1024
+
+
+def _allowed_extensions(db: Session) -> Optional[set[str]]:
+    """Return the allowed extension set, or None when all extensions are allowed."""
+    raw = get_setting(db, "allowed_upload_extensions", settings.ALLOWED_UPLOAD_EXTENSIONS)
+    raw = (raw or "").strip()
+    if not raw or raw == "*":
+        return None
+    return {ext.strip().lstrip(".").lower() for ext in raw.split(",") if ext.strip()}
+
+
+def _upload_limits(db: Session) -> tuple[int, int, int]:
+    """Return (max_files, max_file_bytes, max_batch_bytes) with site-setting overrides."""
+    max_files = int(get_setting(db, "max_upload_files", str(settings.MAX_UPLOAD_FILES)))
+    max_file_mb = int(get_setting(db, "max_upload_file_mb", str(settings.MAX_UPLOAD_FILE_MB)))
+    max_batch_mb = int(get_setting(db, "max_upload_batch_mb", str(settings.MAX_UPLOAD_BATCH_MB)))
+    return max_files, max_file_mb * 1024 * 1024, max_batch_mb * 1024 * 1024
 
 SESSION_ROOT = Path(tempfile.gettempdir()) / "pxnn_it_sessions"
 SESSION_ROOT.mkdir(parents=True, exist_ok=True)
@@ -230,9 +251,10 @@ def _join_producers(values: list[str]) -> str:
 
 
 def _split_stem_segments(stem: str) -> list[str]:
-    underscore_segments = [segment.strip() for segment in stem.split("_") if segment.strip()]
-    if underscore_segments:
-        return underscore_segments
+    if "_" in stem:
+        underscore_segments = [segment.strip() for segment in stem.split("_") if segment.strip()]
+        if underscore_segments:
+            return underscore_segments
 
     dash_segments = [segment.strip() for segment in re.split(r"\s+-\s+", stem) if segment.strip()]
     if len(dash_segments) > 1:
@@ -305,6 +327,61 @@ def _extract_bpm_prefix(stem: str) -> tuple[str, str]:
     return f"{match.group(1)}BPM", match.group(2).strip()
 
 
+PROD_CREDIT_RE = re.compile(
+    r"(?i)(?:^|[\s_,.-])prod(?:uced)?\.?(?:\s+by)?[\s:]+(?P<name>[A-Za-z0-9$&@' .-]+?)(?=$|[_\(\[\)])"
+)
+
+
+def _extract_prod_credit(text_value: str, producers: list[str]) -> tuple[list[str], str]:
+    """Pull 'prod. NAME' / 'produced by NAME' credits out of a stem or note."""
+    match = PROD_CREDIT_RE.search(text_value)
+    if not match:
+        return producers, text_value
+
+    raw_names = re.split(r"(?i)\s*(?:,|&|\bx\b|\band\b)\s*", match.group("name").strip(" .-_"))
+    names = [re.sub(r"\s+", " ", name).strip() for name in raw_names if name.strip()]
+    cleaned = (text_value[: match.start()] + " " + text_value[match.end() :]).strip()
+    return _dedupe_values(producers + names), cleaned
+
+
+def _consume_parentheticals(
+    working_stem: str, producers: list[str], mix: str, version: str
+) -> tuple[str, list[str], str, str]:
+    """Extract producers / mix / version hints from (...) notes instead of discarding them."""
+
+    def _replace(match: re.Match) -> str:
+        nonlocal producers, mix, version
+        content = match.group(1).strip()
+        if not content:
+            return " "
+
+        updated_producers, leftover = _extract_prod_credit(content, producers)
+        if updated_producers != producers:
+            producers = updated_producers
+            content = leftover.strip()
+            if not content:
+                return " "
+
+        if not mix:
+            candidate = _extract_mix_type(content) or _extract_mix_type(
+                re.sub(r"(?i)\bmix\b", "", content)
+            )
+            if candidate:
+                mix = candidate
+                return " "
+
+        if not version:
+            candidate_version = _extract_version(content)
+            if candidate_version:
+                version = candidate_version
+                return " "
+
+        return " "
+
+    cleaned_stem = re.sub(r"\(([^)]*)\)", _replace, working_stem)
+    return cleaned_stem, producers, mix, version
+
+
 def _extract_inline_producer_pattern(stem: str, producers: list[str]) -> tuple[list[str], str]:
     pattern = re.match(
         r"^\s*(?P<producer>[A-Za-z0-9_.-]+)\s+\((?P<note>[^)]*)\)\s+(?P<title>.+)$",
@@ -357,13 +434,16 @@ def _extract_fields(stem: str, suffix: str, index: int) -> dict[str, str]:
     extracted_producers, working_stem = _extract_inline_producer_pattern(
         working_stem, extracted_producers
     )
-    working_stem = re.sub(r"\([^)]*\)", " ", working_stem)
+    mix = ""
+    version = ""
+    working_stem, extracted_producers, mix, version = _consume_parentheticals(
+        working_stem, extracted_producers, mix, version
+    )
+    extracted_producers, working_stem = _extract_prod_credit(working_stem, extracted_producers)
     working_stem = re.sub(r"\s+", " ", working_stem).strip()
 
     segments = _split_stem_segments(working_stem)
     remaining = segments[:]
-    mix = ""
-    version = ""
     date = ""
     key = ""
 
@@ -385,7 +465,12 @@ def _extract_fields(stem: str, suffix: str, index: int) -> dict[str, str]:
         if not bpm:
             bpm = _extract_bpm(segment)
             if bpm:
-                remaining.pop()
+                leftover = re.sub(r"(?i)\b\d{2,3}\s*bpm\b", " ", segment)
+                leftover = re.sub(r"\s+", " ", leftover).strip()
+                if leftover and leftover != segment.strip():
+                    remaining[-1] = leftover
+                else:
+                    remaining.pop()
                 continue
         if not key:
             key = _extract_key(segment)
@@ -422,7 +507,8 @@ def _extract_fields(stem: str, suffix: str, index: int) -> dict[str, str]:
         if trailing_segment:
             remaining[0] = trailing_segment
 
-    if len(remaining) >= 2 and "_" in working_stem:
+    dash_delimited = "_" not in working_stem and bool(re.search(r"\s+-\s+", working_stem))
+    if len(remaining) >= 2 and ("_" in working_stem or dash_delimited):
         artist = _display_text(remaining[0])
         title = " ".join(_display_text(part) for part in remaining[1:] if part)
     elif len(remaining) >= 2 and not extracted_producers:
@@ -764,6 +850,23 @@ async def upload_files(
     if not valid_files:
         raise HTTPException(status_code=400, detail="Select at least one file.")
 
+    max_files, max_file_bytes, max_batch_bytes = _upload_limits(db)
+    if len(valid_files) > max_files:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Too many files. Upload at most {max_files} files per batch.",
+        )
+
+    allowed = _allowed_extensions(db)
+    if allowed is not None:
+        for upload in valid_files:
+            ext = Path(upload.filename).suffix.lstrip(".").lower()
+            if ext not in allowed:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"File type '.{ext or '?'}' is not supported.",
+                )
+
     session_id = uuid.uuid4().hex
     session_dir = SESSION_ROOT / session_id
     originals_dir = session_dir / "originals"
@@ -781,8 +884,26 @@ async def upload_files(
         stored_name = f"{file_id}{suffix}"
         stored_path = originals_dir / stored_name
 
+        bytes_written = 0
         with stored_path.open("wb") as output_file:
-            shutil.copyfileobj(upload.file, output_file)
+            while True:
+                chunk = upload.file.read(UPLOAD_CHUNK_SIZE)
+                if not chunk:
+                    break
+                bytes_written += len(chunk)
+                if bytes_written > max_file_bytes or total_size + bytes_written > max_batch_bytes:
+                    output_file.close()
+                    shutil.rmtree(session_dir, ignore_errors=True)
+                    limit_mb = max_file_bytes // (1024 * 1024)
+                    batch_mb = max_batch_bytes // (1024 * 1024)
+                    raise HTTPException(
+                        status_code=413,
+                        detail=(
+                            f"Upload too large. Max {limit_mb}MB per file "
+                            f"and {batch_mb}MB per batch."
+                        ),
+                    )
+                output_file.write(chunk)
 
         file_size = stored_path.stat().st_size
         total_size += file_size
