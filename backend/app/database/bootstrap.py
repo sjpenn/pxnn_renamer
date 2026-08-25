@@ -169,22 +169,41 @@ def bootstrap_database() -> None:
 
     # Idea — brand-new table, handled by create_all above — no _ensure_column needed.
 
-    # Promote configured admin email (idempotent)
+    # Promote the configured founder account (idempotent).
+    from sqlalchemy.orm import Session as _Session
+
+    db = _Session(bind=engine)
+    try:
+        promote_configured_admin(db)
+    finally:
+        db.close()
+
+
+def promote_configured_admin(db) -> None:
+    """Promote the ADMIN_BOOTSTRAP_EMAIL account to admin, idempotently.
+
+    Match on EITHER the email column OR the username, because accounts created
+    through the password register form store the person's email address in the
+    ``username`` field and leave the ``email`` column NULL. Matching username too
+    ensures the founder account is promoted regardless of how it was created.
+    """
+    from sqlalchemy import or_ as _or
     from .models import User as _UserModel
     from ..core.config import settings as _settings
 
-    email = (_settings.ADMIN_BOOTSTRAP_EMAIL or "").strip().lower()
-    if email:
-        from sqlalchemy.orm import Session as _Session
-        db = _Session(bind=engine)
-        try:
-            match = (
-                db.query(_UserModel)
-                .filter(_UserModel.email.ilike(email))
-                .first()
+    identifier = (_settings.ADMIN_BOOTSTRAP_EMAIL or "").strip().lower()
+    if not identifier:
+        return
+    match = (
+        db.query(_UserModel)
+        .filter(
+            _or(
+                _UserModel.email.ilike(identifier),
+                _UserModel.username.ilike(identifier),
             )
-            if match and not match.is_admin:
-                match.is_admin = True
-                db.commit()
-        finally:
-            db.close()
+        )
+        .first()
+    )
+    if match and not match.is_admin:
+        match.is_admin = True
+        db.commit()
