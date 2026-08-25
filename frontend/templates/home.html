@@ -176,33 +176,33 @@
     <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-6">
             <p class="text-xs uppercase tracking-[0.25em] text-ink-mute">Pricing</p>
-            <h2 class="mt-4 font-editorial text-3xl md:text-5xl text-ink">Pay per beat pack, or go unlimited</h2>
-            <p class="mt-4 text-lg text-ink-dim">No lock-in. Cancel anytime. Credits never expire.</p>
+            <h2 class="mt-4 font-editorial text-3xl md:text-5xl text-ink">Two ways to pay</h2>
+            <p class="mt-4 text-lg text-ink-dim">Pay $1 per single, or go unlimited for $7.99/month. No lock-in. Cancel anytime.</p>
         </div>
 
         {% include "partials/promo_banner.html" %}
 
         <p class="text-center text-sm text-ink-mute mt-2 mb-12">
-            Preview unlimited batches for free. 1 credit to export your renamed ZIP. Re-downloads are always free.
+            Preview unlimited batches for free. Export a renamed ZIP for $1 per single &mdash; or subscribe for unlimited exports. Re-downloads are always free.
         </p>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {% for option in payment_options %}
-            <article class="reveal-on-scroll rounded-2xl border border-[rgba(175,174,172,0.1)] bg-stage-raised p-8 flex flex-col justify-between transition-all hover:border-[rgba(175,174,172,0.25)]">
+            <article class="reveal-on-scroll rounded-2xl border p-8 flex flex-col justify-between transition-all {% if option.plan_type == 'subscription' %}border-[rgba(175,174,172,0.35)] bg-stage-raised ring-1 ring-[rgba(175,174,172,0.15)]{% else %}border-[rgba(175,174,172,0.1)] bg-stage-raised hover:border-[rgba(175,174,172,0.25)]{% endif %}">
                 <div>
                     <p class="text-xs uppercase tracking-[0.25em] text-ink-mute">{{ option.accent }}</p>
                     <h3 class="mt-3 font-editorial text-2xl text-ink">{{ option.label }}</h3>
                     <p class="mt-3 text-sm text-ink-dim leading-relaxed">{{ option.description }}</p>
                     <p class="mt-2 text-xs uppercase tracking-[0.2em] text-ink-mute">
-                        {% if option.plan_type == 'subscription' %}{{ option.credits }} credits/month{% else %}{{ option.credits }} credit{{ 's' if option.credits != 1 else '' }}{% endif %}
+                        {% if option.unlimited %}Unlimited exports{% elif option.plan_type == 'subscription' %}{{ option.credits }} credits/month{% else %}{{ option.credits }} export credit{{ 's' if option.credits != 1 else '' }}{% endif %}
                     </p>
                 </div>
                 <div class="mt-8">
                     <p class="font-editorial text-4xl text-ink">
-                        {{ option.amount_label }}{% if option.plan_type == 'subscription' %}<span class="text-base text-ink-mute">/mo</span>{% endif %}
+                        {{ option.amount_label }}{% if option.plan_type == 'subscription' %}<span class="text-base text-ink-mute">/mo</span>{% else %}<span class="text-base text-ink-mute">/single</span>{% endif %}
                     </p>
                     <a href="/register?plan={{ option.key }}" class="mt-6 btn btn-primary w-full py-3">
-                        Get {{ option.label }}
+                        {% if option.plan_type == 'subscription' %}Go Unlimited{% else %}Pay Per Single{% endif %}
                     </a>
                 </div>
             </article>

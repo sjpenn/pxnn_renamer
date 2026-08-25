@@ -84,12 +84,31 @@ def authenticate_user(db: Session, username: str, password: str) -> Optional[Use
 def has_unlimited_access(user) -> bool:
     """Return True if the user should bypass all paywalls / credit gates.
 
-    Currently triggered by the per-user is_testing flag. Any future feature
-    gate should call this helper rather than re-checking flags directly.
+    Triggered by either:
+      * the per-user is_testing flag (admin-assigned testers), or
+      * an active subscription on a plan marked ``unlimited`` (the
+        $7.99/mo Monthly Unlimited plan).
+
+    Any future feature gate should call this helper rather than re-checking
+    flags directly.
     """
     if user is None:
         return False
-    return bool(getattr(user, "is_testing", False))
+
+    if bool(getattr(user, "is_testing", False)):
+        return True
+
+    # Active subscribers on an unlimited monthly plan bypass the credit paywall.
+    if getattr(user, "subscription_status", None) == "active":
+        plan_key = getattr(user, "subscription_plan", None)
+        if plan_key:
+            from .pricing import PAYMENT_PLANS
+
+            plan = PAYMENT_PLANS.get(plan_key)
+            if plan and plan.get("unlimited"):
+                return True
+
+    return False
 
 
 def serialize_user(user: Optional[User]) -> Optional[dict]:

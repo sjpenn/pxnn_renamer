@@ -9,10 +9,11 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..core.security import require_admin
-from ..database.models import ActivityLog, Announcement, Campaign, CampaignImage, CampaignVariant, CommentCluster, Idea, PricingOverride, Promotion, SiteSettings, UIComment, User
+from ..database.models import ActivityLog, Announcement, AuditLog, Campaign, CampaignImage, CampaignVariant, CommentCluster, Idea, PricingOverride, Promotion, SiteSettings, UIComment, User
 from ..database.session import get_db
 from ..core.pricing import PAYMENT_PLANS
 from ..services import admin_stats, ai_clusterer, campaign_generator, image_generator
+from ..services.audit import record_audit
 from ..services.site_settings import get_setting, set_setting
 from ..services.promo_generator import generate_promo
 from ..services.idea_analyzer import analyze_idea
@@ -70,6 +71,7 @@ async def admin_users_page(
 @router.post("/users/{user_id}/credits")
 async def admin_grant_credits(
     user_id: int,
+    request: Request,
     amount: int = Form(...),
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
@@ -99,6 +101,20 @@ async def admin_grant_credits(
             ),
         )
     )
+    record_audit(
+        db,
+        action="admin.grant_credits",
+        category="admin",
+        summary=f"Granted {amount} credits to {target.username}",
+        actor=admin,
+        target=target,
+        entity_type="user",
+        entity_id=target.id,
+        before={"credit_balance": previous},
+        after={"credit_balance": target.credit_balance},
+        meta={"amount": amount},
+        request=request,
+    )
     db.commit()
     return RedirectResponse(url="/admin/users", status_code=303)
 
@@ -106,6 +122,7 @@ async def admin_grant_credits(
 @router.post("/users/{user_id}/testing")
 async def admin_toggle_testing(
     user_id: int,
+    request: Request,
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
@@ -113,7 +130,8 @@ async def admin_toggle_testing(
     if not target:
         raise HTTPException(status_code=404, detail="User not found.")
 
-    target.is_testing = not bool(target.is_testing)
+    was_testing = bool(target.is_testing)
+    target.is_testing = not was_testing
     db.add(
         ActivityLog(
             user_id=target.id,
@@ -128,6 +146,19 @@ async def admin_toggle_testing(
             ),
         )
     )
+    record_audit(
+        db,
+        action="admin.assign_tester" if target.is_testing else "admin.revoke_tester",
+        category="admin",
+        summary=f"Testing mode {'enabled' if target.is_testing else 'disabled'} for {target.username}",
+        actor=admin,
+        target=target,
+        entity_type="user",
+        entity_id=target.id,
+        before={"is_testing": was_testing},
+        after={"is_testing": bool(target.is_testing)},
+        request=request,
+    )
     db.commit()
     return RedirectResponse(url="/admin/users", status_code=303)
 
@@ -135,6 +166,7 @@ async def admin_toggle_testing(
 @router.post("/users/{user_id}/admin")
 async def admin_toggle_admin(
     user_id: int,
+    request: Request,
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
@@ -145,7 +177,8 @@ async def admin_toggle_admin(
     if target.id == admin.id:
         raise HTTPException(status_code=400, detail="Cannot change your own admin status.")
 
-    target.is_admin = not bool(target.is_admin)
+    was_admin = bool(target.is_admin)
+    target.is_admin = not was_admin
     db.add(
         ActivityLog(
             user_id=target.id,
@@ -160,8 +193,159 @@ async def admin_toggle_admin(
             ),
         )
     )
+    record_audit(
+        db,
+        action="admin.promote" if target.is_admin else "admin.revoke_admin",
+        category="admin",
+        summary=f"Admin role {'granted to' if target.is_admin else 'revoked from'} {target.username}",
+        actor=admin,
+        target=target,
+        entity_type="user",
+        entity_id=target.id,
+        before={"is_admin": was_admin},
+        after={"is_admin": bool(target.is_admin)},
+        request=request,
+    )
     db.commit()
     return RedirectResponse(url="/admin/users", status_code=303)
+
+
+# --------------------------------------------------------------------------- #
+# Audit log — append-only trail of who did what
+# --------------------------------------------------------------------------- #
+
+AUDIT_CATEGORIES = ["auth", "admin", "files", "billing", "security", "general"]
+
+
+def _audit_query(db: Session, *, category: str, action: str, q: str, actor: str):
+    query = db.query(AuditLog)
+    if category in AUDIT_CATEGORIES:
+        query = query.filter(AuditLog.category == category)
+    if action.strip():
+        query = query.filter(AuditLog.action == action.strip())
+    if actor.strip():
+        like = f"%{actor.strip()}%"
+        query = query.filter(AuditLog.actor_label.ilike(like))
+    if q.strip():
+        like = f"%{q.strip()}%"
+        query = query.filter(
+            or_(
+                AuditLog.summary.ilike(like),
+                AuditLog.target_label.ilike(like),
+                AuditLog.entity_id.ilike(like),
+                AuditLog.before_json.ilike(like),
+                AuditLog.after_json.ilike(like),
+                AuditLog.meta_json.ilike(like),
+            )
+        )
+    return query
+
+
+@router.get("/audit", response_class=HTMLResponse)
+async def admin_audit_page(
+    request: Request,
+    category: str = "",
+    action: str = "",
+    q: str = "",
+    actor: str = "",
+    page: int = 1,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    page = max(1, page)
+    per_page = 50
+    query = _audit_query(db, category=category, action=action, q=q, actor=actor)
+    total = query.count()
+    rows = (
+        query.order_by(AuditLog.created_at.desc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+        .all()
+    )
+
+    parsed = []
+    for row in rows:
+        parsed.append(
+            {
+                "row": row,
+                "before": json.loads(row.before_json) if row.before_json else None,
+                "after": json.loads(row.after_json) if row.after_json else None,
+                "meta": json.loads(row.meta_json) if row.meta_json else None,
+            }
+        )
+
+    # Distinct actions for the filter dropdown.
+    action_rows = db.query(AuditLog.action).distinct().order_by(AuditLog.action).all()
+    actions = [a[0] for a in action_rows]
+
+    return templates.TemplateResponse(
+        request,
+        "admin/audit.html",
+        {
+            "current_user": admin,
+            "entries": parsed,
+            "actions": actions,
+            "categories": AUDIT_CATEGORIES,
+            "filter_category": category,
+            "filter_action": action,
+            "filter_q": q,
+            "filter_actor": actor,
+            "page": page,
+            "per_page": per_page,
+            "total": total,
+            "has_next": page * per_page < total,
+            "has_prev": page > 1,
+            "title": "Audit Log · PxNN Admin",
+        },
+    )
+
+
+@router.get("/audit/export")
+async def admin_audit_export(
+    category: str = "",
+    action: str = "",
+    q: str = "",
+    actor: str = "",
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    import csv
+    import io
+
+    query = _audit_query(db, category=category, action=action, q=q, actor=actor)
+    rows = query.order_by(AuditLog.created_at.desc()).limit(10000).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(
+        [
+            "timestamp_utc", "actor", "actor_id", "action", "category",
+            "summary", "target", "target_id", "entity_type", "entity_id",
+            "before", "after", "meta", "ip_address", "user_agent",
+        ]
+    )
+    for r in rows:
+        writer.writerow(
+            [
+                r.created_at.isoformat() if r.created_at else "",
+                r.actor_label or "", r.actor_id or "",
+                r.action, r.category, r.summary,
+                r.target_label or "", r.target_id or "",
+                r.entity_type or "", r.entity_id or "",
+                r.before_json or "", r.after_json or "", r.meta_json or "",
+                r.ip_address or "", r.user_agent or "",
+            ]
+        )
+
+    return FastAPIResponse(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="pxnn_audit_{datetime.utcnow().strftime("%Y%m%d_%H%M%S")}.csv"'
+            ),
+        },
+    )
 
 
 @router.get("/partials/kpis", response_class=HTMLResponse)
@@ -533,6 +717,7 @@ async def admin_set_trial_credits(
 @router.post("/pricing/{plan_key}")
 async def admin_pricing_update(
     plan_key: str,
+    request: Request,
     label: str = Form(""),
     description: str = Form(""),
     amount_cents: str = Form(""),
@@ -551,6 +736,13 @@ async def admin_pricing_update(
         override = PricingOverride(plan_key=plan_key)
         db.add(override)
 
+    before_state = {
+        "label": override.label,
+        "amount_cents": override.amount_cents,
+        "credits": override.credits,
+        "is_visible": override.is_visible,
+    }
+
     override.label = label.strip() or None
     override.description = description.strip() or None
     try:
@@ -565,6 +757,23 @@ async def admin_pricing_update(
     override.is_visible = is_visible == "on"
     override.sort_order = sort_order
     override.updated_by_id = admin.id
+    record_audit(
+        db,
+        action="admin.pricing_update",
+        category="admin",
+        summary=f"Updated pricing override for {plan_key}",
+        actor=admin,
+        entity_type="pricing",
+        entity_id=plan_key,
+        before=before_state,
+        after={
+            "label": override.label,
+            "amount_cents": override.amount_cents,
+            "credits": override.credits,
+            "is_visible": override.is_visible,
+        },
+        request=request,
+    )
     db.commit()
     return RedirectResponse(url="/admin/pricing", status_code=303)
 
@@ -1106,6 +1315,7 @@ async def admin_founder_page(
 ):
     coupons = db.query(CouponCode).order_by(CouponCode.created_at.desc()).limit(100).all()
     admins = db.query(User).filter(User.is_admin.is_(True)).order_by(User.created_at).all()
+    testers = db.query(User).filter(User.is_testing.is_(True)).order_by(User.created_at).all()
     recent_grants = (
         db.query(ActivityLog)
         .filter(ActivityLog.event_type.in_(["admin_credit_grant", "coupon_redeemed"]))
@@ -1122,6 +1332,7 @@ async def admin_founder_page(
             "config_status": _founder_config_status(),
             "coupons": coupons,
             "admins": admins,
+            "testers": testers,
             "recent_grants": recent_grants,
             "trial_credits": get_setting(db, "trial_credits", "5"),
             "allowed_extensions": get_setting(
@@ -1138,6 +1349,7 @@ async def admin_founder_page(
 
 @router.post("/founder/credits")
 async def admin_founder_grant_credits(
+    request: Request,
     username: str = Form(...),
     amount: int = Form(...),
     admin: User = Depends(require_admin),
@@ -1172,6 +1384,20 @@ async def admin_founder_grant_credits(
             ),
         )
     )
+    record_audit(
+        db,
+        action="admin.grant_credits",
+        category="admin",
+        summary=f"{'Granted' if amount > 0 else 'Removed'} {abs(amount)} credits {'to' if amount > 0 else 'from'} {target.username}",
+        actor=admin,
+        target=target,
+        entity_type="user",
+        entity_id=target.id,
+        before={"credit_balance": previous},
+        after={"credit_balance": target.credit_balance},
+        meta={"amount": amount, "via": "founder_console"},
+        request=request,
+    )
     db.commit()
     return RedirectResponse(
         url=f"/admin/founder?notice={abs(amount)}+credits+{'granted+to' if amount > 0 else 'removed+from'}+{target.username}",
@@ -1179,8 +1405,201 @@ async def admin_founder_grant_credits(
     )
 
 
+def _resolve_user_by_identifier(db: Session, identifier: str) -> User | None:
+    """Look up a user by username or email (case-insensitive)."""
+    lookup = (identifier or "").strip().lower()
+    if not lookup:
+        return None
+    return (
+        db.query(User)
+        .filter((User.username == lookup) | (User.email.ilike(lookup)))
+        .first()
+    )
+
+
+@router.post("/founder/assign-admin")
+async def admin_founder_assign_admin(
+    request: Request,
+    username: str = Form(...),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    target = _resolve_user_by_identifier(db, username)
+    if not target:
+        return RedirectResponse(url="/admin/founder?error=User+not+found", status_code=303)
+    if target.is_admin:
+        return RedirectResponse(
+            url=f"/admin/founder?notice={target.username}+is+already+an+admin", status_code=303
+        )
+
+    target.is_admin = True
+    db.add(
+        ActivityLog(
+            user_id=target.id,
+            event_type="admin_role_toggled",
+            summary="Admin role granted",
+            details_json=json.dumps(
+                {"granted_by": admin.username, "new_value": True, "via": "founder_console"}
+            ),
+        )
+    )
+    record_audit(
+        db,
+        action="admin.promote",
+        category="admin",
+        summary=f"Promoted {target.username} to admin",
+        actor=admin,
+        target=target,
+        entity_type="user",
+        entity_id=target.id,
+        before={"is_admin": False},
+        after={"is_admin": True},
+        meta={"via": "founder_console"},
+        request=request,
+    )
+    db.commit()
+    return RedirectResponse(
+        url=f"/admin/founder?notice={target.username}+is+now+an+admin", status_code=303
+    )
+
+
+@router.post("/founder/revoke-admin/{user_id}")
+async def admin_founder_revoke_admin(
+    user_id: int,
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found.")
+    if target.id == admin.id:
+        return RedirectResponse(
+            url="/admin/founder?error=You+cannot+revoke+your+own+admin+access", status_code=303
+        )
+
+    target.is_admin = False
+    db.add(
+        ActivityLog(
+            user_id=target.id,
+            event_type="admin_role_toggled",
+            summary="Admin role revoked",
+            details_json=json.dumps(
+                {"revoked_by": admin.username, "new_value": False, "via": "founder_console"}
+            ),
+        )
+    )
+    record_audit(
+        db,
+        action="admin.revoke_admin",
+        category="admin",
+        summary=f"Revoked admin from {target.username}",
+        actor=admin,
+        target=target,
+        entity_type="user",
+        entity_id=target.id,
+        before={"is_admin": True},
+        after={"is_admin": False},
+        meta={"via": "founder_console"},
+        request=request,
+    )
+    db.commit()
+    return RedirectResponse(
+        url=f"/admin/founder?notice={target.username}+is+no+longer+an+admin", status_code=303
+    )
+
+
+@router.post("/founder/assign-tester")
+async def admin_founder_assign_tester(
+    request: Request,
+    username: str = Form(...),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    target = _resolve_user_by_identifier(db, username)
+    if not target:
+        return RedirectResponse(url="/admin/founder?error=User+not+found", status_code=303)
+    if target.is_testing:
+        return RedirectResponse(
+            url=f"/admin/founder?notice={target.username}+is+already+a+tester", status_code=303
+        )
+
+    target.is_testing = True
+    db.add(
+        ActivityLog(
+            user_id=target.id,
+            event_type="admin_testing_toggled",
+            summary="Testing mode enabled",
+            details_json=json.dumps(
+                {"assigned_by": admin.username, "new_value": True, "via": "founder_console"}
+            ),
+        )
+    )
+    record_audit(
+        db,
+        action="admin.assign_tester",
+        category="admin",
+        summary=f"Assigned {target.username} as tester",
+        actor=admin,
+        target=target,
+        entity_type="user",
+        entity_id=target.id,
+        before={"is_testing": False},
+        after={"is_testing": True},
+        meta={"via": "founder_console"},
+        request=request,
+    )
+    db.commit()
+    return RedirectResponse(
+        url=f"/admin/founder?notice={target.username}+is+now+a+tester", status_code=303
+    )
+
+
+@router.post("/founder/revoke-tester/{user_id}")
+async def admin_founder_revoke_tester(
+    user_id: int,
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    target.is_testing = False
+    db.add(
+        ActivityLog(
+            user_id=target.id,
+            event_type="admin_testing_toggled",
+            summary="Testing mode disabled",
+            details_json=json.dumps(
+                {"revoked_by": admin.username, "new_value": False, "via": "founder_console"}
+            ),
+        )
+    )
+    record_audit(
+        db,
+        action="admin.revoke_tester",
+        category="admin",
+        summary=f"Removed tester access from {target.username}",
+        actor=admin,
+        target=target,
+        entity_type="user",
+        entity_id=target.id,
+        before={"is_testing": True},
+        after={"is_testing": False},
+        meta={"via": "founder_console"},
+        request=request,
+    )
+    db.commit()
+    return RedirectResponse(
+        url=f"/admin/founder?notice={target.username}+is+no+longer+a+tester", status_code=303
+    )
+
+
 @router.post("/founder/coupons")
 async def admin_founder_create_coupon(
+    request: Request,
     credits: int = Form(...),
     code: str = Form(""),
     max_redemptions: str = Form(""),
@@ -1216,6 +1635,21 @@ async def admin_founder_create_coupon(
     except CouponError as exc:
         return RedirectResponse(url=f"/admin/founder?error={str(exc).replace(' ', '+')}", status_code=303)
 
+    record_audit(
+        db,
+        action="admin.coupon_create",
+        category="admin",
+        summary=f"Created coupon {coupon.code} ({coupon.credits} credits)",
+        actor=admin,
+        entity_type="coupon",
+        entity_id=coupon.id,
+        after={
+            "code": coupon.code,
+            "credits": coupon.credits,
+            "max_redemptions": coupon.max_redemptions,
+        },
+        request=request,
+    )
     db.commit()
     return RedirectResponse(url=f"/admin/founder?notice=Coupon+{coupon.code}+created", status_code=303)
 

@@ -108,6 +108,46 @@ class PaymentRecord(Base):
     user = relationship("User", back_populates="payment_records")
 
 
+class AuditLog(Base):
+    """Append-only, security-grade audit trail.
+
+    Distinct from ActivityLog (which powers funnel/dashboard analytics), this
+    records *who did what to whom*, with before/after values and request
+    context, so system changes are fully traceable after the fact.
+    """
+
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+    # Actor — who performed the action (nullable for system/anonymous events).
+    actor_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    actor_label = Column(String, nullable=True)  # snapshot; survives user deletion
+
+    action = Column(String, nullable=False, index=True)  # e.g. "admin.promote", "files.export"
+    category = Column(String, nullable=False, default="general", index=True)  # auth|admin|files|billing|security
+    summary = Column(String, nullable=False)
+
+    # Target — who/what was affected. target_id is a plain int (no FK) so the
+    # trail survives deletion of the affected row.
+    target_id = Column(Integer, nullable=True, index=True)
+    target_label = Column(String, nullable=True)
+    entity_type = Column(String, nullable=True)  # user|collection|file|payment|coupon|pricing|setting
+    entity_id = Column(String, nullable=True, index=True)
+
+    # Change record — before/after snapshots and free-form metadata
+    # (rename change lists, filenames, counts, session ids, etc.).
+    before_json = Column(Text, nullable=True)
+    after_json = Column(Text, nullable=True)
+    meta_json = Column(Text, nullable=True)
+
+    ip_address = Column(String, nullable=True)
+    user_agent = Column(String, nullable=True)
+
+    actor = relationship("User", foreign_keys=[actor_id])
+
+
 class Announcement(Base):
     __tablename__ = "announcements"
 

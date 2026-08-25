@@ -19,14 +19,19 @@ def _create_user(db, username="testuser", credits=0, stripe_customer_id="cus_tes
     return user
 
 
-def test_invoice_paid_webhook_grants_subscription_credits(client, db):
+def test_invoice_paid_webhook_records_unlimited_renewal(client, db):
+    """The monthly-unlimited plan grants no credits on renewal (access is via
+    the subscription bypass), but the invoice must still be recorded."""
+    from backend.app.core.security import has_unlimited_access
+
     user = _create_user(db, credits=0, stripe_customer_id="cus_inv")
-    user.subscription_plan = "pro_monthly"
+    user.subscription_plan = "monthly_unlimited"
+    user.subscription_status = "active"
     user.subscription_id = "sub_test"
     db.commit()
 
     mock_sub = MagicMock()
-    mock_sub.get.side_effect = lambda key, default=None: {"metadata": {"plan_key": "pro_monthly", "user_id": str(user.id)}}.get(key, default)
+    mock_sub.get.side_effect = lambda key, default=None: {"metadata": {"plan_key": "monthly_unlimited", "user_id": str(user.id)}}.get(key, default)
 
     event_payload = {
         "type": "invoice.paid",
@@ -35,7 +40,7 @@ def test_invoice_paid_webhook_grants_subscription_credits(client, db):
                 "id": "inv_001",
                 "customer": "cus_inv",
                 "subscription": "sub_test",
-                "amount_paid": 2900,
+                "amount_paid": 799,
                 "currency": "usd",
             }
         },
@@ -53,13 +58,18 @@ def test_invoice_paid_webhook_grants_subscription_credits(client, db):
 
     assert response.status_code == 200
     db.refresh(user)
-    assert user.credit_balance == 15  # pro_monthly grants 15 credits
+    # No credits stacked; unlimited access comes from the active subscription.
+    assert user.credit_balance == 0
+    assert has_unlimited_access(user) is True
+    record = db.query(PaymentRecord).filter(PaymentRecord.stripe_invoice_id == "inv_001").first()
+    assert record is not None
+    assert record.plan_key == "monthly_unlimited"
 
 
 def test_invoice_paid_webhook_idempotent(client, db):
-    """Second call with same invoice_id must not double-grant credits."""
+    """Second call with same invoice_id must not re-process the renewal."""
     user = _create_user(db, credits=15, stripe_customer_id="cus_idem")
-    user.subscription_plan = "pro_monthly"
+    user.subscription_plan = "monthly_unlimited"
     user.subscription_id = "sub_idem"
     db.commit()
 
@@ -67,17 +77,17 @@ def test_invoice_paid_webhook_idempotent(client, db):
     db.add(PaymentRecord(
         user_id=user.id,
         stripe_invoice_id="inv_idem",
-        plan_key="pro_monthly",
+        plan_key="monthly_unlimited",
         plan_type="subscription",
-        amount_cents=2900,
+        amount_cents=799,
         currency="usd",
-        credits=15,
+        credits=0,
         status="paid",
     ))
     db.commit()
 
     mock_sub = MagicMock()
-    mock_sub.get.side_effect = lambda key, default=None: {"metadata": {"plan_key": "pro_monthly"}}.get(key, default)
+    mock_sub.get.side_effect = lambda key, default=None: {"metadata": {"plan_key": "monthly_unlimited"}}.get(key, default)
 
     event_payload = {
         "type": "invoice.paid",
@@ -111,8 +121,8 @@ def test_subscription_cancelled_webhook_clears_plan(client, db):
     user = _create_user(db, stripe_customer_id="cus_cancel")
     user.subscription_id = "sub_cancel"
     user.subscription_status = "active"
-    user.subscription_plan = "starter_monthly"
-    user.active_plan = "starter_monthly"
+    user.subscription_plan = "monthly_unlimited"
+    user.active_plan = "monthly_unlimited"
     db.commit()
 
     event_payload = {

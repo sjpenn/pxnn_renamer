@@ -11,6 +11,7 @@ from ..core.security import (
     clear_auth_cookie,
     create_access_token,
     create_password_reset_token,
+    get_current_user_optional,
     hash_password,
     serialize_user,
     set_auth_cookie,
@@ -18,6 +19,7 @@ from ..core.security import (
 )
 from ..database.models import ActivityLog, User
 from ..database.session import get_db
+from ..services.audit import record_audit
 from ..services.email_service import notify_new_signup, send_password_reset
 from ..services.site_settings import get_setting
 
@@ -75,6 +77,18 @@ async def register(
         user.credit_balance = trial_credits
         _log_auth_activity(db, user, "trial_credits_granted", f"{trial_credits} trial credits granted")
 
+    record_audit(
+        db,
+        action="auth.register",
+        category="auth",
+        summary=f"Account created: {user.username}",
+        actor=user,
+        target=user,
+        entity_type="user",
+        entity_id=user.id,
+        meta={"email": user.email, "trial_credits": trial_credits, "method": "form"},
+        request=request,
+    )
     db.commit()
 
     notify_new_signup(db, user, method="form")
@@ -101,6 +115,16 @@ async def login(
         )
 
     _log_auth_activity(db, user, "login", "Signed in")
+    record_audit(
+        db,
+        action="auth.login",
+        category="auth",
+        summary=f"Signed in: {user.username}",
+        actor=user,
+        entity_type="user",
+        entity_id=user.id,
+        request=request,
+    )
     db.commit()
 
     token = create_access_token(str(user.id))
@@ -109,7 +133,24 @@ async def login(
 
 
 @router.post("/logout")
-async def logout(response: Response):
+async def logout(
+    request: Request,
+    response: Response,
+    current_user: User | None = Depends(get_current_user_optional),
+    db: Session = Depends(get_db),
+):
+    if current_user is not None:
+        record_audit(
+            db,
+            action="auth.logout",
+            category="auth",
+            summary=f"Signed out: {current_user.username}",
+            actor=current_user,
+            entity_type="user",
+            entity_id=current_user.id,
+            request=request,
+        )
+        db.commit()
     clear_auth_cookie(response)
     return {"ok": True}
 
@@ -137,6 +178,17 @@ async def forgot_password(
         sent = send_password_reset(user, reset_url)
         if sent:
             _log_auth_activity(db, user, "password_reset_requested", "Password reset email sent")
+            record_audit(
+                db,
+                action="auth.password_reset_requested",
+                category="security",
+                summary=f"Password reset requested: {user.username}",
+                actor=user,
+                target=user,
+                entity_type="user",
+                entity_id=user.id,
+                request=request,
+            )
             db.commit()
 
     return {"ok": True, "detail": "If that account has an email on file, a reset link is on its way."}
@@ -166,5 +218,16 @@ async def reset_password(
 
     user.password_hash = hash_password(new_password)
     _log_auth_activity(db, user, "password_reset_completed", "Password reset via email link")
+    record_audit(
+        db,
+        action="auth.password_reset_completed",
+        category="security",
+        summary=f"Password reset completed: {user.username}",
+        actor=user,
+        target=user,
+        entity_type="user",
+        entity_id=user.id,
+        request=request,
+    )
     db.commit()
     return {"ok": True}

@@ -13,6 +13,7 @@ from ..core.pricing import get_payment_options, get_payment_plan, PAYMENT_PLANS
 from ..core.security import get_current_user
 from ..database.models import ActivityLog, PaymentRecord, User
 from ..database.session import get_db
+from ..services.audit import record_audit
 from ..services.email_service import notify_purchase, notify_account_paused, notify_service_canceled
 
 router = APIRouter(tags=["payments"])
@@ -163,6 +164,28 @@ def _mark_checkout_session_paid(
             },
         )
 
+    record_audit(
+        db,
+        action="billing.subscription_started" if is_subscription else "billing.payment_completed",
+        category="billing",
+        summary=(
+            f"Subscription started: {payment_record.plan_key}"
+            if is_subscription
+            else f"Payment completed: {payment_record.plan_key} (+{payment_record.credits} credits)"
+        ),
+        actor=user,
+        target=user,
+        entity_type="payment",
+        entity_id=payment_record.id,
+        after={
+            "plan_key": payment_record.plan_key,
+            "plan_type": payment_record.plan_type,
+            "amount_cents": payment_record.amount_cents,
+            "credits": payment_record.credits,
+            "credit_balance": user.credit_balance,
+        },
+        meta={"checkout_session_id": checkout_session_id},
+    )
     db.commit()
 
     notify_purchase(db, user, payment_record.plan_key, payment_record.amount_cents, payment_record.plan_type)

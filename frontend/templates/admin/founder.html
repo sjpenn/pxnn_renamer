@@ -173,18 +173,66 @@
   <p class="text-xs text-ink-dim mt-2">Users redeem codes from their Profile page (or POST /api/credits/redeem).</p>
 </section>
 
-<!-- Admin team -->
-<section class="bg-stage-raised border border-hairline rounded-xl p-4">
-  <h2 class="text-lg font-display text-ink mb-3">Admin team</h2>
-  <ul class="space-y-1 text-sm">
-    {% for a in admins %}
-    <li class="flex items-center gap-2">
-      <span class="text-magenta text-xs border border-magenta rounded px-2 py-0.5">ADMIN</span>
-      <span class="text-ink">{{ a.username }}</span>
-      <span class="text-ink-dim text-xs">{{ a.email or '' }}</span>
-    </li>
-    {% endfor %}
-  </ul>
-  <p class="text-xs text-ink-dim mt-2">Grant or revoke admin from the <a href="/admin/users" class="text-cyan hover:text-ink">Users page</a>.</p>
-</section>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+  <!-- Admin team -->
+  <section class="bg-stage-raised border border-hairline rounded-xl p-4">
+    <h2 class="text-lg font-display text-ink mb-3">Admin team</h2>
+    <form method="post" action="/admin/founder/assign-admin" class="flex flex-wrap items-end gap-3 mb-4">
+      <label class="text-sm text-ink-dim flex-1 min-w-[180px]">
+        Username or email
+        <input name="username" required placeholder="e.g. newadmin@gedsio.com"
+               class="mt-1 w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink" />
+      </label>
+      <button type="submit" class="px-4 py-2 bg-magenta text-black rounded font-medium text-sm">Make admin</button>
+    </form>
+    <ul class="space-y-1 text-sm">
+      {% for a in admins %}
+      <li class="flex items-center gap-2">
+        <span class="text-magenta text-xs border border-magenta rounded px-2 py-0.5">ADMIN</span>
+        <span class="text-ink">{{ a.username }}</span>
+        <span class="text-ink-dim text-xs flex-1 truncate">{{ a.email or '' }}</span>
+        {% if a.id != current_user.id %}
+        <form method="post" action="/admin/founder/revoke-admin/{{ a.id }}" class="inline"
+              onsubmit="return confirm('Revoke admin from {{ a.username }}?');">
+          <button type="submit" class="text-xs text-ink-mute hover:text-magenta transition">revoke</button>
+        </form>
+        {% else %}
+        <span class="text-xs text-ink-mute">you</span>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    <p class="text-xs text-ink-dim mt-2">The bootstrap admin ({{ current_user.email or 'ADMIN_BOOTSTRAP_EMAIL' }}) is promoted automatically at startup.</p>
+  </section>
+
+  <!-- Testers -->
+  <section class="bg-stage-raised border border-hairline rounded-xl p-4">
+    <h2 class="text-lg font-display text-ink mb-3">Testers</h2>
+    <form method="post" action="/admin/founder/assign-tester" class="flex flex-wrap items-end gap-3 mb-4">
+      <label class="text-sm text-ink-dim flex-1 min-w-[180px]">
+        Username or email
+        <input name="username" required placeholder="e.g. betauser"
+               class="mt-1 w-full bg-stage-sunken border border-hairline rounded px-3 py-2 text-sm text-ink" />
+      </label>
+      <button type="submit" class="px-4 py-2 bg-cyan text-black rounded font-medium text-sm">Assign tester</button>
+    </form>
+    <ul class="space-y-1 text-sm">
+      {% for t in testers %}
+      <li class="flex items-center gap-2">
+        <span class="text-success text-xs border border-success rounded px-2 py-0.5">TESTER</span>
+        <span class="text-ink">{{ t.username }}</span>
+        <span class="text-ink-dim text-xs flex-1 truncate">{{ t.email or '' }}</span>
+        <form method="post" action="/admin/founder/revoke-tester/{{ t.id }}" class="inline"
+              onsubmit="return confirm('Remove tester access from {{ t.username }}?');">
+          <button type="submit" class="text-xs text-ink-mute hover:text-magenta transition">revoke</button>
+        </form>
+      </li>
+      {% else %}
+      <li class="text-ink-dim text-xs">No testers yet. Assign one above to grant unlimited, paywall-free access.</li>
+      {% endfor %}
+    </ul>
+    <p class="text-xs text-ink-dim mt-2">Testers bypass the credit paywall entirely. You can also toggle per-user from the <a href="/admin/users" class="text-cyan hover:text-ink">Users page</a>.</p>
+  </section>
+</div>
 {% endblock %}

@@ -1,35 +1,37 @@
 from backend.app.core.pricing import get_payment_options, get_payment_plan, PAYMENT_PLANS
 
 
-def test_get_payment_options_includes_subscription_plans():
+def test_only_two_plans_are_offered():
+    assert set(PAYMENT_PLANS.keys()) == {"single_export", "monthly_unlimited"}
+
+
+def test_get_payment_options_returns_both_plans():
     options = get_payment_options()
-    plan_keys = [o["key"] for o in options]
-    assert "starter_monthly" in plan_keys
-    assert "pro_monthly" in plan_keys
-    assert "label_monthly" in plan_keys
+    plan_keys = {o["key"] for o in options}
+    assert plan_keys == {"single_export", "monthly_unlimited"}
 
 
-def test_subscription_plans_have_plan_type():
-    options = get_payment_options()
-    sub_options = [o for o in options if o["key"].endswith("_monthly")]
-    assert len(sub_options) == 3
-    for opt in sub_options:
-        assert opt["plan_type"] == "subscription"
+def test_single_export_is_one_dollar_pay_per_turn():
+    plan = get_payment_plan("single_export")
+    assert plan["plan_type"] == "one_time"
+    assert plan["amount_cents"] == 100
+    assert plan["credits"] == 1
+    assert plan["amount_label"] == "$1"
+    assert plan.get("unlimited") is False
 
 
-def test_one_time_plans_have_plan_type():
-    options = get_payment_options()
-    one_time = [o for o in options if not o["key"].endswith("_monthly")]
-    assert len(one_time) == 3
-    for opt in one_time:
-        assert opt["plan_type"] == "one_time"
-
-
-def test_get_payment_plan_subscription_returns_plan_type():
-    plan = get_payment_plan("pro_monthly")
+def test_monthly_unlimited_is_seven_ninety_nine_subscription():
+    plan = get_payment_plan("monthly_unlimited")
     assert plan["plan_type"] == "subscription"
-    assert plan["credits"] == 15
-    assert plan["amount_cents"] == 2900
+    assert plan["amount_cents"] == 799
+    assert plan["amount_label"] == "$7.99"
+    assert plan.get("unlimited") is True
+
+
+def test_payment_options_carry_unlimited_flag():
+    options = {o["key"]: o for o in get_payment_options()}
+    assert options["single_export"]["unlimited"] is False
+    assert options["monthly_unlimited"]["unlimited"] is True
 
 
 def test_get_payment_plan_unknown_raises_key_error():

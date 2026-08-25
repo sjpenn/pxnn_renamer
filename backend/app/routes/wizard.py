@@ -8,7 +8,7 @@ import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File as UploadFormFile, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File as UploadFormFile, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
@@ -16,6 +16,7 @@ from ..core.config import settings
 from ..core.security import get_current_user
 from ..database.models import ActivityLog, File as StoredFile, FileCollection, User
 from ..database.session import get_db
+from ..services.audit import record_audit, rename_changes
 from ..services.name_line import render_blocks as _render_blocks_line
 from ..services.site_settings import get_setting
 
@@ -842,6 +843,7 @@ def _update_collection_preview(
 
 @router.post("/api/wizard/upload")
 async def upload_files(
+    request: Request,
     files: list[UploadFile] = UploadFormFile(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -958,6 +960,29 @@ async def upload_files(
             "total_size_label": _format_size(total_size),
         },
     )
+    record_audit(
+        db,
+        action="files.upload",
+        category="files",
+        summary=f"{len(file_entries)} file(s) uploaded",
+        actor=current_user,
+        entity_type="collection",
+        entity_id=collection.id,
+        after={
+            "filenames": [f["original_name"] for f in file_entries],
+        },
+        meta={
+            "session_id": session_id,
+            "file_count": len(file_entries),
+            "total_size_bytes": total_size,
+            "total_size_label": _format_size(total_size),
+            "files": [
+                {"name": f["original_name"], "size_bytes": f["size_bytes"]}
+                for f in file_entries
+            ],
+        },
+        request=request,
+    )
     db.commit()
 
     return {
@@ -979,6 +1004,7 @@ async def upload_files(
 
 @router.post("/api/wizard/preview")
 async def preview_renames(
+    request: Request,
     session_id: str = Form(...),
     format_template: str = Form("ARTIST_TITLE_PRODUCERS_MIX_VERSION"),
     delimiter: str = Form("underscore"),
@@ -1069,6 +1095,25 @@ async def preview_renames(
             collection_id=collection.id,
             details={"session_id": session_id, "file_count": len(preview_items)},
         )
+    record_audit(
+        db,
+        action="files.rename_preview",
+        category="files",
+        summary=f"Rename preview generated for {len(preview_items)} file(s)",
+        actor=current_user,
+        entity_type="collection",
+        entity_id=collection.id,
+        after={"changes": rename_changes(preview_items)},
+        meta={
+            "session_id": session_id,
+            "file_count": len(preview_items),
+            "format_template": effective_format_template,
+            "delimiter": delimiter,
+            "case_style": case_style,
+            "safe_cleanup": safe_cleanup,
+        },
+        request=request,
+    )
     db.commit()
 
     return {
@@ -1082,6 +1127,7 @@ async def preview_renames(
 @router.get("/api/wizard/download/{session_id}")
 async def download_archive(
     session_id: str,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -1124,11 +1170,32 @@ async def download_archive(
             },
         )
 
+    is_first_export = collection.download_count == 0
     collection.download_count += 1
     collection.downloaded_at = _utcnow()
     collection.status = "downloaded"
     for file_record in collection.files:
         file_record.status = "downloaded"
+
+    record_audit(
+        db,
+        action="files.export",
+        category="files",
+        summary=f"Archive exported ({len(metadata['preview'])} file(s) renamed)",
+        actor=current_user,
+        entity_type="collection",
+        entity_id=collection.id,
+        after={"changes": rename_changes(metadata["preview"])},
+        meta={
+            "session_id": session_id,
+            "file_count": len(metadata["preview"]),
+            "first_export": is_first_export,
+            "re_download": not is_first_export,
+            "credits_remaining": current_user.credit_balance,
+            "unlimited_access": has_unlimited_access(current_user),
+        },
+        request=request,
+    )
     db.commit()
 
     return FileResponse(

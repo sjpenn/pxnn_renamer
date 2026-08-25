@@ -4,60 +4,29 @@ from sqlalchemy.orm import Session
 
 from .config import settings
 
+# Two-option pricing: pay-per-single ($1 per export) vs. unlimited monthly ($7.99/mo).
+# The monthly plan carries `unlimited: True`; active subscribers bypass the credit
+# paywall via core.security.has_unlimited_access rather than accumulating credits.
 PAYMENT_PLANS = {
     "single_export": {
-        "label": "Single Export",
-        "description": "1 download credit for a finished rename batch.",
-        "amount_cents": 700,
+        "label": "Pay Per Single",
+        "description": "One export credit \u2014 $1 per turn. Perfect for a single finished batch.",
+        "amount_cents": 100,
         "credits": 1,
         "price_id_setting": "STRIPE_SINGLE_EXPORT_PRICE_ID",
-        "accent": "Starter",
+        "accent": "Pay as you go",
         "plan_type": "one_time",
+        "unlimited": False,
     },
-    "creator_pack": {
-        "label": "Creator Pack",
-        "description": "10 download credits for repeat uploads and revisions.",
-        "amount_cents": 3900,
-        "credits": 10,
-        "price_id_setting": "STRIPE_CREATOR_PACK_PRICE_ID",
+    "monthly_unlimited": {
+        "label": "Monthly Unlimited",
+        "description": "Unlimited exports every month for one flat price. Cancel anytime.",
+        "amount_cents": 799,
+        "credits": 0,
+        "price_id_setting": "STRIPE_MONTHLY_UNLIMITED_PRICE_ID",
         "accent": "Best value",
-        "plan_type": "one_time",
-    },
-    "label_pack": {
-        "label": "Label Pack",
-        "description": "50 download credits for teams and heavier release schedules.",
-        "amount_cents": 14900,
-        "credits": 50,
-        "price_id_setting": "STRIPE_LABEL_PACK_PRICE_ID",
-        "accent": "Team",
-        "plan_type": "one_time",
-    },
-    "starter_monthly": {
-        "label": "Starter",
-        "description": "3 credits/month for independent producers.",
-        "amount_cents": 900,
-        "credits": 3,
-        "price_id_setting": "STRIPE_STARTER_MONTHLY_PRICE_ID",
-        "accent": "Monthly",
         "plan_type": "subscription",
-    },
-    "pro_monthly": {
-        "label": "Pro",
-        "description": "15 credits/month for regular uploaders.",
-        "amount_cents": 2900,
-        "credits": 15,
-        "price_id_setting": "STRIPE_PRO_MONTHLY_PRICE_ID",
-        "accent": "Popular",
-        "plan_type": "subscription",
-    },
-    "label_monthly": {
-        "label": "Label",
-        "description": "60 credits/month for teams and heavy release schedules.",
-        "amount_cents": 7900,
-        "credits": 60,
-        "price_id_setting": "STRIPE_LABEL_MONTHLY_PRICE_ID",
-        "accent": "Team",
-        "plan_type": "subscription",
+        "unlimited": True,
     },
 }
 
@@ -102,6 +71,7 @@ def get_payment_options(db: Optional[Session] = None) -> list[dict]:
                 "accent": accent,
                 "stripe_price_id": price_id,
                 "plan_type": plan["plan_type"],
+                "unlimited": plan.get("unlimited", False),
                 "sort_order": sort_order,
             }
         )

@@ -12,7 +12,10 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: Optional[str] = None
     STRIPE_PUBLISHABLE_KEY: Optional[str] = None
     STRIPE_WEBHOOK_SECRET: Optional[str] = None
+    # Active plans: pay-per-single ($1) and monthly unlimited ($7.99/mo)
     STRIPE_SINGLE_EXPORT_PRICE_ID: Optional[str] = None
+    STRIPE_MONTHLY_UNLIMITED_PRICE_ID: Optional[str] = None
+    # Legacy price IDs (kept so existing .env files stay valid; no longer offered)
     STRIPE_CREATOR_PACK_PRICE_ID: Optional[str] = None
     STRIPE_LABEL_PACK_PRICE_ID: Optional[str] = None
     STRIPE_STARTER_MONTHLY_PRICE_ID: Optional[str] = None
